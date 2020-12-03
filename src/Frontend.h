@@ -127,7 +127,7 @@ namespace lrcpp {
         static bool cameraStart();
         static void cameraStop();
 
-        static void loggerPrintf(enum retro_log_level level, char const* format, ...);
+        static void loggerVprintf(enum retro_log_level level, char const* format, ...);
 
         static retro_time_t perfGetTimeUsec();
         static uint64_t perfGetCpuFeatures();

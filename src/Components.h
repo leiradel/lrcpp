@@ -12,7 +12,7 @@ namespace lrcpp {
     class Logger {
     public:
         // Interfaces
-        virtual void printf(enum retro_log_level level, char const* format, va_list args) = 0;
+        virtual void vprintf(enum retro_log_level level, char const* format, va_list args) = 0;
     };
 
     /**

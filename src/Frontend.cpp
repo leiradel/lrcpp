@@ -447,7 +447,7 @@ bool lrcpp::Frontend::getLogInterface(struct retro_log_callback* data) {
         return false;
     }
 
-    data->log = loggerPrintf;
+    data->log = loggerVprintf;
     return true;
 }
 
@@ -865,10 +865,10 @@ void lrcpp::Frontend::cameraStop() {
     s_instance->_camera->stop();
 }
 
-void lrcpp::Frontend::loggerPrintf(enum retro_log_level level, char const* format, ...) {
+void lrcpp::Frontend::loggerVprintf(enum retro_log_level level, char const* format, ...) {
     va_list args;
     va_start(args, format);
-    s_instance->_logger->printf(level, format, args);
+    s_instance->_logger->vprintf(level, format, args);
     va_end(args);
 }
 
