@@ -1,0 +1,51 @@
+// Generated with FSM compiler, https://github.com/leiradel/luamods/ddlt
+
+digraph CoreFsm {
+    CoreInitialized [label="CoreInitialized"];
+    CoreLoaded [label="CoreLoaded"];
+    EnvironmentSet [label="EnvironmentSet"];
+    GameLoaded [label="GameLoaded"];
+    GameRunning [label="GameRunning"];
+    Start [label="Start"];
+
+    CoreInitialized -> CoreInitialized [label="apiVersion"];
+    CoreInitialized -> EnvironmentSet [label="deinit"];
+    CoreInitialized -> CoreInitialized [label="getSystemInfo"];
+    CoreInitialized -> GameLoaded [label="loadGame"];
+    CoreInitialized -> GameLoaded [label="loadGameSpecial"];
+    CoreInitialized -> CoreInitialized [label="setControllerPortDevice"];
+    CoreLoaded -> CoreLoaded [label="apiVersion"];
+    CoreLoaded -> CoreLoaded [label="getSystemInfo"];
+    CoreLoaded -> EnvironmentSet [label="setEnvironment"];
+    CoreLoaded -> Start [label="unload"];
+    EnvironmentSet -> EnvironmentSet [label="apiVersion"];
+    EnvironmentSet -> EnvironmentSet [label="getSystemInfo"];
+    EnvironmentSet -> CoreLoaded [label="gotoCoreLoaded"];
+    EnvironmentSet -> CoreInitialized [label="init"];
+    EnvironmentSet -> EnvironmentSet [label="setControllerPortDevice"];
+    GameLoaded -> GameLoaded [label="apiVersion"];
+    GameLoaded -> GameLoaded [label="getMemoryData"];
+    GameLoaded -> GameLoaded [label="getMemorySize"];
+    GameLoaded -> GameLoaded [label="getRegion"];
+    GameLoaded -> GameLoaded [label="getSystemAvInfo"];
+    GameLoaded -> GameLoaded [label="getSystemInfo"];
+    GameLoaded -> GameRunning [label="setCallbacks"];
+    GameLoaded -> GameLoaded [label="setControllerPortDevice"];
+    GameLoaded -> CoreInitialized [label="unloadGame"];
+    GameRunning -> GameRunning [label="apiVersion"];
+    GameRunning -> GameRunning [label="cheatReset"];
+    GameRunning -> GameRunning [label="cheatSet"];
+    GameRunning -> GameRunning [label="getMemoryData"];
+    GameRunning -> GameRunning [label="getMemorySize"];
+    GameRunning -> GameRunning [label="getRegion"];
+    GameRunning -> GameRunning [label="getSystemAvInfo"];
+    GameRunning -> GameRunning [label="getSystemInfo"];
+    GameRunning -> GameRunning [label="reset"];
+    GameRunning -> GameRunning [label="run"];
+    GameRunning -> GameRunning [label="serialize"];
+    GameRunning -> GameRunning [label="serializeSize"];
+    GameRunning -> GameRunning [label="setControllerPortDevice"];
+    GameRunning -> CoreInitialized [label="unloadGame"];
+    GameRunning -> GameRunning [label="unserialize"];
+    Start -> CoreLoaded [label="load"];
+}

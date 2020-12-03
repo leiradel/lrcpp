@@ -1,0 +1,248 @@
+/*
+MIT License
+
+Copyright (c) 2020 Andre Leiradella
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+header {
+    #include "libretro.h"
+
+    namespace lrcpp {
+        class Core;
+    }
+
+    typedef lrcpp::Core Core;
+    typedef size_t* size_ptr_t;
+    typedef char const* const_char_ptr_t;
+    typedef retro_game_info const* const_retro_game_info_ptr_t;
+    typedef void* void_ptr_t;
+    typedef void const* const_void_ptr_t;
+    typedef void** void_ptr_ptr_t;
+    typedef unsigned* unsigned_ptr_t;
+    typedef struct retro_system_info* retro_system_info_ptr_t;
+    typedef struct retro_system_av_info* retro_system_av_info_ptr_t;
+}
+
+fsm CoreFsm {
+    class Core as _ctx;
+
+    Start {
+        load(const_char_ptr_t path) => CoreLoaded {
+            if (!_ctx.load(path)) {
+                forbid;
+            }
+        }
+    }
+
+    CoreLoaded {
+        apiVersion(unsigned_ptr_t version) => CoreLoaded {
+            *version = _ctx.apiVersion();
+        }
+
+        getSystemInfo(retro_system_info_ptr_t info) => CoreLoaded {
+            _ctx.getSystemInfo(info);
+        }
+
+        setEnvironment(retro_environment_t cb) => EnvironmentSet {
+            _ctx.setEnvironment(cb);
+        }
+
+        unload() => Start {
+            _ctx.unload();
+        }
+    }
+
+    EnvironmentSet {
+        apiVersion(unsigned_ptr_t version) => EnvironmentSet {
+            *version = _ctx.apiVersion();
+        }
+
+        getSystemInfo(retro_system_info_ptr_t info) => EnvironmentSet {
+            _ctx.getSystemInfo(info);
+        }
+
+        setControllerPortDevice(unsigned port, unsigned device) => EnvironmentSet {
+            _ctx.setControllerPortDevice(port, device);
+        }
+
+        init() => CoreInitialized {
+            _ctx.init();
+        }
+
+        gotoCoreLoaded() => CoreLoaded; // Only so that the state goes to CoreLoaded;
+
+        unload() => gotoCoreLoaded() => unload();
+    }
+
+    CoreInitialized {
+        apiVersion(unsigned_ptr_t version) => CoreInitialized {
+            *version = _ctx.apiVersion();
+        }
+
+        getSystemInfo(retro_system_info_ptr_t info) => CoreInitialized {
+            _ctx.getSystemInfo(info);
+        }
+
+        setControllerPortDevice(unsigned port, unsigned device) => CoreInitialized {
+            _ctx.setControllerPortDevice(port, device);
+        }
+
+        loadGame(const_retro_game_info_ptr_t gameInfo) => GameLoaded {
+            if (!_ctx.loadGame(gameInfo)) {
+                forbid;
+            }
+        }
+
+        loadGameSpecial(unsigned gameType, const_retro_game_info_ptr_t info, size_t numInfo) => GameLoaded {
+            if (!_ctx.loadGameSpecial(gameType, info, numInfo)) {
+                forbid;
+            }
+        }
+
+        deinit() => EnvironmentSet {
+            _ctx.deinit();
+        }
+
+        unload() => deinit() => unload();
+    }
+
+    GameLoaded {
+        apiVersion(unsigned_ptr_t version) => GameLoaded {
+            *version = _ctx.apiVersion();
+        }
+
+        getSystemInfo(retro_system_info_ptr_t info) => GameLoaded {
+            _ctx.getSystemInfo(info);
+        }
+
+        setControllerPortDevice(unsigned port, unsigned device) => GameLoaded {
+            _ctx.setControllerPortDevice(port, device);
+        }
+
+        getSystemAvInfo(retro_system_av_info_ptr_t info) => GameLoaded {
+            _ctx.getSystemAvInfo(info);
+        }
+
+        setCallbacks(
+            retro_video_refresh_t videoRefresh,
+            retro_audio_sample_t audioSample,
+            retro_audio_sample_batch_t audioSampleBatch,
+            retro_input_poll_t inputPoll,
+            retro_input_state_t inputState
+        ) => GameRunning {
+            _ctx.setVideoRefresh(videoRefresh);
+            _ctx.setAudioSample(audioSample);
+            _ctx.setAudioSampleBatch(audioSampleBatch);
+            _ctx.setInputPoll(inputPoll);
+            _ctx.setInputState(inputState);
+        }
+
+        unloadGame() => CoreInitialized {
+            _ctx.unloadGame();
+        }
+
+        getRegion(unsigned_ptr_t region) => GameLoaded {
+            *region = _ctx.getRegion();
+        }
+
+        getMemoryData(unsigned id, void_ptr_ptr_t data) => GameLoaded {
+            *data = _ctx.getMemoryData(id);
+        }
+
+        getMemorySize(unsigned id, size_ptr_t size) => GameLoaded {
+            *size = _ctx.getMemorySize(id);
+        }
+
+        deinit() => unloadGame() => deinit();
+
+        unload() => unloadGame() => unload();
+    }
+    
+    GameRunning {
+        apiVersion(unsigned_ptr_t version) => GameRunning {
+            *version = _ctx.apiVersion();
+        }
+
+        getSystemInfo(retro_system_info_ptr_t info) => GameRunning {
+            _ctx.getSystemInfo(info);
+        }
+
+        setControllerPortDevice(unsigned port, unsigned device) => GameRunning {
+            _ctx.setControllerPortDevice(port, device);
+        }
+
+        getSystemAvInfo(retro_system_av_info_ptr_t info) => GameRunning {
+            _ctx.getSystemAvInfo(info);
+        }
+
+        run() => GameRunning {
+            _ctx.run();
+        }
+
+        reset() => GameRunning {
+            _ctx.reset();
+        }
+
+        serializeSize(size_ptr_t size) => GameRunning {
+            *size = _ctx.serializeSize();
+        }
+
+        serialize(void_ptr_t data, size_t size) => GameRunning {
+            if (!_ctx.serialize(data, size)) {
+                forbid;
+            }
+        }
+
+        unserialize(const_void_ptr_t data, size_t size) => GameRunning {
+            if (!_ctx.unserialize(data, size)) {
+                forbid;
+            }
+        }
+
+        cheatReset() => GameRunning {
+            _ctx.cheatReset();
+        }
+
+        cheatSet(unsigned index, bool enabled, const_char_ptr_t code) => GameRunning {
+            _ctx.cheatSet(index, enabled, code);
+        }
+
+        getRegion(unsigned_ptr_t region) => GameRunning {
+            *region = _ctx.getRegion();
+        }
+
+        getMemoryData(unsigned id, void_ptr_ptr_t data) => GameRunning {
+            *data = _ctx.getMemoryData(id);
+        }
+
+        getMemorySize(unsigned id, size_ptr_t size) => GameRunning {
+            *size = _ctx.getMemorySize(id);
+        }
+
+        unloadGame() => CoreInitialized {
+            _ctx.unloadGame();
+        }
+
+        deinit() => unloadGame() => deinit();
+
+        unload() => unloadGame() => unload();
+    }
+}
