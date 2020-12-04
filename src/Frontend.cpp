@@ -200,11 +200,6 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
 
 bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info const* info, size_t numInfo) {
     InstanceSetter setter(this);
-    struct retro_system_info systemInfo;
-
-    if (!_fsm.getSystemInfo(&systemInfo)) {
-        return false;
-    }
 
     bool ok = _fsm.loadGameSpecial(gameType, info, numInfo);
     ok = ok && _fsm.setCallbacks(staticVideoRefreshCallback,
