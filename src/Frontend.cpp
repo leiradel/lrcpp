@@ -71,6 +71,10 @@ lrcpp::Frontend::Frontend()
     , _fsm(_core)
 {}
 
+lrcpp::Frontend::~Frontend() {
+    _fsm.unload();
+}
+
 lrcpp::Logger* lrcpp::Frontend::setLogger(Logger* logger) {
     Logger* previous = _logger;
     _logger = logger;
