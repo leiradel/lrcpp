@@ -125,9 +125,9 @@ Deals with everything related to configuration and then some. Several methods mu
   * `bool setCoreOptions(struct retro_core_option_definition const** options)`
   * `bool setCoreOptionsIntl(struct retro_core_options_intl const* intl)`
   * `bool setCoreOptionsDisplay(struct retro_core_option_display const* display)`
-  * The following methods are already implemented:
-    * `bool setVariables(struct retro_variable const* variables)`: Creates equivalent `retro_core_option_definition`s for the variables and calls `setCoreOptions`.
-    * `bool getCoreOptionsVersion(unsigned* version)`: Always sets `version` to 1.
+* The following methods are already implemented:
+  * `bool setVariables(struct retro_variable const* variables)`: Creates equivalent `retro_core_option_definition`s for the variables and calls `setCoreOptions`.
+  * `bool getCoreOptionsVersion(unsigned* version)`: Always sets `version` to 1.
 * The following method that doesn't belong to the libretro API is implemented:
   * `bool preprocessMemoryDescriptors(struct retro_memory_descriptor* descriptors, unsigned count)`: Pre-processes the memory descriptors that are received in the `setMemoryMaps` method.
 
