@@ -38,13 +38,13 @@ namespace lrcpp {
         virtual bool setSubsystemInfo(struct retro_subsystem_info const* info) = 0;
         virtual bool setMemoryMaps(struct retro_memory_map const* map) = 0;
 
-        virtual bool getUsername(char const** data) = 0;
+        virtual bool getUsername(char const** username) = 0;
         virtual bool getLanguage(unsigned* language) = 0;
 
         virtual bool setSupportAchievements(bool supports) = 0;
         virtual bool setSerializationQuirks(uint64_t quirks) = 0;
 
-        virtual bool getAudioVideoEnable(int* data) = 0;
+        virtual bool getAudioVideoEnable(int* enabled) = 0;
         virtual bool getFastForwarding(bool* is) = 0;
 
         bool getCoreOptionsVersion(unsigned* version);
@@ -96,6 +96,7 @@ namespace lrcpp {
      */
     class Led {
     public:
+        // Environment calls
         virtual void setState(int led, int state) = 0;
     };
 
@@ -117,6 +118,7 @@ namespace lrcpp {
      */
     class Midi {
     public:
+        // Interfaces
         virtual bool inputEnabled() = 0;
         virtual bool outputEnabled() = 0;
         virtual bool read(uint8_t* byte) = 0;
@@ -149,6 +151,7 @@ namespace lrcpp {
      */
     class Rumble {
     public:
+        // Interfaces
         virtual bool setState(unsigned port, enum retro_rumble_effect effect, uint16_t strength) = 0;
     };
 
@@ -157,6 +160,7 @@ namespace lrcpp {
      */
     class Sensor {
     public:
+        // Interfaces
         virtual bool setState(unsigned port, enum retro_sensor_action action, unsigned rate) = 0;
         virtual float getInput(unsigned port, unsigned id) = 0;
     };
@@ -166,6 +170,7 @@ namespace lrcpp {
      */
     class Camera {
     public:
+        // Interfaces
         virtual bool start() = 0;
         virtual void stop() = 0;
     };
@@ -175,6 +180,7 @@ namespace lrcpp {
      */
     class Location {
     public:
+        // Interfaces
         virtual bool start() = 0;
         virtual void stop() = 0;
         virtual bool getPosition(double* lat, double* lon, double* horizAccuracy, double* vertAccuracy) = 0;
@@ -183,6 +189,7 @@ namespace lrcpp {
 
     class VirtualFileSystem {
     public:
+        // Interfaces
         virtual unsigned getVirtualFileSystemInterfaceVersion() = 0;
 
         virtual char const* getPath(struct retro_vfs_file_handle* stream) = 0;
@@ -196,7 +203,7 @@ namespace lrcpp {
         virtual int64_t write(struct retro_vfs_file_handle* stream, void const* s, uint64_t len) = 0;
         virtual int flush(struct retro_vfs_file_handle* stream) = 0;
         virtual int remove(char const* path) = 0;
-        virtual int rename(char const* old_path, char const* new_path) = 0;
+        virtual int rename(char const* oldPath, char const* newPath) = 0;
         virtual int stat(char const* path, int32_t* size) = 0;
         virtual int mkDir(char const* dir) = 0;
         virtual struct retro_vfs_dir_handle* openDir(char const* dir, bool includeHidden) = 0;
@@ -208,9 +215,10 @@ namespace lrcpp {
 
     class DiskControl {
     public:
+        // Environment calls
         virtual bool getDiskControlInterfaceVersion(unsigned* const version) = 0;
-        virtual bool setDiskControlInterface(struct retro_disk_control_callback const* interface);
-        virtual bool setDiskControlExtInterface(struct retro_disk_control_ext_callback const* interface);
+        virtual bool setDiskControlInterface(struct retro_disk_control_callback const* interface) = 0;
+        virtual bool setDiskControlExtInterface(struct retro_disk_control_ext_callback const* interface) = 0;
     };
 
     /**
@@ -218,6 +226,7 @@ namespace lrcpp {
      */
     class Perf {
     public:
+        // Interfaces
         virtual retro_time_t getTimeUsec() = 0;
         virtual uint64_t getCpuFeatures() = 0;
         virtual retro_perf_tick_t getCounter() = 0;

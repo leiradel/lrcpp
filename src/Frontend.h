@@ -9,8 +9,9 @@ namespace lrcpp {
     class Frontend {
     public:
         Frontend();
+        virtual ~Frontend();
 
-        // Interfaces
+        // Components
         Logger* setLogger(Logger* logger);
         Config* setConfig(Config* config);
         Video* setVideo(Video* video);
@@ -26,7 +27,7 @@ namespace lrcpp {
         DiskControl* setDiskControl(DiskControl* diskControl);
         Perf* serPerf(Perf* perf);
 
-        // Life-cycle
+        // Core life-cycle
         bool load(char const* corePath);
         bool loadGame();
         bool loadGame(char const* gamePath);
