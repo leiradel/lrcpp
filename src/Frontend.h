@@ -25,12 +25,12 @@ namespace lrcpp {
         VirtualFileSystem* setVirtualFileSystem(VirtualFileSystem* virtualFileSystem);
         DiskControl* setDiskControl(DiskControl* diskControl);
         Perf* serPerf(Perf* perf);
-        FileSystem* setFileSystem(FileSystem* fileSystem);
 
         // Life-cycle
         bool load(char const* corePath);
         bool loadGame();
         bool loadGame(char const* gamePath);
+        bool loadGame(char const* gamePath, void const* data, size_t size);
         bool loadGameSpecial(unsigned gameType, struct retro_game_info const* info, size_t numInfo);
         bool run();
         bool reset();
@@ -184,7 +184,6 @@ namespace lrcpp {
         VirtualFileSystem* _virtualFileSystem;
         DiskControl* _diskControl;
         Perf* _perf;
-        FileSystem* _fileSystem;
 
         bool _supportsNoGame;
         struct retro_vfs_interface _virtualFileSystemInterface;

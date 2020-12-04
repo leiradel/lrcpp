@@ -67,7 +67,6 @@ lrcpp::Frontend::Frontend()
     , _virtualFileSystem(nullptr)
     , _diskControl(nullptr)
     , _perf(nullptr)
-    , _fileSystem(nullptr)
     , _supportsNoGame(false)
     , _fsm(_core)
 {}
@@ -156,12 +155,6 @@ lrcpp::Perf* lrcpp::Frontend::serPerf(Perf* perf) {
     return previous;
 }
 
-lrcpp::FileSystem* lrcpp::Frontend::setFileSystem(FileSystem* fileSystem) {
-    FileSystem* previous = _fileSystem;
-    _fileSystem = fileSystem;
-    return previous;
-}
-
 bool lrcpp::Frontend::load(char const* corePath) {
     InstanceSetter setter(this);
 
@@ -173,60 +166,27 @@ bool lrcpp::Frontend::load(char const* corePath) {
 }
 
 bool lrcpp::Frontend::loadGame() {
-    InstanceSetter setter(this);
-
-    if (!_supportsNoGame) {
-        return false;
-    }
-
-    struct retro_system_info systemInfo;
-
-    if (!_fsm.getSystemInfo(&systemInfo)) {
-        return false;
-    }
-
-    retro_game_info game;
-    game.path = nullptr;
-    game.data = nullptr;
-    game.size = 0;
-    game.meta = nullptr;
-
-    bool ok = _fsm.loadGame(&game);
-    ok = ok && _fsm.setCallbacks(staticVideoRefreshCallback,
-                                 staticAudioSampleCallback,
-                                 staticAudioSampleBatchCallback,
-                                 staticInputPollCallback,
-                                 staticInputStateCallback);
-
-    return ok;
+    return _supportsNoGame ? loadGame(nullptr, nullptr, 0) : false;
 }
 
 bool lrcpp::Frontend::loadGame(char const* gamePath) {
+    retro_system_info info;
+
+    if (!_fsm.getSystemInfo(&info)) {
+        return false;
+    }
+
+    return info.need_fullpath ? loadGame(gamePath, nullptr, 0) : false;
+}
+
+bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t size) {
     InstanceSetter setter(this);
-
-    if (_fileSystem == nullptr) {
-        return false;
-    }
-
-    struct retro_system_info systemInfo;
-
-    if (!_fsm.getSystemInfo(&systemInfo)) {
-        return false;
-    }
 
     retro_game_info game;
     game.path = gamePath;
-    game.data = nullptr;
-    game.size = 0;
+    game.data = data;
+    game.size = size;
     game.meta = nullptr;
-
-    if (!systemInfo.need_fullpath) {
-        game.data = _fileSystem->load(gamePath, &game.size);
-
-        if (game.data == nullptr) {
-            return false;
-        }
-    }
 
     bool ok = _fsm.loadGame(&game);
     ok = ok && _fsm.setCallbacks(staticVideoRefreshCallback,
@@ -235,7 +195,6 @@ bool lrcpp::Frontend::loadGame(char const* gamePath) {
                                  staticInputPollCallback,
                                  staticInputStateCallback);
 
-    _fileSystem->free(game.data);
     return ok;
 }
 

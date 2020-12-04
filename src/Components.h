@@ -226,16 +226,6 @@ namespace lrcpp {
         virtual void stop(struct retro_perf_counter* counter) = 0;
         virtual void log() = 0;
     };
-
-    /**
-     * A component responsible for dealing with the file system, i.e. to load
-     * content.
-     */
-    class FileSystem {
-    public:
-        virtual void* load(char const* path, size_t* size) = 0;
-        virtual void free(void const* data) = 0;
-    };
 }
 
 #endif // LRCPP_COMPONENTS_H__
