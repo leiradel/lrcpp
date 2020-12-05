@@ -5,10 +5,10 @@
 #include "dynlib.h"
 
 namespace lrcpp {
-    class Core {
+    class Core final {
     public:
         Core() : _handle(nullptr) {}
-        virtual ~Core();
+        ~Core();
 
         bool load(char const* path);
         void unload();

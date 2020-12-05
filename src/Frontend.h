@@ -6,10 +6,10 @@
 #include "CoreFsm.h"
 
 namespace lrcpp {
-    class Frontend {
+    class Frontend final {
     public:
         Frontend();
-        virtual ~Frontend();
+        ~Frontend();
 
         // Components
         bool setLogger(Logger* logger);
