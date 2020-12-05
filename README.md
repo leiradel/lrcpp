@@ -50,22 +50,21 @@ The `Frontend` class manages a `Core`'s' lifecycle, and connects it to the platf
 * Lifecycle
   * `Frontend()`: Constructs a frontend without any components.
   * `~Frontend()`: Destructs the frontend. The destructor will handle the correct shutdown of the core it manages irrespectively of its state: game loaded, running etc.
-* Components, each method will set a new component and return the old one. Setting (or leaving) a component as `nullptr` will make the corresponding functionality unavailable for the core.
-  * `Logger* setLogger(Logger* logger)`
-  * `Config* setConfig(Config* config)`
-  * `Video* setVideo(Video* video)`
-  * `Led* setLed(Led* led)`
-  * `Audio* setAudio(Audio* audio)`
-  * `Midi* setMidi(Midi* midi)`
-  * `Input* setInput(Input* input)`
-  * `Rumble* setRumble(Rumble* rumble)`
-  * `Sensor* setSensor(Sensor* sensor)`
-  * `Camera* setCamera(Camera* camera)`
-  * `Location* setLocation(Location* location)`
-  * `VirtualFileSystem* setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)`
-  * `DiskControl* setDiskControl(DiskControl* diskControl)`
-  * `Perf* serPerf(Perf* perf)`
-  * `FileSystem* setFileSystem(FileSystem* fileSystem)`: The file system component is not used by the core, but by the frontend to load content and pass it to the core.
+* Components, each method will set a new component and return `true` if successful, of `false` if the component cannot be set. Setting (or leaving) a component as `nullptr` will make the corresponding functionality unavailable for the core. Components can only be set when there's no core loaded.
+  * `bool setLogger(Logger* logger)`
+  * `bool setConfig(Config* config)`
+  * `bool setVideo(Video* video)`
+  * `bool setLed(Led* led)`
+  * `bool setAudio(Audio* audio)`
+  * `bool setMidi(Midi* midi)`
+  * `bool setInput(Input* input)`
+  * `bool setRumble(Rumble* rumble)`
+  * `bool setSensor(Sensor* sensor)`
+  * `bool setCamera(Camera* camera)`
+  * `bool setLocation(Location* location)`
+  * `bool setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)`
+  * `bool setDiskControl(DiskControl* diskControl)`
+  * `bool serPerf(Perf* perf)`
 * Managed core fife-cycle. These methods take into account the current state of the core and will return `false` if it detects inconsistencies like trying to run a frame with a core that has not being loaded. They also return `false` if they fail for any other reason.
   * `bool load(char const* corePath)`: Loads a core from the file system.
   * `bool loadGame()`: Starts the core without a game, only available for cores that call `RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME` with `true`.
@@ -97,7 +96,7 @@ The minimum set of components required to run the more simple cores are`Audio` a
 
 Logs messages from the core. Only one method must be implemented.
 
-* Interfaces
+* Interface
   * `void vprintf(enum retro_log_level level, char const* format, va_list args)`
 
 #### Config
@@ -158,7 +157,7 @@ Takes care of everything related with video output. The methods that must be imp
 
 Changes the state of the system's LEDs.
 
-* Environment calls
+* Interface
   * `void setState(int led, int state)`
 
 #### Audio
@@ -166,6 +165,7 @@ Changes the state of the system's LEDs.
 Component that receives audio frames and must produce the audio output.
 
 * Environment calls
+  * `bool setSystemAvInfo(retro_system_av_info const* info)`
   * `bool setAudioCallback(struct retro_audio_callback const* callback)`
 * Callbacks
   * `size_t sampleBatch(int16_t const* data, size_t frames)`
@@ -173,9 +173,9 @@ Component that receives audio frames and must produce the audio output.
 
 #### Midi
 
-Provides the core access to the system's MIDI device.
+Provides the core access to the a MIDI device for raw I/O.
 
-* Interfaces
+* Interface
   * `bool inputEnabled()`
   * `bool outputEnabled()`
   * `bool read(uint8_t* byte)`
@@ -198,24 +198,36 @@ Deals with all input devices.
 
 #### Rumble
 
+Allows to set the state of the rumble motors in controllers.
+
 * Interfaces
   * `bool setState(unsigned port, enum retro_rumble_effect effect, uint16_t strength)`
 
 #### Sensor
 
-* Interfaces
+Controls sensors like accelerometers.
+
+* Interface
   * `bool setState(unsigned port, enum retro_sensor_action action, unsigned rate)`
   * `float getInput(unsigned port, unsigned id)`
 
 #### Camera
 
-* Interfaces
+Provides access to an attached camera.
+
+* Environment calls
+  * `bool getCameraInterface(retro_camera_callback const* callback)`
+* Interface
   * `bool start()`
   * `void stop()`
 
 #### Location
 
-* Interfaces
+Provides location information to the core.
+
+* Environment calls
+  * `bool getLocationInterface(retro_location_callback const* callback)`
+* Interface
   * `bool start()`
   * `void stop()`
   * `bool getPosition(double* lat, double* lon, double* horizAccuracy, double* vertAccuracy)`
@@ -223,7 +235,11 @@ Deals with all input devices.
 
 #### VirtualFileSystem
 
-* Interfaces
+Provides the core with a virtual file system interface.
+
+* Environment calls
+  * `bool getVfsInterface(retro_vfs_interface_info const* callback)`
+* Interface
   * `unsigned getVirtualFileSystemInterfaceVersion()`
   * `char const* getPath(struct retro_vfs_file_handle* stream)`
   * `struct retro_vfs_file_handle* open(char const* path, unsigned mode, unsigned hints)`
@@ -247,12 +263,16 @@ Deals with all input devices.
 
 #### DiskControl
 
+Interface with the core to control removable midia.
+
 * Environment calls
   * `bool getDiskControlInterfaceVersion(unsigned* const version)`
   * `bool setDiskControlInterface(struct retro_disk_control_callback const* interface)`
   * `bool setDiskControlExtInterface(struct retro_disk_control_ext_callback const* interface)`
 
 #### Perf
+
+Utility interface for performance measurement.
 
 * Interfaces
   * `retro_time_t getTimeUsec()`
