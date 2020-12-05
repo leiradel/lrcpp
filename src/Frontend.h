@@ -114,11 +114,6 @@ namespace lrcpp {
         bool environmentCallback(unsigned cmd, void* data);
 
         static bool staticEnvironmentCallback(unsigned cmd, void* data);
-        static void staticVideoRefreshCallback(void const* data, unsigned width, unsigned height, size_t pitch);
-        static size_t staticAudioSampleBatchCallback(int16_t const* data, size_t frames);
-        static void staticAudioSampleCallback(int16_t left, int16_t right);
-        static int16_t staticInputStateCallback(unsigned port, unsigned device, unsigned index, unsigned id);
-        static void staticInputPollCallback();
 
         static bool rumbleSetState(unsigned port, enum retro_rumble_effect effect, uint16_t strength);
 
@@ -171,6 +166,16 @@ namespace lrcpp {
         static bool midiWrite(uint8_t byte, uint32_t deltaTime);
         static bool midiFlush();
 
+        static uintptr_t videoGetCurrentFramebuffer();
+        static retro_proc_address_t videoGetProcAddress(char const* symbol);
+        static void videoRefresh(void const* data, unsigned width, unsigned height, size_t pitch);
+
+        static size_t audioSampleBatch(int16_t const* data, size_t frames);
+        static void audioSample(int16_t left, int16_t right);
+
+        static int16_t inputState(unsigned port, unsigned device, unsigned index, unsigned id);
+        static void inputPoll();
+
         Logger* _logger;
         Config* _config;
         Video* _video;
@@ -187,6 +192,7 @@ namespace lrcpp {
         Perf* _perf;
 
         bool _supportsNoGame;
+
         struct retro_vfs_interface _virtualFileSystemInterface;
         struct retro_midi_interface _midiInterface;
 
