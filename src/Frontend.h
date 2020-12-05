@@ -12,20 +12,20 @@ namespace lrcpp {
         virtual ~Frontend();
 
         // Components
-        Logger* setLogger(Logger* logger);
-        Config* setConfig(Config* config);
-        Video* setVideo(Video* video);
-        Led* setLed(Led* led);
-        Audio* setAudio(Audio* audio);
-        Midi* setMidi(Midi* midi);
-        Input* setInput(Input* input);
-        Rumble* setRumble(Rumble* rumble);
-        Sensor* setSensor(Sensor* sensor);
-        Camera* setCamera(Camera* camera);
-        Location* setLocation(Location* location);
-        VirtualFileSystem* setVirtualFileSystem(VirtualFileSystem* virtualFileSystem);
-        DiskControl* setDiskControl(DiskControl* diskControl);
-        Perf* serPerf(Perf* perf);
+        bool setLogger(Logger* logger);
+        bool setConfig(Config* config);
+        bool setVideo(Video* video);
+        bool setLed(Led* led);
+        bool setAudio(Audio* audio);
+        bool setMidi(Midi* midi);
+        bool setInput(Input* input);
+        bool setRumble(Rumble* rumble);
+        bool setSensor(Sensor* sensor);
+        bool setCamera(Camera* camera);
+        bool setLocation(Location* location);
+        bool setVirtualFileSystem(VirtualFileSystem* virtualFileSystem);
+        bool setDiskControl(DiskControl* diskControl);
+        bool serPerf(Perf* perf);
 
         // Core life-cycle
         bool load(char const* corePath);

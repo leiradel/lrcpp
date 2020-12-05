@@ -75,88 +75,130 @@ lrcpp::Frontend::~Frontend() {
     _fsm.unload();
 }
 
-lrcpp::Logger* lrcpp::Frontend::setLogger(Logger* logger) {
-    Logger* previous = _logger;
-    _logger = logger;
-    return previous;
+bool lrcpp::Frontend::setLogger(Logger* logger) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _logger = logger;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Config* lrcpp::Frontend::setConfig(Config* config) {
-    Config* previous = _config;
-    _config = config;
-    return previous;
+bool lrcpp::Frontend::setConfig(Config* config) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _config = config;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Video* lrcpp::Frontend::setVideo(Video* video) {
-    Video* previous = _video;
-    _video = video;
-    return previous;
+bool lrcpp::Frontend::setVideo(Video* video) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _video = video;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Led* lrcpp::Frontend::setLed(Led* led) {
-    Led* previous = _led;
-    _led = led;
-    return previous;
+bool lrcpp::Frontend::setLed(Led* led) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _led = led;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Audio* lrcpp::Frontend::setAudio(Audio* audio) {
-    Audio* previous = _audio;
-    _audio = audio;
-    return previous;
+bool lrcpp::Frontend::setAudio(Audio* audio) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _audio = audio;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Midi* lrcpp::Frontend::setMidi(Midi* midi) {
-    Midi* previous = _midi;
-    _midi = midi;
-    return previous;
+bool lrcpp::Frontend::setMidi(Midi* midi) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _midi = midi;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Input* lrcpp::Frontend::setInput(Input* input) {
-    Input* previous = _input;
-    _input = input;
-    return previous;
+bool lrcpp::Frontend::setInput(Input* input) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _input = input;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Rumble* lrcpp::Frontend::setRumble(Rumble* rumble) {
-    Rumble* previous = _rumble;
-    _rumble = rumble;
-    return previous;
+bool lrcpp::Frontend::setRumble(Rumble* rumble) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _rumble = rumble;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Sensor* lrcpp::Frontend::setSensor(Sensor* sensor) {
-    Sensor* previous = _sensor;
-    _sensor = sensor;
-    return previous;
+bool lrcpp::Frontend::setSensor(Sensor* sensor) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _sensor = sensor;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Camera* lrcpp::Frontend::setCamera(Camera* camera) {
-    Camera* previous = _camera;
-    _camera = camera;
-    return previous;
+bool lrcpp::Frontend::setCamera(Camera* camera) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _camera = camera;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Location* lrcpp::Frontend::setLocation(Location* location) {
-    Location* previous = _location;
-    _location = location;
-    return previous;
+bool lrcpp::Frontend::setLocation(Location* location) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _location = location;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::VirtualFileSystem* lrcpp::Frontend::setVirtualFileSystem(VirtualFileSystem* virtualFileSystem) {
-    VirtualFileSystem* previous = _virtualFileSystem;
-    _virtualFileSystem = virtualFileSystem;
-    return previous;
+bool lrcpp::Frontend::setVirtualFileSystem(VirtualFileSystem* virtualFileSystem) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _virtualFileSystem = virtualFileSystem;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::DiskControl* lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
-    DiskControl* previous = _diskControl;
-    _diskControl = diskControl;
-    return previous;
+bool lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _diskControl = diskControl;
+        return true;
+    }
+
+    return false;
 }
 
-lrcpp::Perf* lrcpp::Frontend::serPerf(Perf* perf) {
-    Perf* previous = _perf;
-    _perf = perf;
-    return previous;
+bool lrcpp::Frontend::serPerf(Perf* perf) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
+        _perf = perf;
+        return true;
+    }
+
+    return false;
 }
 
 bool lrcpp::Frontend::load(char const* corePath) {
