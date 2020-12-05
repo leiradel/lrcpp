@@ -123,6 +123,9 @@ namespace lrcpp {
      */
     class Led {
     public:
+        // RETRO_ENVIRONMENT_GET_LED_INTERFACE
+        // retro_led_interface.set_led_state is set in Frontend and will call the interface methods
+
         // Interface
         virtual void setState(int led, int state) = 0;
     };
