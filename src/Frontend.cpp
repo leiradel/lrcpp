@@ -794,7 +794,7 @@ bool lrcpp::Frontend::environmentCallback(unsigned cmd, void* data) {
             return getCoreOptionsVersion((unsigned*)data);
 
         case RETRO_ENVIRONMENT_SET_CORE_OPTIONS:
-            return setCoreOptions((struct retro_core_option_definition const**)data);
+            return setCoreOptions((struct retro_core_option_definition const*)data);
 
         case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL:
             return setCoreOptionsIntl((struct retro_core_options_intl const*)data);
