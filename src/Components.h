@@ -11,6 +11,8 @@ namespace lrcpp {
     */
     class Logger {
     public:
+        virtual ~Logger() {}
+
         // RETRO_ENVIRONMENT_GET_LOG_INTERFACE
         // retro_log_callback.log is set in Frontend and will call the interface methods
 
@@ -23,6 +25,8 @@ namespace lrcpp {
     */
     class Config {
     public:
+        virtual ~Config() {}
+
         // RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL
         virtual bool setPerformanceLevel(unsigned level) = 0;
         // RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY
@@ -78,6 +82,8 @@ namespace lrcpp {
     */
     class Video {
     public:
+        virtual ~Video() {}
+
         // RETRO_ENVIRONMENT_SET_ROTATION
         virtual bool setRotation(unsigned rotation) = 0;
         // RETRO_ENVIRONMENT_GET_OVERSCAN
@@ -123,6 +129,8 @@ namespace lrcpp {
      */
     class Led {
     public:
+        virtual ~Led() {}
+
         // RETRO_ENVIRONMENT_GET_LED_INTERFACE
         // retro_led_interface.set_led_state is set in Frontend and will call the interface methods
 
@@ -135,6 +143,8 @@ namespace lrcpp {
     */
     class Audio {
     public:
+        virtual ~Audio() {}
+
         // RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO
         virtual bool setSystemAvInfo(retro_system_av_info const* info) = 0;
         // RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK
@@ -150,6 +160,8 @@ namespace lrcpp {
      */
     class Midi {
     public:
+        virtual ~Midi() {}
+
         // RETRO_ENVIRONMENT_GET_MIDI_INTERFACE
         // retro_midi_interface.input_enabled, output_enabled, read, write, and flush are set in Frontend and will call the
         // interface methods
@@ -167,6 +179,8 @@ namespace lrcpp {
     */
     class Input {
     public:
+        virtual ~Input() {}
+
         // RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS
         virtual bool setInputDescriptors(retro_input_descriptor const* descriptors) = 0;
         // RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK
@@ -188,6 +202,8 @@ namespace lrcpp {
      */
     class Rumble {
     public:
+        virtual ~Rumble() {}
+
         // RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE
         // retro_rumble_interface.set_rumble_state is set in Frontend and will call the interface methods
 
@@ -200,6 +216,8 @@ namespace lrcpp {
      */
     class Sensor {
     public:
+        virtual ~Sensor() {}
+
         // RETRO_ENVIRONMENT_GET_SENSOR_INTERFACE
         // retro_sensor_interface.set_sensor_state and get_sensor_input are set in Frontend and will call the interface methods
 
@@ -213,6 +231,8 @@ namespace lrcpp {
      */
     class Camera {
     public:
+        virtual ~Camera() {}
+
         // RETRO_ENVIRONMENT_GET_CAMERA_INTERFACE
         // retro_camera_callback.start and stop are set by Frontend and will call the interface methods
         virtual bool getCameraInterface(retro_camera_callback const* callback) = 0;
@@ -227,6 +247,8 @@ namespace lrcpp {
      */
     class Location {
     public:
+        virtual ~Location() {}
+
         // RETRO_ENVIRONMENT_GET_LOCATION_INTERFACE
         // retro_location_callback.start, stop, get_position, and set_interval are set by Frontend and will call the interface
         // methods
@@ -241,6 +263,8 @@ namespace lrcpp {
 
     class VirtualFileSystem {
     public:
+        virtual ~VirtualFileSystem() {}
+
         // RETRO_ENVIRONMENT_GET_VFS_INTERFACE
         // retro_vfs_interface_info.retro_vfs_interface is set by Frontend and will call the interface methods
         virtual bool getVfsInterface(retro_vfs_interface_info const* callback) = 0;
@@ -269,6 +293,8 @@ namespace lrcpp {
 
     class DiskControl {
     public:
+        virtual ~DiskControl() {}
+
         // RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION
         virtual bool getDiskControlInterfaceVersion(unsigned* const version) = 0;
         // RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE
@@ -282,6 +308,8 @@ namespace lrcpp {
      */
     class Perf {
     public:
+        virtual ~Perf() {}
+
         // RETRO_ENVIRONMENT_GET_PERF_INTERFACE
         // retro_perf_callback.get_time_usec, get_cpu_features, get_perf_counter, perf_register, perf_start, perf_stop, and
         // perf_log are set by Frontend and will call the interface methods
