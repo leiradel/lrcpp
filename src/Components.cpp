@@ -7,7 +7,6 @@
 
 bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
     std::vector<struct retro_core_option_definition> defs;
-    std::vector<struct retro_core_option_definition const*> pointers;
     std::vector<std::string> strings;
 
     for (size_t i = 0; variables[i].key != nullptr; i++) {
@@ -59,10 +58,19 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
 
         def.default_value = def.values[0].value;
         defs.emplace_back(def);
-        pointers.emplace_back(&defs[defs.size() - 1]);
     }
 
-    pointers.emplace_back(nullptr);
+    struct retro_core_option_definition def;
+
+    def.key = nullptr;
+    def.desc = nullptr;
+    def.info = nullptr;
+    def.values[0].value = nullptr;
+    def.values[0].label = nullptr;
+    def.default_value = nullptr;
+
+    defs.emplace_back(def);
+
     return setCoreOptions(pointers.data());
 }
 
