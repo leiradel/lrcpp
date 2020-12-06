@@ -62,7 +62,7 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION
         bool getCoreOptionsVersion(unsigned* version);
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS
-        virtual bool setCoreOptions(retro_core_option_definition const** options) = 0;
+        virtual bool setCoreOptions(retro_core_option_definition const* options) = 0;
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL
         virtual bool setCoreOptionsIntl(retro_core_options_intl const* intl) = 0;
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY
