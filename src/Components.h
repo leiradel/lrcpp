@@ -87,9 +87,9 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_SET_ROTATION
         virtual bool setRotation(unsigned rotation) = 0;
         // RETRO_ENVIRONMENT_GET_OVERSCAN
-        virtual bool getOverscan(bool* data) = 0;
+        virtual bool getOverscan(bool* overscan) = 0;
         // RETRO_ENVIRONMENT_GET_CAN_DUPE
-        virtual bool getCanDupe(bool* data) = 0;
+        virtual bool getCanDupe(bool* canDupe) = 0;
         // RETRO_ENVIRONMENT_SET_MESSAGE
         virtual bool showMessage(retro_message const* message) = 0;
         // RETRO_ENVIRONMENT_SET_PIXEL_FORMAT
