@@ -617,7 +617,7 @@ bool lrcpp::Frontend::getCoreOptionsVersion(unsigned* data) {
     return _config != nullptr && _config->getCoreOptionsVersion(data);
 }
 
-bool lrcpp::Frontend::setCoreOptions(struct retro_core_option_definition const** data) {
+bool lrcpp::Frontend::setCoreOptions(struct retro_core_option_definition const* data) {
     return _config != nullptr && _config->setCoreOptions(data);
 }
 

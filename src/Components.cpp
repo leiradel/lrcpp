@@ -71,7 +71,7 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
 
     defs.emplace_back(def);
 
-    return setCoreOptions(pointers.data());
+    return setCoreOptions(defs.data());
 }
 
 bool lrcpp::Config::getCoreOptionsVersion(unsigned* const version) {
