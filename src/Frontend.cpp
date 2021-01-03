@@ -241,6 +241,10 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
                                  inputPoll,
                                  inputState);
 
+    retro_system_av_info avinfo;
+    ok = ok && _fsm.getSystemAvInfo(&avinfo);
+    ok = ok && setSystemAvInfo(&avinfo);
+
     return ok;
 }
 
@@ -253,6 +257,10 @@ bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info 
                                  audioSampleBatch,
                                  inputPoll,
                                  inputState);
+
+    retro_system_av_info avinfo;
+    ok = ok && _fsm.getSystemAvInfo(&avinfo);
+    ok = ok && setSystemAvInfo(&avinfo);
 
     return ok;
 }
