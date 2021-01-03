@@ -6,8 +6,22 @@
 #include <string>
 
 bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
+    size_t totalLength = 0;
+
+    for (size_t i = 0; variables[i].key != nullptr; i++) {
+        totalLength += strlen(variables[i].key) + 1;
+        totalLength += strlen(variables[i].value) + 1;
+    }
+
+    char* const strings = (char*)malloc(totalLength);
+
+    if (strings == nullptr) {
+        return false;
+    }
+
+    char* ptr = strings;
+
     std::vector<struct retro_core_option_definition> defs;
-    std::vector<std::string> strings;
 
     for (size_t i = 0; variables[i].key != nullptr; i++) {
         struct retro_core_option_definition def;
@@ -19,10 +33,12 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
             return false;
         }
 
-        strings.emplace_back(variables[i].value, option - variables[i].value);
-
-        def.desc = strings[strings.size() - 1].c_str();
+        def.desc = ptr;
         def.info = nullptr;
+
+        memcpy(ptr, variables[i].value, option - variables[i].value);
+        ptr += option - variables[i].value;
+        *ptr++ = 0;
 
         size_t j = 0;
         option++;
@@ -37,15 +53,18 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
 
         for (;;) {
             char const* const pipe = strchr(option, '|');
+            def.values[j].value = ptr;
 
             if (pipe == nullptr) {
-                strings.emplace_back(option);
+                strcpy(ptr, option);
+                ptr += strlen(ptr) + 1;
             }
             else {
-                strings.emplace_back(option, pipe - option);
+                memcpy(ptr, option, pipe - option);
+                ptr += pipe - option;
+                *ptr++ = 0;
             }
 
-            def.values[j].value = strings[strings.size() - 1].c_str();
             def.values[j].label = nullptr;
 
             if (pipe == nullptr) {
@@ -71,7 +90,9 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
 
     defs.emplace_back(def);
 
-    return setCoreOptions(defs.data());
+    bool const ok = setCoreOptions(defs.data());
+    free(strings);
+    return ok;
 }
 
 bool lrcpp::Config::getCoreOptionsVersion(unsigned* const version) {
