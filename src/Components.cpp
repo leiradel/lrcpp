@@ -2,8 +2,7 @@
 
 #include <string.h>
 #include <ctype.h>
-#include <vector>
-#include <string>
+#include <stdlib.h>
 
 void lrcpp::Logger::debug(char const* format, ...) {
     va_list args;
@@ -34,35 +33,39 @@ void lrcpp::Logger::error(char const* format, ...) {
 }
 
 bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
+    size_t count = 0;
     size_t totalLength = 0;
 
-    for (size_t i = 0; variables[i].key != nullptr; i++) {
-        totalLength += strlen(variables[i].key) + 1;
-        totalLength += strlen(variables[i].value) + 1;
+    for (size_t count = 0; variables[count].key != nullptr; count++) {
+        totalLength += strlen(variables[count].key) + 1;
+        totalLength += strlen(variables[count].value) + 1;
     }
 
+    retro_core_option_definition* const defs = (retro_core_option_definition*)malloc((count + 1) * sizeof(*defs));
     char* const strings = (char*)malloc(totalLength);
 
-    if (strings == nullptr) {
+    if (defs == nullptr || strings == nullptr) {
+        free(defs);
+        free(strings);
         return false;
     }
 
     char* ptr = strings;
 
-    std::vector<struct retro_core_option_definition> defs;
-
-    for (size_t i = 0; variables[i].key != nullptr; i++) {
-        struct retro_core_option_definition def;
-        def.key = variables[i].key;
+    for (size_t i = 0; i < count; i++) {
+        retro_core_option_definition* const def = defs + i;
+        def->key = variables[i].key;
 
         char const* option = strchr(variables[i].value, ';');
 
         if (option == nullptr) {
+            free(defs);
+            free(strings);
             return false;
         }
 
-        def.desc = ptr;
-        def.info = nullptr;
+        def->desc = ptr;
+        def->info = nullptr;
 
         memcpy(ptr, variables[i].value, option - variables[i].value);
         ptr += option - variables[i].value;
@@ -76,12 +79,14 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
         }
 
         if (*option == 0) {
+            free(defs);
+            free(strings);
             return false;
         }
 
         for (;;) {
             char const* const pipe = strchr(option, '|');
-            def.values[j].value = ptr;
+            def->values[j].value = ptr;
 
             if (pipe == nullptr) {
                 strcpy(ptr, option);
@@ -93,7 +98,7 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
                 *ptr++ = 0;
             }
 
-            def.values[j].label = nullptr;
+            def->values[j].label = nullptr;
 
             if (pipe == nullptr) {
                 break;
@@ -103,23 +108,19 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
             j++;
         }
 
-        def.default_value = def.values[0].value;
-        defs.emplace_back(def);
+        def->default_value = def->values[0].value;
     }
 
-    struct retro_core_option_definition def;
+    defs[count].key = nullptr;
+    defs[count].desc = nullptr;
+    defs[count].info = nullptr;
+    defs[count].values[0].value = nullptr;
+    defs[count].values[0].label = nullptr;
+    defs[count].default_value = nullptr;
 
-    def.key = nullptr;
-    def.desc = nullptr;
-    def.info = nullptr;
-    def.values[0].value = nullptr;
-    def.values[0].label = nullptr;
-    def.default_value = nullptr;
-
-    defs.emplace_back(def);
-
-    bool const ok = setCoreOptions(defs.data());
+    bool const ok = setCoreOptions(defs);
     free(strings);
+    free(defs);
     return ok;
 }
 
