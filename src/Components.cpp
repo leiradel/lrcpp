@@ -5,6 +5,34 @@
 #include <vector>
 #include <string>
 
+void lrcpp::Logger::debug(char const* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vprintf(RETRO_LOG_DEBUG, format, args);
+    va_end(args);
+}
+
+void lrcpp::Logger::info(char const* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vprintf(RETRO_LOG_INFO, format, args);
+    va_end(args);
+}
+
+void lrcpp::Logger::warn(char const* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vprintf(RETRO_LOG_WARN, format, args);
+    va_end(args);
+}
+
+void lrcpp::Logger::error(char const* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vprintf(RETRO_LOG_ERROR, format, args);
+    va_end(args);
+}
+
 bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
     size_t totalLength = 0;
 

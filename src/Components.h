@@ -18,6 +18,12 @@ namespace lrcpp {
 
         // Interface
         virtual void vprintf(retro_log_level level, char const* format, va_list args) = 0;
+
+        // Convenience.
+        void debug(char const* format, ...);
+        void info(char const* format, ...);
+        void warn(char const* format, ...);
+        void error(char const* format, ...);
     };
 
     /**
