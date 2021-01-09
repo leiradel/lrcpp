@@ -36,7 +36,7 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
     size_t count = 0;
     size_t totalLength = 0;
 
-    for (size_t count = 0; variables[count].key != nullptr; count++) {
+    for (count = 0; variables[count].key != nullptr; count++) {
         totalLength += strlen(variables[count].key) + 1;
         totalLength += strlen(variables[count].value) + 1;
     }
