@@ -71,7 +71,6 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
         ptr += option - variables[i].value;
         *ptr++ = 0;
 
-        size_t j = 0;
         option++;
 
         while (isspace(*option)) {
@@ -84,7 +83,9 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
             return false;
         }
 
-        for (;;) {
+        size_t j = 0;
+
+        for (; j < RETRO_NUM_CORE_OPTION_VALUES_MAX - 1; j++) {
             char const* const pipe = strchr(option, '|');
             def->values[j].value = ptr;
 
@@ -105,9 +106,15 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
             }
 
             option = pipe + 1;
-            j++;
         }
 
+        if (j == RETRO_NUM_CORE_OPTION_VALUES_MAX - 1) {
+            free(defs);
+            free(strings);
+            return false;
+        }
+
+        def->values[j + 1].value = def->values[j + 1].label = nullptr;
         def->default_value = def->values[0].value;
     }
 
