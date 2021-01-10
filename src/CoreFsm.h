@@ -2,9 +2,7 @@
 
 // Generated with FSM compiler, https://github.com/leiradel/luamods/ddlt
 
-#include "Core.h"
-
-#line 25 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 25 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
 
     #include "libretro.h"
 
@@ -24,6 +22,8 @@
     typedef struct retro_system_av_info* retro_system_av_info_ptr_t;
 
 
+#include <stdarg.h>
+
 class CoreFsm {
 public:
     enum class State {
@@ -35,7 +35,10 @@ public:
         Start,
     };
 
-    CoreFsm(Core& ctx): _ctx(ctx), __state(State::Start) {}
+    typedef void (*VPrintf)(void* ud, const char* fmt, va_list args);
+
+    CoreFsm(Core& ctx) : _ctx(ctx), __state(State::Start), __vprintf(nullptr), __vprintfud(nullptr) {}
+    CoreFsm(Core& ctx, VPrintf printer, void* printerud) : _ctx(ctx), __state(State::Start), __vprintf(printer), __vprintfud(printerud) {}
 
     State currentState() const { return __state; }
 
@@ -77,4 +80,6 @@ protected:
 
     Core& _ctx;
     State __state;
+    VPrintf __vprintf;
+    void* __vprintfud;
 };

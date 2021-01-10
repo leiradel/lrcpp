@@ -41,6 +41,10 @@ header {
     typedef struct retro_system_av_info* retro_system_av_info_ptr_t;
 }
 
+cpp {
+    #include "Core.h"
+}
+
 fsm CoreFsm {
     class Core as _ctx;
 
