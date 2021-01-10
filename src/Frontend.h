@@ -50,6 +50,7 @@ namespace lrcpp {
         bool getRegion(unsigned* region);
         bool getMemoryData(unsigned id, void** data);
         bool getMemorySize(unsigned id, size_t* size);
+        bool setControllerPortDevice(unsigned port, unsigned device);
 
     protected:
         // Environment functions

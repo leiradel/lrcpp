@@ -340,6 +340,11 @@ bool lrcpp::Frontend::getMemorySize(unsigned id, size_t* size) {
     return _fsm.getMemorySize(id, size);
 }
 
+bool lrcpp::Frontend::setControllerPortDevice(unsigned port, unsigned device) {
+    InstanceSetter setter(this);
+    return _fsm.setControllerPortDevice(port, device);
+}
+
 bool lrcpp::Frontend::setRotation(unsigned data) {
     return _video != nullptr && _video->setRotation(data);
 }
