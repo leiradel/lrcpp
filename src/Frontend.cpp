@@ -192,7 +192,7 @@ bool lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
     return false;
 }
 
-bool lrcpp::Frontend::serPerf(Perf* perf) {
+bool lrcpp::Frontend::setPerf(Perf* perf) {
     if (_fsm.currentState() == CoreFsm::State::Start) {
         _perf = perf;
         return true;

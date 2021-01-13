@@ -25,7 +25,7 @@ namespace lrcpp {
         bool setLocation(Location* location);
         bool setVirtualFileSystem(VirtualFileSystem* virtualFileSystem);
         bool setDiskControl(DiskControl* diskControl);
-        bool serPerf(Perf* perf);
+        bool setPerf(Perf* perf);
 
         // Core life-cycle
         bool load(char const* corePath);
