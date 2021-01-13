@@ -8,8 +8,9 @@
 namespace lrcpp {
     class Frontend final {
     public:
-        Frontend();
         ~Frontend();
+
+        static Frontend& getInstance();
 
         // Components
         bool setLogger(Logger* logger);
@@ -53,6 +54,9 @@ namespace lrcpp {
         bool setControllerPortDevice(unsigned port, unsigned device);
 
     protected:
+        // Frontend is a singleton
+        Frontend();
+
         // Environment functions
         bool setRotation(unsigned data);
         bool getOverscan(bool* data);
@@ -176,6 +180,8 @@ namespace lrcpp {
 
         static int16_t inputState(unsigned port, unsigned device, unsigned index, unsigned id);
         static void inputPoll();
+
+        static Frontend _instance;
 
         Logger* _logger;
         Config* _config;
