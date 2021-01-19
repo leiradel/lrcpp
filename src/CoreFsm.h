@@ -4,7 +4,7 @@
 
 //#line 25 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
 
-    #include "libretro.h"
+    #include <lrcpp/libretro.h>
 
     namespace lrcpp {
         class Core;

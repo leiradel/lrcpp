@@ -1,11 +1,13 @@
-#ifndef LRCPP_MANAGEDCORE_H__
-#define LRCPP_MANAGEDCORE_H__
+#ifndef LRCPP_FRONTEND_H__
+#define LRCPP_FRONTEND_H__
 
-#include "Components.h"
-#include "Core.h"
-#include "CoreFsm.h"
+#include <lrcpp/Components.h>
+#include <lrcpp/Core.h>
+
+class CoreFsm;
 
 namespace lrcpp {
+
     class Frontend final {
     public:
         ~Frontend();
@@ -198,14 +200,14 @@ namespace lrcpp {
         DiskControl* _diskControl;
         Perf* _perf;
 
+        Core _core;
+        CoreFsm* _fsm;
+
         bool _supportsNoGame;
 
         struct retro_vfs_interface _virtualFileSystemInterface;
         struct retro_midi_interface _midiInterface;
-
-        Core _core;
-        CoreFsm _fsm;
     };
 } // namespace lrcpp
 
-#endif // LRCPP_MANAGEDCORE_H__
+#endif // LRCPP_FRONTEND_H__

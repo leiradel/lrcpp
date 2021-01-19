@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "Frontend.h"
+#include <lrcpp/Frontend.h>
+#include "CoreFsm.h"
 
 #include <new>
 #include <string.h>
@@ -46,12 +47,15 @@ lrcpp::Frontend::Frontend()
     , _virtualFileSystem(nullptr)
     , _diskControl(nullptr)
     , _perf(nullptr)
+    , _fsm(new (std::nothrow) CoreFsm(_core))
     , _supportsNoGame(false)
-    , _fsm(_core)
 {}
 
 lrcpp::Frontend::~Frontend() {
-    _fsm.unload();
+    if (_fsm != nullptr) {
+        _fsm->unload();
+        delete _fsm;
+    }
 }
 
 lrcpp::Frontend& lrcpp::Frontend::getInstance() {
@@ -59,7 +63,7 @@ lrcpp::Frontend& lrcpp::Frontend::getInstance() {
 }
 
 bool lrcpp::Frontend::setLogger(Logger* logger) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _logger = logger;
         return true;
     }
@@ -68,7 +72,7 @@ bool lrcpp::Frontend::setLogger(Logger* logger) {
 }
 
 bool lrcpp::Frontend::setConfig(Config* config) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _config = config;
         return true;
     }
@@ -77,7 +81,7 @@ bool lrcpp::Frontend::setConfig(Config* config) {
 }
 
 bool lrcpp::Frontend::setVideo(Video* video) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _video = video;
         return true;
     }
@@ -86,7 +90,7 @@ bool lrcpp::Frontend::setVideo(Video* video) {
 }
 
 bool lrcpp::Frontend::setLed(Led* led) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _led = led;
         return true;
     }
@@ -95,7 +99,7 @@ bool lrcpp::Frontend::setLed(Led* led) {
 }
 
 bool lrcpp::Frontend::setAudio(Audio* audio) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _audio = audio;
         return true;
     }
@@ -104,7 +108,7 @@ bool lrcpp::Frontend::setAudio(Audio* audio) {
 }
 
 bool lrcpp::Frontend::setMidi(Midi* midi) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _midi = midi;
         return true;
     }
@@ -113,7 +117,7 @@ bool lrcpp::Frontend::setMidi(Midi* midi) {
 }
 
 bool lrcpp::Frontend::setInput(Input* input) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _input = input;
         return true;
     }
@@ -122,7 +126,7 @@ bool lrcpp::Frontend::setInput(Input* input) {
 }
 
 bool lrcpp::Frontend::setRumble(Rumble* rumble) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _rumble = rumble;
         return true;
     }
@@ -131,7 +135,7 @@ bool lrcpp::Frontend::setRumble(Rumble* rumble) {
 }
 
 bool lrcpp::Frontend::setSensor(Sensor* sensor) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _sensor = sensor;
         return true;
     }
@@ -140,7 +144,7 @@ bool lrcpp::Frontend::setSensor(Sensor* sensor) {
 }
 
 bool lrcpp::Frontend::setCamera(Camera* camera) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _camera = camera;
         return true;
     }
@@ -149,7 +153,7 @@ bool lrcpp::Frontend::setCamera(Camera* camera) {
 }
 
 bool lrcpp::Frontend::setLocation(Location* location) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _location = location;
         return true;
     }
@@ -158,7 +162,7 @@ bool lrcpp::Frontend::setLocation(Location* location) {
 }
 
 bool lrcpp::Frontend::setVirtualFileSystem(VirtualFileSystem* virtualFileSystem) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _virtualFileSystem = virtualFileSystem;
         return true;
     }
@@ -167,7 +171,7 @@ bool lrcpp::Frontend::setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)
 }
 
 bool lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _diskControl = diskControl;
         return true;
     }
@@ -176,7 +180,7 @@ bool lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
 }
 
 bool lrcpp::Frontend::setPerf(Perf* perf) {
-    if (_fsm.currentState() == CoreFsm::State::Start) {
+    if (_fsm->currentState() == CoreFsm::State::Start) {
         _perf = perf;
         return true;
     }
@@ -185,9 +189,13 @@ bool lrcpp::Frontend::setPerf(Perf* perf) {
 }
 
 bool lrcpp::Frontend::load(char const* corePath) {
-    bool ok = _fsm.load(corePath);
-    ok = ok && _fsm.setEnvironment(staticEnvironmentCallback);
-    ok = ok && _fsm.init();
+    if (_fsm == nullptr) {
+        return false;
+    }
+
+    bool ok = _fsm->load(corePath);
+    ok = ok && _fsm->setEnvironment(staticEnvironmentCallback);
+    ok = ok && _fsm->init();
 
     return ok;
 }
@@ -199,7 +207,7 @@ bool lrcpp::Frontend::loadGame() {
 bool lrcpp::Frontend::loadGame(char const* gamePath) {
     retro_system_info info;
 
-    if (!_fsm.getSystemInfo(&info)) {
+    if (!_fsm->getSystemInfo(&info)) {
         return false;
     }
 
@@ -213,97 +221,97 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
     game.size = size;
     game.meta = nullptr;
 
-    bool ok = _fsm.loadGame(&game);
-    ok = ok && _fsm.setCallbacks(videoRefresh,
+    bool ok = _fsm->loadGame(&game);
+    ok = ok && _fsm->setCallbacks(videoRefresh,
                                  audioSample,
                                  audioSampleBatch,
                                  inputPoll,
                                  inputState);
 
     retro_system_av_info avinfo;
-    ok = ok && _fsm.getSystemAvInfo(&avinfo);
+    ok = ok && _fsm->getSystemAvInfo(&avinfo);
     ok = ok && setSystemAvInfo(&avinfo);
 
     return ok;
 }
 
 bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info const* info, size_t numInfo) {
-    bool ok = _fsm.loadGameSpecial(gameType, info, numInfo);
-    ok = ok && _fsm.setCallbacks(videoRefresh,
+    bool ok = _fsm->loadGameSpecial(gameType, info, numInfo);
+    ok = ok && _fsm->setCallbacks(videoRefresh,
                                  audioSample,
                                  audioSampleBatch,
                                  inputPoll,
                                  inputState);
 
     retro_system_av_info avinfo;
-    ok = ok && _fsm.getSystemAvInfo(&avinfo);
+    ok = ok && _fsm->getSystemAvInfo(&avinfo);
     ok = ok && setSystemAvInfo(&avinfo);
 
     return ok;
 }
 
 bool lrcpp::Frontend::run() {
-    return _fsm.run();
+    return _fsm->run();
 }
 
 bool lrcpp::Frontend::reset() {
-    return _fsm.reset();
+    return _fsm->reset();
 }
 
 bool lrcpp::Frontend::unloadGame() {
-    return _fsm.unloadGame();
+    return _fsm->unloadGame();
 }
 
 bool lrcpp::Frontend::unload() {
-    return _fsm.unload();
+    return _fsm->unload();
 }
 
 bool lrcpp::Frontend::apiVersion(unsigned* version) {
-    return _fsm.apiVersion(version);
+    return _fsm->apiVersion(version);
 }
 
 bool lrcpp::Frontend::getSystemInfo(struct retro_system_info* info) {
-    return _fsm.getSystemInfo(info);
+    return _fsm->getSystemInfo(info);
 }
 
 bool lrcpp::Frontend::getSystemAvInfo(struct retro_system_av_info* info) {
-    return _fsm.getSystemAvInfo(info);
+    return _fsm->getSystemAvInfo(info);
 }
 
 bool lrcpp::Frontend::serializeSize(size_t* size) {
-    return _fsm.serializeSize(size);
+    return _fsm->serializeSize(size);
 }
 
 bool lrcpp::Frontend::serialize(void* data, size_t size) {
-    return _fsm.serialize(data, size);
+    return _fsm->serialize(data, size);
 }
 
 bool lrcpp::Frontend::unserialize(void const* data, size_t size) {
-    return _fsm.unserialize(data, size);
+    return _fsm->unserialize(data, size);
 }
 
 bool lrcpp::Frontend::cheatReset() {
-    return _fsm.cheatReset();
+    return _fsm->cheatReset();
 }
 
 bool lrcpp::Frontend::cheatSet(unsigned index, bool enabled, char const* code) {
-    return _fsm.cheatSet(index, enabled, code);
+    return _fsm->cheatSet(index, enabled, code);
 }
 
 bool lrcpp::Frontend::getRegion(unsigned* region) {
-    return _fsm.getRegion(region);
+    return _fsm->getRegion(region);
 }
 
 bool lrcpp::Frontend::getMemoryData(unsigned id, void** data) {
-    return _fsm.getMemoryData(id, data);
+    return _fsm->getMemoryData(id, data);
 }
 
 bool lrcpp::Frontend::getMemorySize(unsigned id, size_t* size) {
-    return _fsm.getMemorySize(id, size);
+    return _fsm->getMemorySize(id, size);
 }
 
 bool lrcpp::Frontend::setControllerPortDevice(unsigned port, unsigned device) {
-    return _fsm.setControllerPortDevice(port, device);
+    return _fsm->setControllerPortDevice(port, device);
 }
 
 bool lrcpp::Frontend::setRotation(unsigned data) {
@@ -323,7 +331,7 @@ bool lrcpp::Frontend::showMessage(struct retro_message const* data) {
 }
 
 bool lrcpp::Frontend::shutdown() {
-    return _fsm.unload();
+    return _fsm->unload();
 }
 
 bool lrcpp::Frontend::setPerformanceLevel(unsigned data) {

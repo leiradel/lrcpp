@@ -1,8 +1,8 @@
 #ifndef LRCPP_CORE_H__
 #define LRCPP_CORE_H__
 
-#include "libretro.h"
 #include "dynlib.h"
+#include <lrcpp/libretro.h>
 
 namespace lrcpp {
     class Core final {

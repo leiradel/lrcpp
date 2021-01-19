@@ -1,8 +1,7 @@
 #ifndef LRCPP_COMPONENTS_H__
 #define LRCPP_COMPONENTS_H__
 
-#include "libretro.h"
-
+#include <lrcpp/libretro.h>
 #include <stdarg.h>
 
 namespace lrcpp {

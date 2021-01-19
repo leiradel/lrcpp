@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 header {
-    #include "libretro.h"
+    #include <lrcpp/libretro.h>
 
     namespace lrcpp {
         class Core;
