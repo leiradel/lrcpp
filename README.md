@@ -1,17 +1,27 @@
 # **lrcpp**
 
-**lrcpp** is a library meant to ease the development of Libretro frontends. It has three components:
+**lrcpp** is a library meant to ease the development of Libretro frontends. It has four blocks:
 
 * A `Core` class that can load a Libretro core from disk, and has methods that map 1:1 with the ones of the Libretro API.
-* A `Frontend` class that manages a `Core` instance, and takes care of all the callbacks and environment calls. It delegates all functionalities to other classes, which must be implemented and passed to the `Frontend` instance.
+* A [Finite State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) (FSM) that manages the state of the core, preventing it from entering an invalid state or running code before required pre-requisites have been fulfilled.
+* Components, classes that provide front-end functionalities to the core.
+* A `Frontend` class that manages a `Core` instance via the FSM, and takes care of all the callbacks and environment calls. It delegates all functionalities to the component classes, which must be implemented and passed to the `Frontend` instance.
 
 ## Usage
+
+In order to have a working application several classes must be implemented. Their methods map almost directly to the Libretro API and should be self explanatory.
+
+The minimum set of components required to run the more simple cores are`Audio` and `Video` (only the software framebuffer methods need be implemented for most of the cores, so `setHwRender` can return `false`). `Input` must also be provided in order to be able to interact with the emulation, of course. Some cores will also need configuration information to run, and thus will need a `Config` component. It doesn't hurt to provide a `Logger` component since it's easy to implement.
+
+After implementing the components, get the front-end instance with `getInstance()`, set the implemented components, and use the front-end's managed core life-cycle methods to load a core, load a game, emulate one frame, save and load states etc.
+
+## API
 
 ### Core
 
 The `Core` class manages the loading and unloading of a shared object that exposts the functions of the Libretro API. It has the following methods:
 
-* Lifecycle
+* Life-cycle
   * `Core()`: Contructs an empty core.
   * `~Core()`: Destructs the core, unloading the shared object that was load by `load`.
   * `bool load(char const* path)`: Loads a shared object and gets all the symbols of the Libretro API from it. Returns true if on success.
@@ -45,11 +55,11 @@ The `Core` class manages the loading and unloading of a shared object that expos
 
 ### Frontend
 
-The `Frontend` class manages a `Core`'s' lifecycle, and connects it to the platform specific code needed for it to run. It does so via platform dependent components that are responsible for thigs like video and audio output, controller and camera input, and so on. `Frontend` also takes care of calling the core's functions and set the necessary callbacks for it to use, and routes the environment calls from the core to the correct components.
+The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the platform specific code needed for it to run. It does so via platform dependent components that are responsible for thigs like video and audio output, controller and camera input, and so on. `Frontend` also takes care of calling the core's functions and set the necessary callbacks for it to use, and routes the environment calls from the core to the correct components.
 
-* Lifecycle
-  * `Frontend()`: Constructs a frontend without any components.
-  * `~Frontend()`: Destructs the frontend. The destructor will handle the correct shutdown of the core it manages irrespectively of its state: game loaded, running etc.
+* Life-cycle
+  * Since it's not possible to run more than one Libretro core at the same time (imposed by a limitation of the Libretro API), the `Frontend` class is a singleton.
+    * `static Frontend& getInstance()`: returns the front-end instance.
 * Components, each method will set a new component and return `true` if successful, of `false` if the component cannot be set. Setting (or leaving) a component as `nullptr` will make the corresponding functionality unavailable for the core. Components can only be set when there's no core loaded.
   * `bool setLogger(Logger* logger)`
   * `bool setConfig(Config* config)`
@@ -65,7 +75,7 @@ The `Frontend` class manages a `Core`'s' lifecycle, and connects it to the platf
   * `bool setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)`
   * `bool setDiskControl(DiskControl* diskControl)`
   * `bool serPerf(Perf* perf)`
-* Managed core fife-cycle. These methods take into account the current state of the core and will return `false` if it detects inconsistencies like trying to run a frame with a core that has not being loaded. They also return `false` if they fail for any other reason.
+* Managed core life-cycle. These methods take into account the current state of the core and will return `false` if it detects inconsistencies like trying to run a frame with a core that has not being loaded. They also return `false` if they fail for any other reason.
   * `bool load(char const* corePath)`: Loads a core from the file system.
   * `bool loadGame()`: Starts the core without a game, only available for cores that call `RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME` with `true`.
   * `bool loadGame(char const* gamePath)`: Starts a core with the given content path. The core will be responsible for loading the content. Only valid if `retro_system_info.need_fullpath` is `true`.
@@ -88,9 +98,7 @@ The `Frontend` class manages a `Core`'s' lifecycle, and connects it to the platf
   * `bool getMemoryData(unsigned id, void** data)`
   * `bool getMemorySize(unsigned id, size_t* size)`
 
-In order to have a working frontend, several classes must be implemented. Their methods map almost directly to the Libretro API and should be self explanatory.
-
-The minimum set of components required to run the more simple cores are`Audio` and `Video` (only the software framebuffer methods need be implemented for most of the cores, so `setHwRender` can return `false`). `Input` must also be provided in order to be able to interact with the emulation, of course. Some cores will also need configuration information to run, and thus will need a `Config` component. It doesn't hurt to provide a `Logger` component, since it's easy to implement.
+### Components
 
 #### Logger
 
