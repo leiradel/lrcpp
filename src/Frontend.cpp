@@ -592,7 +592,7 @@ bool lrcpp::Frontend::getTargetRefreshRate(float* data) {
 }
 
 bool lrcpp::Frontend::getInputBitmasks(bool* data) {
-    // At least the vice core calls this with a null data
+    // HACK: At least the vice core calls this with a null data
     bool dummy = false;
     return _input != nullptr && _input->getInputBitmasks(data != nullptr ? data : &dummy);
 }
