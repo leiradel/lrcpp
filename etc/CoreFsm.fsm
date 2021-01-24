@@ -42,7 +42,7 @@ header {
 }
 
 cpp {
-    #include "Core.h"
+    #include <lrcpp/Core.h>
 }
 
 fsm CoreFsm {

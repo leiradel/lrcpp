@@ -41,6 +41,7 @@ public:
     CoreFsm(Core& ctx, VPrintf printer, void* printerud) : _ctx(ctx), __state(State::Start), __vprintf(printer), __vprintfud(printerud) {}
 
     State currentState() const { return __state; }
+    bool canTransitionTo(const State state) const;
 
 #ifdef DEBUG_FSM
     const char* stateName(State state) const;

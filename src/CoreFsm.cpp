@@ -2,10 +2,75 @@
 
 #include "CoreFsm.h"
 
-//#line 44 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 44 "/home/leiradel/Develop/hackable-console/src/lrcpp/etc/CoreFsm.fsm"
 
-    #include "Core.h"
+    #include <lrcpp/Core.h>
 
+
+bool CoreFsm::canTransitionTo(const State state) const {
+    switch (__state) {
+        case State::CoreInitialized:
+            switch (state) {
+                case State::CoreInitialized:
+                case State::EnvironmentSet:
+                case State::GameLoaded:
+                case State::Start:
+                    return true;
+                default: break;
+            }
+            break;
+        case State::CoreLoaded:
+            switch (state) {
+                case State::CoreLoaded:
+                case State::EnvironmentSet:
+                case State::Start:
+                    return true;
+                default: break;
+            }
+            break;
+        case State::EnvironmentSet:
+            switch (state) {
+                case State::CoreInitialized:
+                case State::CoreLoaded:
+                case State::EnvironmentSet:
+                case State::Start:
+                    return true;
+                default: break;
+            }
+            break;
+        case State::GameLoaded:
+            switch (state) {
+                case State::CoreInitialized:
+                case State::EnvironmentSet:
+                case State::GameLoaded:
+                case State::GameRunning:
+                case State::Start:
+                    return true;
+                default: break;
+            }
+            break;
+        case State::GameRunning:
+            switch (state) {
+                case State::CoreInitialized:
+                case State::EnvironmentSet:
+                case State::GameRunning:
+                case State::Start:
+                    return true;
+                default: break;
+            }
+            break;
+        case State::Start:
+            switch (state) {
+                case State::CoreLoaded:
+                    return true;
+                default: break;
+            }
+            break;
+        default: break;
+    }
+
+    return false;
+}
 
 #ifdef DEBUG_FSM
 const char* CoreFsm::stateName(State state) const {
