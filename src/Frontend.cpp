@@ -56,7 +56,7 @@ lrcpp::Frontend::Frontend(void* fsmMemory)
 lrcpp::Frontend::~Frontend() {
     if (_fsm != nullptr) {
         _fsm->unload();
-        delete _fsm;
+        _fsm->~CoreFsm();
     }
 }
 
