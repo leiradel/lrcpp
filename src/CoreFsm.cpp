@@ -2,7 +2,7 @@
 
 #include "CoreFsm.h"
 
-//#line 44 "/home/leiradel/Develop/hackable-console/src/lrcpp/etc/CoreFsm.fsm"
+//#line 46 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
     #include <lrcpp/Core.h>
 
@@ -143,7 +143,7 @@ bool CoreFsm::apiVersion(unsigned_ptr_t version) {
                 return false;
             }
 
-//#line 100 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 108 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *version = _ctx.apiVersion();
         
@@ -184,7 +184,7 @@ bool CoreFsm::apiVersion(unsigned_ptr_t version) {
                 return false;
             }
 
-//#line 60 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 68 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *version = _ctx.apiVersion();
         
@@ -225,7 +225,7 @@ bool CoreFsm::apiVersion(unsigned_ptr_t version) {
                 return false;
             }
 
-//#line 78 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 86 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *version = _ctx.apiVersion();
         
@@ -266,7 +266,7 @@ bool CoreFsm::apiVersion(unsigned_ptr_t version) {
                 return false;
             }
 
-//#line 132 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 140 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *version = _ctx.apiVersion();
         
@@ -307,7 +307,7 @@ bool CoreFsm::apiVersion(unsigned_ptr_t version) {
                 return false;
             }
 
-//#line 184 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 192 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *version = _ctx.apiVersion();
         
@@ -356,7 +356,7 @@ bool CoreFsm::cheatReset() {
                 return false;
             }
 
-//#line 224 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 232 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.cheatReset();
         
@@ -405,7 +405,7 @@ bool CoreFsm::cheatSet(unsigned index, bool enabled, const_char_ptr_t code) {
                 return false;
             }
 
-//#line 228 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 236 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.cheatSet(index, enabled, code);
         
@@ -454,7 +454,7 @@ bool CoreFsm::deinit() {
                 return false;
             }
 
-//#line 124 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 132 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.deinit();
         
@@ -591,7 +591,7 @@ bool CoreFsm::getMemoryData(unsigned id, void_ptr_ptr_t data) {
                 return false;
             }
 
-//#line 170 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 178 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *data = _ctx.getMemoryData(id);
         
@@ -632,7 +632,7 @@ bool CoreFsm::getMemoryData(unsigned id, void_ptr_ptr_t data) {
                 return false;
             }
 
-//#line 236 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 244 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *data = _ctx.getMemoryData(id);
         
@@ -681,7 +681,7 @@ bool CoreFsm::getMemorySize(unsigned id, size_ptr_t size) {
                 return false;
             }
 
-//#line 174 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 182 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *size = _ctx.getMemorySize(id);
         
@@ -722,7 +722,7 @@ bool CoreFsm::getMemorySize(unsigned id, size_ptr_t size) {
                 return false;
             }
 
-//#line 240 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 248 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *size = _ctx.getMemorySize(id);
         
@@ -771,7 +771,7 @@ bool CoreFsm::getRegion(unsigned_ptr_t region) {
                 return false;
             }
 
-//#line 166 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 174 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *region = _ctx.getRegion();
         
@@ -812,7 +812,7 @@ bool CoreFsm::getRegion(unsigned_ptr_t region) {
                 return false;
             }
 
-//#line 232 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 240 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *region = _ctx.getRegion();
         
@@ -861,7 +861,7 @@ bool CoreFsm::getSystemAvInfo(retro_system_av_info_ptr_t info) {
                 return false;
             }
 
-//#line 144 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 152 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemAvInfo(info);
         
@@ -902,7 +902,7 @@ bool CoreFsm::getSystemAvInfo(retro_system_av_info_ptr_t info) {
                 return false;
             }
 
-//#line 196 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 204 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemAvInfo(info);
         
@@ -951,7 +951,7 @@ bool CoreFsm::getSystemInfo(retro_system_info_ptr_t info) {
                 return false;
             }
 
-//#line 104 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 112 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemInfo(info);
         
@@ -992,7 +992,7 @@ bool CoreFsm::getSystemInfo(retro_system_info_ptr_t info) {
                 return false;
             }
 
-//#line 64 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 72 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemInfo(info);
         
@@ -1033,7 +1033,7 @@ bool CoreFsm::getSystemInfo(retro_system_info_ptr_t info) {
                 return false;
             }
 
-//#line 82 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 90 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemInfo(info);
         
@@ -1074,7 +1074,7 @@ bool CoreFsm::getSystemInfo(retro_system_info_ptr_t info) {
                 return false;
             }
 
-//#line 136 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 144 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemInfo(info);
         
@@ -1115,7 +1115,7 @@ bool CoreFsm::getSystemInfo(retro_system_info_ptr_t info) {
                 return false;
             }
 
-//#line 188 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 196 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.getSystemInfo(info);
         
@@ -1209,7 +1209,7 @@ bool CoreFsm::init() {
                 return false;
             }
 
-//#line 90 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 98 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.init();
         
@@ -1258,7 +1258,7 @@ bool CoreFsm::load(const_char_ptr_t path) {
                 return false;
             }
 
-//#line 52 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 54 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             if (!_ctx.load(path)) {
                 return false;
@@ -1309,7 +1309,7 @@ bool CoreFsm::loadGame(const_retro_game_info_ptr_t gameInfo) {
                 return false;
             }
 
-//#line 112 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 120 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             if (!_ctx.loadGame(gameInfo)) {
                 return false;
@@ -1360,7 +1360,7 @@ bool CoreFsm::loadGameSpecial(unsigned gameType, const_retro_game_info_ptr_t inf
                 return false;
             }
 
-//#line 118 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 126 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             if (!_ctx.loadGameSpecial(gameType, info, numInfo)) {
                 return false;
@@ -1411,7 +1411,7 @@ bool CoreFsm::reset() {
                 return false;
             }
 
-//#line 204 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 212 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.reset();
         
@@ -1460,7 +1460,7 @@ bool CoreFsm::run() {
                 return false;
             }
 
-//#line 200 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 208 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.run();
         
@@ -1509,7 +1509,7 @@ bool CoreFsm::serialize(void_ptr_t data, size_t size) {
                 return false;
             }
 
-//#line 212 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 220 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             if (!_ctx.serialize(data, size)) {
                 return false;
@@ -1560,7 +1560,7 @@ bool CoreFsm::serializeSize(size_ptr_t size) {
                 return false;
             }
 
-//#line 208 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 216 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             *size = _ctx.serializeSize();
         
@@ -1609,7 +1609,7 @@ bool CoreFsm::setCallbacks(retro_video_refresh_t videoRefresh, retro_audio_sampl
                 return false;
             }
 
-//#line 154 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 162 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.setVideoRefresh(videoRefresh);
             _ctx.setAudioSample(audioSample);
@@ -1662,7 +1662,7 @@ bool CoreFsm::setControllerPortDevice(unsigned port, unsigned device) {
                 return false;
             }
 
-//#line 108 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 116 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.setControllerPortDevice(port, device);
         
@@ -1703,7 +1703,7 @@ bool CoreFsm::setControllerPortDevice(unsigned port, unsigned device) {
                 return false;
             }
 
-//#line 86 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 94 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.setControllerPortDevice(port, device);
         
@@ -1744,7 +1744,7 @@ bool CoreFsm::setControllerPortDevice(unsigned port, unsigned device) {
                 return false;
             }
 
-//#line 140 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 148 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.setControllerPortDevice(port, device);
         
@@ -1785,7 +1785,7 @@ bool CoreFsm::setControllerPortDevice(unsigned port, unsigned device) {
                 return false;
             }
 
-//#line 192 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 200 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.setControllerPortDevice(port, device);
         
@@ -1834,7 +1834,7 @@ bool CoreFsm::setEnvironment(retro_environment_t cb) {
                 return false;
             }
 
-//#line 68 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 76 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.setEnvironment(cb);
         
@@ -1927,7 +1927,7 @@ bool CoreFsm::unload() {
                 return false;
             }
 
-//#line 72 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 80 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.unload();
         
@@ -2108,7 +2108,7 @@ bool CoreFsm::unloadGame() {
                 return false;
             }
 
-//#line 162 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 170 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.unloadGame();
         
@@ -2149,7 +2149,7 @@ bool CoreFsm::unloadGame() {
                 return false;
             }
 
-//#line 244 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 252 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             _ctx.unloadGame();
         
@@ -2198,7 +2198,7 @@ bool CoreFsm::unserialize(const_void_ptr_t data, size_t size) {
                 return false;
             }
 
-//#line 218 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 226 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
             if (!_ctx.unserialize(data, size)) {
                 return false;
@@ -2212,6 +2212,57 @@ bool CoreFsm::unserialize(const_void_ptr_t data, size_t size) {
             printf(
                 "FSM %s:%u Switched to %s",
                 __FUNCTION__, __LINE__, stateName(State::GameRunning)
+            );
+#endif
+            return true;
+        }
+        break;
+
+        default: break;
+    }
+
+    return false;
+}
+
+bool CoreFsm::use(const_core_functions_ptr_t functions) {
+    switch (__state) {
+        case State::Start: {
+            if (!before()) {
+#ifdef DEBUG_FSM
+                printf(
+                    "FSM %s:%u Failed global precondition while switching to %s",
+                    __FUNCTION__, __LINE__, stateName(State::CoreLoaded)
+                );
+#endif
+
+                return false;
+            }
+
+            if (!before(__state)) {
+#ifdef DEBUG_FSM
+                printf(
+                    "FSM %s:%u Failed state precondition while switching to %s",
+                    __FUNCTION__, __LINE__, stateName(State::CoreLoaded)
+                );
+#endif
+
+                return false;
+            }
+
+//#line 60 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
+
+            if (!_ctx.use(functions)) {
+                return false;
+            }
+        
+            __state = State::CoreLoaded;
+            after(__state);
+            after();
+
+#ifdef DEBUG_FSM
+            printf(
+                "FSM %s:%u Switched to %s",
+                __FUNCTION__, __LINE__, stateName(State::CoreLoaded)
             );
 #endif
             return true;

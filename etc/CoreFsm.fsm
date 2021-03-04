@@ -27,9 +27,11 @@ header {
 
     namespace lrcpp {
         class Core;
+        class CoreFunctions;
     }
 
     typedef lrcpp::Core Core;
+    typedef lrcpp::CoreFunctions const* const_core_functions_ptr_t;
     typedef size_t* size_ptr_t;
     typedef char const* const_char_ptr_t;
     typedef retro_game_info const* const_retro_game_info_ptr_t;
@@ -51,6 +53,12 @@ fsm CoreFsm {
     Start {
         load(const_char_ptr_t path) => CoreLoaded {
             if (!_ctx.load(path)) {
+                forbid;
+            }
+        }
+
+        use(const_core_functions_ptr_t functions) => CoreLoaded {
+            if (!_ctx.use(functions)) {
                 forbid;
             }
         }

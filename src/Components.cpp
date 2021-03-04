@@ -1,7 +1,6 @@
 #include <lrcpp/Components.h>
 
 #include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
 
 void lrcpp::Logger::debug(char const* format, ...) {
@@ -73,7 +72,7 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
 
         option++;
 
-        while (isspace(*option)) {
+        while (*option == ' ' || *option == '\t') {
             option++;
         }
 

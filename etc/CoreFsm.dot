@@ -48,4 +48,5 @@ digraph CoreFsm {
     GameRunning -> CoreInitialized [label="unloadGame"];
     GameRunning -> GameRunning [label="unserialize"];
     Start -> CoreLoaded [label="load"];
+    Start -> CoreLoaded [label="use"];
 }

@@ -32,6 +32,7 @@ namespace lrcpp {
 
         // Core life-cycle
         bool load(char const* corePath);
+        bool use(CoreFunctions const* coreFunctions);
         bool loadGame();
         bool loadGame(char const* gamePath);
         bool loadGame(char const* gamePath, void const* data, size_t size);
@@ -55,10 +56,15 @@ namespace lrcpp {
         bool getMemorySize(unsigned id, size_t* size);
         bool setControllerPortDevice(unsigned port, unsigned device);
 
+#ifdef __circle__
+    public:
+#else
     protected:
+#endif
         // Frontend is a singleton
-        Frontend();
+        Frontend(void* fsmMemory);
 
+    protected:
         // Environment functions
         bool setRotation(unsigned data);
         bool getOverscan(bool* data);
@@ -182,8 +188,6 @@ namespace lrcpp {
 
         static int16_t inputState(unsigned port, unsigned device, unsigned index, unsigned id);
         static void inputPoll();
-
-        static Frontend _instance;
 
         Logger* _logger;
         Config* _config;

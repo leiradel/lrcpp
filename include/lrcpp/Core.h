@@ -5,12 +5,42 @@
 #include <dynlib.h>
 
 namespace lrcpp {
+    struct CoreFunctions {
+        void (*init)();
+        void (*deinit)();
+        unsigned (*apiVersion)();
+        void (*getSystemInfo)(struct retro_system_info*);
+        void (*getSystemAvInfo)(struct retro_system_av_info*);
+        void (*setEnvironment)(retro_environment_t);
+        void (*setVideoRefresh)(retro_video_refresh_t);
+        void (*setAudioSample)(retro_audio_sample_t);
+        void (*setAudioSampleBatch)(retro_audio_sample_batch_t);
+        void (*setInputPoll)(retro_input_poll_t);
+        void (*setInputState)(retro_input_state_t);
+        void (*setControllerPortDevice)(unsigned, unsigned);
+        void (*reset)();
+        void (*run)();
+        size_t (*serializeSize)();
+        bool (*serialize)(void*, size_t);
+        bool (*unserialize)(void const*, size_t);
+        void (*cheatReset)();
+        void (*cheatSet)(unsigned, bool, char const*);
+        bool (*loadGame)(struct retro_game_info const*);
+        bool (*loadGameSpecial)(unsigned, struct retro_game_info const*, size_t);
+        void (*unloadGame)();
+        unsigned (*getRegion)();
+        void* (*getMemoryData)(unsigned);
+        size_t (*getMemorySize)(unsigned);
+
+    };
+
     class Core final {
     public:
         Core() : _handle(nullptr) {}
         ~Core();
 
         bool load(char const* path);
+        bool use(CoreFunctions const* functions);
         void unload();
 
         // All the remaining methods map 1:1 to the Libretro API.
@@ -74,5 +104,37 @@ namespace lrcpp {
         size_t (*_getMemorySize)(unsigned);
     };
 } // namespace lrcpp
+
+#define LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, prefix) \
+    do { \
+        functions.init = prefix ## init; \
+        functions.deinit = prefix ## deinit; \
+        functions.apiVersion = prefix ## api_version; \
+        functions.getSystemInfo = prefix ## get_system_info; \
+        functions.getSystemAvInfo = prefix ## get_system_av_info; \
+        functions.setEnvironment = prefix ## set_environment; \
+        functions.setVideoRefresh = prefix ## set_video_refresh; \
+        functions.setAudioSample = prefix ## set_audio_sample; \
+        functions.setAudioSampleBatch = prefix ## set_audio_sample_batch; \
+        functions.setInputPoll = prefix ## set_input_poll; \
+        functions.setInputState = prefix ## set_input_state; \
+        functions.setControllerPortDevice = prefix ## set_controller_port_device; \
+        functions.reset = prefix ## reset; \
+        functions.run = prefix ## run; \
+        functions.serializeSize = prefix ## serialize_size; \
+        functions.serialize = prefix ## serialize; \
+        functions.unserialize = prefix ## unserialize; \
+        functions.cheatReset = prefix ## cheat_reset; \
+        functions.cheatSet = prefix ## cheat_set; \
+        functions.loadGame = prefix ## load_game; \
+        functions.loadGameSpecial = prefix ## load_game_special; \
+        functions.unloadGame = prefix ## unload_game; \
+        functions.getRegion = prefix ## get_region; \
+        functions.getMemoryData = prefix ## get_memory_data; \
+        functions.getMemorySize = prefix ## get_memory_size; \
+    } while (0)
+
+#define LRCPP_CORE_INIT_FUNCTIONS_DEFAULT(functions) LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, retro_)
+#define LRCPP_CORE_INIT_FUNCTIONS(functions, prefix) LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, prefix ## retro_)
 
 #endif // LRCPP_CORE_H__

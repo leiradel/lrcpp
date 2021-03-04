@@ -25,14 +25,16 @@ SOFTWARE.
 #include <lrcpp/Frontend.h>
 #include "CoreFsm.h"
 
+#ifdef __circle__
+#include <circle/new.h>
+#else
 #include <new>
+#endif
+
 #include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 
-lrcpp::Frontend lrcpp::Frontend::_instance;
-
-lrcpp::Frontend::Frontend()
+lrcpp::Frontend::Frontend(void* fsmMemory)
     : _logger(nullptr)
     , _config(nullptr)
     , _video(nullptr)
@@ -47,7 +49,7 @@ lrcpp::Frontend::Frontend()
     , _virtualFileSystem(nullptr)
     , _diskControl(nullptr)
     , _perf(nullptr)
-    , _fsm(new (std::nothrow) CoreFsm(_core))
+    , _fsm(new (fsmMemory) CoreFsm(_core))
     , _supportsNoGame(false)
 {}
 
@@ -58,8 +60,18 @@ lrcpp::Frontend::~Frontend() {
     }
 }
 
+#ifdef __circle__
+static uint8_t fsmMemory[sizeof(CoreFsm)] alignas(CoreFsm);
+static lrcpp::Frontend singleton(fsmMemory);
+#endif
+
 lrcpp::Frontend& lrcpp::Frontend::getInstance() {
-    return _instance;
+#ifndef __circle__
+    static uint8_t fsmMemory[sizeof(CoreFsm)] alignas(CoreFsm);
+    static Frontend singleton(fsmMemory);
+#endif
+
+    return singleton;
 }
 
 bool lrcpp::Frontend::setLogger(Logger* logger) {
@@ -194,6 +206,18 @@ bool lrcpp::Frontend::load(char const* corePath) {
     }
 
     bool ok = _fsm->load(corePath);
+    ok = ok && _fsm->setEnvironment(staticEnvironmentCallback);
+    ok = ok && _fsm->init();
+
+    return ok;
+}
+
+bool lrcpp::Frontend::use(CoreFunctions const* coreFunctions) {
+    if (_fsm == nullptr) {
+        return false;
+    }
+
+    bool ok = _fsm->use(coreFunctions);
     ok = ok && _fsm->setEnvironment(staticEnvironmentCallback);
     ok = ok && _fsm->init();
 
@@ -801,218 +825,218 @@ bool lrcpp::Frontend::environmentCallback(unsigned cmd, void* data) {
 }
 
 bool lrcpp::Frontend::staticEnvironmentCallback(unsigned cmd, void* data) {
-    return _instance.environmentCallback(cmd, data);
+    return getInstance().environmentCallback(cmd, data);
 }
 
 bool lrcpp::Frontend::rumbleSetState(unsigned port, enum retro_rumble_effect effect, uint16_t strength) {
-    return _instance._rumble->setState(port, effect, strength);
+    return getInstance()._rumble->setState(port, effect, strength);
 }
 
 bool lrcpp::Frontend::sensorSetState(unsigned port, enum retro_sensor_action action, unsigned rate) {
-    return _instance._sensor->setState(port, action, rate);
+    return getInstance()._sensor->setState(port, action, rate);
 }
 
 float lrcpp::Frontend::sensorGetInput(unsigned port, unsigned id) {
-    return _instance._sensor->getInput(port, id);
+    return getInstance()._sensor->getInput(port, id);
 }
 
 bool lrcpp::Frontend::cameraStart() {
-    return _instance._camera->start();
+    return getInstance()._camera->start();
 }
 
 void lrcpp::Frontend::cameraStop() {
-    _instance._camera->stop();
+    getInstance()._camera->stop();
 }
 
 void lrcpp::Frontend::loggerVprintf(enum retro_log_level level, char const* format, ...) {
     va_list args;
     va_start(args, format);
-    _instance._logger->vprintf(level, format, args);
+    getInstance()._logger->vprintf(level, format, args);
     va_end(args);
 }
 
 retro_time_t lrcpp::Frontend::perfGetTimeUsec() {
-    return _instance._perf->getTimeUsec();
+    return getInstance()._perf->getTimeUsec();
 }
 
 uint64_t lrcpp::Frontend::perfGetCpuFeatures() {
-    return _instance._perf->getCpuFeatures();
+    return getInstance()._perf->getCpuFeatures();
 }
 
 retro_perf_tick_t lrcpp::Frontend::perfGetCounter() {
-    return _instance._perf->getCounter();
+    return getInstance()._perf->getCounter();
 }
 
 void lrcpp::Frontend::perfRegister(struct retro_perf_counter* counter) {
-    _instance._perf->register_(counter);
+    getInstance()._perf->register_(counter);
 }
 
 void lrcpp::Frontend::perfStart(struct retro_perf_counter* counter) {
-    _instance._perf->start(counter);
+    getInstance()._perf->start(counter);
 }
 
 void lrcpp::Frontend::perfStop(struct retro_perf_counter* counter) {
-    _instance._perf->stop(counter);
+    getInstance()._perf->stop(counter);
 }
 
 void lrcpp::Frontend::perfLog() {
-    _instance._perf->log();
+    getInstance()._perf->log();
 }
 
 bool lrcpp::Frontend::locationStart() {
-    return _instance._location->start();
+    return getInstance()._location->start();
 }
 
 void lrcpp::Frontend::locationStop() {
-    _instance._location->stop();
+    getInstance()._location->stop();
 }
 
 bool lrcpp::Frontend::locationGetPosition(double* lat, double* lon, double* horizAccuracy, double* vertAccuracy) {
-    return _instance._location->getPosition(lat, lon, horizAccuracy, vertAccuracy);
+    return getInstance()._location->getPosition(lat, lon, horizAccuracy, vertAccuracy);
 }
 
 void lrcpp::Frontend::locationSetInterval(unsigned intervalMs, unsigned intervalDistance) {
-    _instance._location->setInterval(intervalMs, intervalDistance);
+    getInstance()._location->setInterval(intervalMs, intervalDistance);
 }
 
 char const* lrcpp::Frontend::virtualFileSystemGetPath(struct retro_vfs_file_handle* stream) {
-    return _instance._virtualFileSystem->getPath(stream);
+    return getInstance()._virtualFileSystem->getPath(stream);
 }
 
 struct retro_vfs_file_handle* lrcpp::Frontend::virtualFileSystemOpen(char const* path, unsigned mode, unsigned hints) {
-    return _instance._virtualFileSystem->open(path, mode, hints);
+    return getInstance()._virtualFileSystem->open(path, mode, hints);
 }
 
 int lrcpp::Frontend::virtualFileSystemClose(struct retro_vfs_file_handle* stream) {
-    return _instance._virtualFileSystem->close(stream);
+    return getInstance()._virtualFileSystem->close(stream);
 }
 
 int64_t lrcpp::Frontend::virtualFileSystemSize(struct retro_vfs_file_handle* stream) {
-    return _instance._virtualFileSystem->size(stream);
+    return getInstance()._virtualFileSystem->size(stream);
 }
 
 int64_t lrcpp::Frontend::virtualFileSystemTruncate(struct retro_vfs_file_handle* stream, int64_t length) {
-    return _instance._virtualFileSystem->truncate(stream, length);
+    return getInstance()._virtualFileSystem->truncate(stream, length);
 }
 
 int64_t lrcpp::Frontend::virtualFileSystemTell(struct retro_vfs_file_handle* stream) {
-    return _instance._virtualFileSystem->tell(stream);
+    return getInstance()._virtualFileSystem->tell(stream);
 }
 
 int64_t lrcpp::Frontend::virtualFileSystemSeek(struct retro_vfs_file_handle* stream, int64_t offset, int seekPosition) {
-    return _instance._virtualFileSystem->seek(stream, offset, seekPosition);
+    return getInstance()._virtualFileSystem->seek(stream, offset, seekPosition);
 }
 
 int64_t lrcpp::Frontend::virtualFileSystemRead(struct retro_vfs_file_handle* stream, void* s, uint64_t len) {
-    return _instance._virtualFileSystem->read(stream, s, len);
+    return getInstance()._virtualFileSystem->read(stream, s, len);
 }
 
 int64_t lrcpp::Frontend::virtualFileSystemWrite(struct retro_vfs_file_handle* stream, void const* s, uint64_t len) {
-    return _instance._virtualFileSystem->write(stream, s, len);
+    return getInstance()._virtualFileSystem->write(stream, s, len);
 }
 
 int lrcpp::Frontend::virtualFileSystemFlush(struct retro_vfs_file_handle* stream) {
-    return _instance._virtualFileSystem->flush(stream);
+    return getInstance()._virtualFileSystem->flush(stream);
 }
 
 int lrcpp::Frontend::virtualFileSystemRemove(char const* path) {
-    return _instance._virtualFileSystem->remove(path);
+    return getInstance()._virtualFileSystem->remove(path);
 }
 
 int lrcpp::Frontend::virtualFileSystemRename(char const* oldPath, char const* newPath) {
-    return _instance._virtualFileSystem->rename(oldPath, newPath);
+    return getInstance()._virtualFileSystem->rename(oldPath, newPath);
 }
 
 int lrcpp::Frontend::virtualFileSystemStat(char const* path, int32_t* size) {
-    return _instance._virtualFileSystem->stat(path, size);
+    return getInstance()._virtualFileSystem->stat(path, size);
 }
 
 int lrcpp::Frontend::virtualFileSystemMkDir(char const* dir) {
-    return _instance._virtualFileSystem->mkDir(dir);
+    return getInstance()._virtualFileSystem->mkDir(dir);
 }
 
 struct retro_vfs_dir_handle* lrcpp::Frontend::virtualFileSystemOpenDir(char const* dir, bool includeHidden) {
-    return _instance._virtualFileSystem->openDir(dir, includeHidden);
+    return getInstance()._virtualFileSystem->openDir(dir, includeHidden);
 }
 
 bool lrcpp::Frontend::virtualFileSystemReadDir(struct retro_vfs_dir_handle* dirstream) {
-    return _instance._virtualFileSystem->readDir(dirstream);
+    return getInstance()._virtualFileSystem->readDir(dirstream);
 }
 
 char const* lrcpp::Frontend::virtualFileSystemDirentGetName(struct retro_vfs_dir_handle* dirstream) {
-    return _instance._virtualFileSystem->direntGetName(dirstream);
+    return getInstance()._virtualFileSystem->direntGetName(dirstream);
 }
 
 bool lrcpp::Frontend::virtualFileSystemDirentIsDir(struct retro_vfs_dir_handle* dirstream) {
-    return _instance._virtualFileSystem->direntIsDir(dirstream);
+    return getInstance()._virtualFileSystem->direntIsDir(dirstream);
 }
 
 int lrcpp::Frontend::virtualFileSystemCloseDir(struct retro_vfs_dir_handle* dirstream) {
-    return _instance._virtualFileSystem->closeDir(dirstream);
+    return getInstance()._virtualFileSystem->closeDir(dirstream);
 }
 
 void lrcpp::Frontend::ledSetState(int led, int state) {
-    return _instance._led->setState(led, state);
+    return getInstance()._led->setState(led, state);
 }
 
 bool lrcpp::Frontend::midiInputEnabled() {
-    return _instance._midi->inputEnabled();
+    return getInstance()._midi->inputEnabled();
 }
 
 bool lrcpp::Frontend::midiOutputEnabled() {
-    return _instance._midi->outputEnabled();
+    return getInstance()._midi->outputEnabled();
 }
 
 bool lrcpp::Frontend::midiRead(uint8_t* byte) {
-    return _instance._midi->read(byte);
+    return getInstance()._midi->read(byte);
 }
 
 bool lrcpp::Frontend::midiWrite(uint8_t byte, uint32_t deltaTime) {
-    return _instance._midi->write(byte, deltaTime);
+    return getInstance()._midi->write(byte, deltaTime);
 }
 
 bool lrcpp::Frontend::midiFlush() {
-    return _instance._midi->flush();
+    return getInstance()._midi->flush();
 }
 
 uintptr_t lrcpp::Frontend::videoGetCurrentFramebuffer() {
-    return _instance._video->getCurrentFramebuffer();
+    return getInstance()._video->getCurrentFramebuffer();
 }
 
 retro_proc_address_t lrcpp::Frontend::videoGetProcAddress(char const* symbol) {
-    return _instance._video->getProcAddress(symbol);
+    return getInstance()._video->getProcAddress(symbol);
 }
 
 void lrcpp::Frontend::videoRefresh(void const* data, unsigned width, unsigned height, size_t pitch) {
-    if (_instance._video != nullptr) {
-        _instance._video->refresh(data, width, height, pitch);
+    if (getInstance()._video != nullptr) {
+        getInstance()._video->refresh(data, width, height, pitch);
     }
 }
 
 size_t lrcpp::Frontend::audioSampleBatch(int16_t const* data, size_t frames) {
-    if (_instance._audio != nullptr) {
-        return _instance._audio->sampleBatch(data, frames);
+    if (getInstance()._audio != nullptr) {
+        return getInstance()._audio->sampleBatch(data, frames);
     }
 
     return 0;
 }
 
 void lrcpp::Frontend::audioSample(int16_t left, int16_t right) {
-    if (_instance._audio != nullptr) {
-        _instance._audio->sample(left, right);
+    if (getInstance()._audio != nullptr) {
+        getInstance()._audio->sample(left, right);
     }
 }
 
 int16_t lrcpp::Frontend::inputState(unsigned port, unsigned device, unsigned index, unsigned id) {
-    if (_instance._input != nullptr) {
-        return _instance._input->state(port, device, index, id);
+    if (getInstance()._input != nullptr) {
+        return getInstance()._input->state(port, device, index, id);
     }
 
     return 0;
 }
 
 void lrcpp::Frontend::inputPoll() {
-    if (_instance._input != nullptr) {
-        _instance._input->poll();
+    if (getInstance()._input != nullptr) {
+        getInstance()._input->poll();
     }
 }

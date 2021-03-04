@@ -30,6 +30,7 @@ lrcpp::Core::~Core() {
     unload();
 }
 
+bool lrcpp::Core::load(const char* path) {
 #define CORE_DLSYM(prop, name) \
     do { \
         void* sym = dynlib_symbol(_handle, name); \
@@ -37,8 +38,6 @@ lrcpp::Core::~Core() {
         memcpy(&prop, &sym, sizeof(prop)); \
     } while (0)
 
-bool lrcpp::Core::load(const char* path)
-{
     _handle = dynlib_open(path);
 
     if (_handle == NULL) {
@@ -76,9 +75,53 @@ bool lrcpp::Core::load(const char* path)
 error:
     dynlib_close(_handle);
     return false;
-}
 
 #undef CORE_DLSYM
+}
+
+
+bool lrcpp::Core::use(CoreFunctions const* functions) {
+#define CORE_DLSYM(name) \
+    do { \
+        if (functions->name == NULL) goto error; \
+        _ ## name = functions->name; \
+    } while (0)
+
+    CORE_DLSYM(init);
+    CORE_DLSYM(deinit);
+    CORE_DLSYM(apiVersion);
+    CORE_DLSYM(getSystemInfo);
+    CORE_DLSYM(getSystemAvInfo);
+    CORE_DLSYM(setEnvironment);
+    CORE_DLSYM(setVideoRefresh);
+    CORE_DLSYM(setAudioSample);
+    CORE_DLSYM(setAudioSampleBatch);
+    CORE_DLSYM(setInputPoll);
+    CORE_DLSYM(setInputState);
+    CORE_DLSYM(setControllerPortDevice);
+    CORE_DLSYM(reset);
+    CORE_DLSYM(run);
+    CORE_DLSYM(serializeSize);
+    CORE_DLSYM(serialize);
+    CORE_DLSYM(unserialize);
+    CORE_DLSYM(cheatReset);
+    CORE_DLSYM(cheatSet);
+    CORE_DLSYM(loadGame);
+    CORE_DLSYM(loadGameSpecial);
+    CORE_DLSYM(unloadGame);
+    CORE_DLSYM(getRegion);
+    CORE_DLSYM(getMemoryData);
+    CORE_DLSYM(getMemorySize);
+
+    return true;
+
+error:
+    dynlib_close(_handle);
+    return false;
+
+#undef CORE_DLSYM
+}
+
 
 void lrcpp::Core::unload() {
     if (_handle != nullptr) {

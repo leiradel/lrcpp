@@ -2,15 +2,17 @@
 
 // Generated with FSM compiler, https://github.com/leiradel/luamods/ddlt
 
-//#line 25 "/home/leiradel/Develop/lrcpp/etc/CoreFsm.fsm"
+//#line 25 "/home/leiradel/Develop/circle/sample/libretro/lrcpp/etc/CoreFsm.fsm"
 
     #include <lrcpp/libretro.h>
 
     namespace lrcpp {
         class Core;
+        class CoreFunctions;
     }
 
     typedef lrcpp::Core Core;
+    typedef lrcpp::CoreFunctions const* const_core_functions_ptr_t;
     typedef size_t* size_ptr_t;
     typedef char const* const_char_ptr_t;
     typedef retro_game_info const* const_retro_game_info_ptr_t;
@@ -72,6 +74,7 @@ public:
     bool unload();
     bool unloadGame();
     bool unserialize(const_void_ptr_t data, size_t size);
+    bool use(const_core_functions_ptr_t functions);
 
 protected:
     bool before() const;
