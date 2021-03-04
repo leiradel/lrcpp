@@ -10,6 +10,9 @@ namespace lrcpp {
 
     class Frontend final {
     public:
+        Frontend(Frontend const&) = delete;
+        Frontend& operator=(Frontend const&) = delete;
+
         ~Frontend();
 
         static Frontend& getInstance();
