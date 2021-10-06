@@ -3,15 +3,18 @@
 #include <string.h>
 
 #ifdef WIN32
-    #include "realpath.c"
-    #define PATH_MAX _MAX_PATH
+    #define _MAX_PATH PATH_MAX
+
+    extern "C" {
+        #include "realpath.c"
+    }
 #endif
 
 Config::Config() {
     reset();
 }
 
-bool Config::init(char const* configPath, lrcpp::Logger* logger) {
+bool Config::init(char const* configPath, char const* contentPath, char const* corePath, lrcpp::Logger* logger) {
     reset();
 
     _logger = logger;
@@ -20,21 +23,11 @@ bool Config::init(char const* configPath, lrcpp::Logger* logger) {
         return false;
     }
 
-    std::string rootDir;
-
-    if (!getOption("lrcpp_root_dir", &rootDir)) {
+    if (!getDirectory(contentPath, &_contentDir)) {
         return false;
     }
 
-    _systemDir = rootDir + "/system/";
-    _assetsDir = rootDir + "/assets/";
-    _savesDir = rootDir + "/saves/";
-
-    if (!getOption("lrcpp_core_path", &_corePath)) {
-        return false;
-    }
-
-    if (!initCoreDir(_corePath, &_coreDir)) {
+    if (!getDirectory(corePath, &_coreDir)) {
         return false;
     }
 
@@ -64,7 +57,7 @@ bool Config::setPerformanceLevel(unsigned level) {
 }
 
 bool Config::getSystemDirectory(char const** directory) {
-    *directory = _systemDir.c_str();
+    *directory = _coreDir.c_str();
     return true;
 }
 
@@ -99,12 +92,12 @@ bool Config::getLibretroPath(char const** path) {
 }
 
 bool Config::getCoreAssetsDirectory(char const** directory) {
-    *directory = _assetsDir.c_str();
+    *directory = _coreDir.c_str();
     return true;
 }
 
 bool Config::getSaveDirectory(char const** directory) {
-    *directory = _savesDir.c_str();
+    *directory = _contentDir.c_str();
     return true;
 }
 
@@ -185,8 +178,45 @@ bool Config::setCoreOptionsDisplay(retro_core_option_display const* display) {
     return false;
 }
 
+bool Config::getDirectory(char const* path, std::string* directory) {
+    char real[PATH_MAX];
+
+    if (realpath(path, real) == nullptr) {
+        _logger->error("Could not get the real path for \"%s\": %s", path, strerror(errno));
+        return false;
+    }
+
+    _logger->info("Real path for \"%s\" is \"%s\"", path, real);
+
+    char* const slash = strrchr(real, '/');
+    char* const bslash = strrchr(real, '\\');
+
+    if (slash == nullptr && bslash == nullptr) {
+        _logger->error("Real path for \"%s\" doesn't have slashes: \"%s\"", path, real);
+        return false;
+    }
+
+    if (slash != nullptr && bslash != nullptr) {
+        if (slash > bslash) {
+            *slash = 0;
+        }
+        else {
+            *bslash = 0;
+        }
+    }
+    else if (slash != nullptr) {
+        *slash = 0;
+    }
+    else if (bslash != nullptr) {
+        *bslash = 0;
+    }
+
+    *directory = std::string(real);
+    return true;
+}
+
 bool Config::initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options) {
-    _logger->info("Reading settings from \"%s\"", iniPath.c_str());
+    _logger->info("Reading settings from \"%s\"", configPath);
 
     FILE* const file = fopen(configPath, "r");
 
@@ -281,37 +311,11 @@ bool Config::initOptions(char const* configPath, std::unordered_map<std::string,
     return true;
 }
 
-bool Config::initCoreDir(std::string const& corePath, std::string* coreDir) {
-#if 0
-    char* const slash = strrchr(path, '/');
-    char* const bslash = strrchr(path, '\\');
-
-    if (slash != nullptr && bslash != nullptr) {
-        (slash > bslash ? slash : bslash)[1] = 0;
-    }
-    else if (slash != nullptr) {
-        slash[1] = 0;
-    }
-    else if (bslash != nullptr) {
-        bslash[1] = 0;
-    }
-    else {
-        _logger->error("Invalid core path \"%s\"", corePath.c_str());
-        return false;
-    }
-
-    *coreDir = path;
-#endif
-    return true;
-}
-
 void Config::reset() {
     _logger = nullptr;
 
-    _systemDir.clear();
+    _contentDir.clear();
     _coreDir.clear();
-    _assetsDir.clear();
-    _savesDir.clear();
     _supportsNoGame = false;
 
     _options.clear();

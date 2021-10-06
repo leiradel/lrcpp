@@ -10,7 +10,7 @@ class Config : lrcpp::Config {
 public:
     Config();
 
-    bool init(char const* configPath, lrcpp::Logger* logger);
+    bool init(char const* configPath, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
     void destroy();
 
     bool getOption(char const* key, char const** value) const;
@@ -38,16 +38,13 @@ public:
     virtual bool setCoreOptionsDisplay(retro_core_option_display const* display) override;
 
 protected:
+    bool getDirectory(char const* path, std::string* directory);
     bool initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options);
-    bool initCoreDir(std::string const& corePath, std::string* coreDir);
     void reset();
 
     lrcpp::Logger* _logger;
 
-    std::string _systemDir;
-    std::string _assetsDir;
-    std::string _savesDir;
-    std::string _corePath;
+    std::string _contentDir;
     std::string _coreDir;
     bool _supportsNoGame;
 
