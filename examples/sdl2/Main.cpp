@@ -1,6 +1,4 @@
-#include "Config.h"
-#include "Logger.h"
-#include "Video.h"
+#include "Player.h"
 
 #include <string.h>
 #include <errno.h>
@@ -17,9 +15,9 @@ static void Usage(FILE* out) {
 }
 
 int main(int argc, char const* argv[]) {
-    char const* corePathArg = nullptr;
-    char const* configPathArg = nullptr;
-    char const* contentPathArg = nullptr;
+    char const* corePath = nullptr;
+    char const* configPath = nullptr;
+    char const* contentPath = nullptr;
     retro_log_level level = RETRO_LOG_WARN;
 
     for (int i = 1; i < argc; i++) {
@@ -29,12 +27,12 @@ int main(int argc, char const* argv[]) {
                 return EXIT_FAILURE;
             }
 
-            if (corePathArg != nullptr) {
+            if (corePath != nullptr) {
                 fprintf(stderr, "Error: core path already specified\n");
                 return EXIT_FAILURE;
             }
 
-            corePathArg = argv[i];
+            corePath = argv[i];
         }
         else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--config") == 0) {
             if (++i == argc) {
@@ -42,12 +40,12 @@ int main(int argc, char const* argv[]) {
                 return EXIT_FAILURE;
             }
 
-            if (configPathArg != nullptr) {
+            if (configPath != nullptr) {
                 fprintf(stderr, "Error: configuration path already specified\n");
                 return EXIT_FAILURE;
             }
 
-            configPathArg = argv[i];
+            configPath = argv[i];
         }
         else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
             if (level == RETRO_LOG_WARN) {
@@ -66,49 +64,28 @@ int main(int argc, char const* argv[]) {
             return EXIT_SUCCESS;
         }
         else {
-            if (contentPathArg != nullptr) {
+            if (contentPath != nullptr) {
                 fprintf(stderr, "Error: content path already specified\n");
                 return EXIT_FAILURE;
             }
 
-            contentPathArg = argv[i];
+            contentPath = argv[i];
         }
     }
 
-    if (corePathArg == nullptr || contentPathArg == nullptr) {
+    if (corePath == nullptr || contentPath == nullptr) {
         Usage(stderr);
         return EXIT_FAILURE;
     }
 
-    Logger logger;
+    Player player;
 
-    if (!logger.init()) {
-        fprintf(stderr, "Error: could not initialize the logger");
+    if (!player.init(configPath, corePath, contentPath, level)) {
         return EXIT_FAILURE;
     }
 
-    logger.setLevel(level);
-
-    Config config;
-
-    if (!config.init(configPathArg, contentPathArg, corePathArg, &logger)) {
-        fprintf(stderr, "Error: could not initialize the configuration component");
-        logger.destroy();
-        return EXIT_FAILURE;
-    }
-
-    Video video;
-
-    if (!video.init(&logger)) {
-        fprintf(stderr, "Error: could not initialize the video component");
-        config.destroy();
-        logger.destroy();
-        return EXIT_FAILURE;
-    }
-
-    video.destroy();
-    config.destroy();
-    logger.destroy();
+    player.run();
+    player.destroy();
 
     return EXIT_SUCCESS;
 }
