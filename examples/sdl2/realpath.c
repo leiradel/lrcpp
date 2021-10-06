@@ -24,8 +24,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-_CRTIMP char __cdecl
-*realpath( const char *__restrict__ name, char *__restrict__ resolved )
+char* realpath( const char *__restrict__ name, char *__restrict__ resolved )
 {
   char *retname = NULL;  /* we will return this, if we fail */
 
@@ -64,7 +63,7 @@ _CRTIMP char __cdecl
        * `malloc' failure case.
        */
 
-      retname = malloc( _MAX_PATH );
+      retname = (char*)malloc( _MAX_PATH );
     }
 
     /* By now, we should have a valid buffer.

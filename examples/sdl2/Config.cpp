@@ -11,29 +11,50 @@ Config::Config() {
     reset();
 }
 
-bool Config::init(std::string const& iniPath, std::string const& rootDir, std::string const& corePath, lrcpp::Logger* logger) {
+bool Config::init(char const* configPath, lrcpp::Logger* logger) {
     reset();
 
     _logger = logger;
 
-    if (!initOptions(iniPath)) {
+    if (configPath != nullptr && !initOptions(configPath, &_options)) {
         return false;
     }
 
-    _systemDir = rootDir + "/libretro/system/";
+    std::string rootDir;
 
-    if (!initCoreDir(corePath)) {
+    if (!getOption("lrcpp_root_dir", &rootDir)) {
         return false;
     }
 
-    _assetsDir = rootDir + "/libretro/assets/";
-    _savesDir = rootDir + "/libretro/saves/";
+    _systemDir = rootDir + "/system/";
+    _assetsDir = rootDir + "/assets/";
+    _savesDir = rootDir + "/saves/";
+
+    if (!getOption("lrcpp_core_path", &_corePath)) {
+        return false;
+    }
+
+    if (!initCoreDir(_corePath, &_coreDir)) {
+        return false;
+    }
 
     return true;
 }
 
 void Config::destroy() {
     reset();
+}
+
+bool Config::getOption(char const* key, char const** value) const {
+    auto const it = _options.find(key);
+
+    if (it == _options.end()) {
+        _logger->error("Could't find \"%s\" in the configuration file", key);
+        return false;
+    }
+
+    *value = it->second.c_str();
+    return true;
 }
 
 bool Config::setPerformanceLevel(unsigned level) {
@@ -164,45 +185,15 @@ bool Config::setCoreOptionsDisplay(retro_core_option_display const* display) {
     return false;
 }
 
-bool Config::initCoreDir(std::string const& corePath) {
-    char path[PATH_MAX];
+bool Config::initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options) {
+    _logger->info("Reading settings from \"%s\"", iniPath.c_str());
 
-    if (realpath(corePath.c_str(), path) == NULL) {
-        _logger->error("Error getting the absolute path to \"%s\": %s", corePath.c_str(), strerror(errno));
-        destroy();
-        return false;
-    }
-
-    char* const slash = strrchr(path, '/');
-    char* const bslash = strrchr(path, '\\');
-
-    if (slash != nullptr && bslash != nullptr) {
-        (slash > bslash ? slash : bslash)[1] = 0;
-    }
-    else if (slash != nullptr) {
-        slash[1] = 0;
-    }
-    else if (bslash != nullptr) {
-        bslash[1] = 0;
-    }
-    else {
-        _logger->error("Invalid core path \"%s\"", corePath.c_str());
-        return false;
-    }
-
-    _coreDir = path;
-    return true;
-}
-
-bool Config::initOptions(std::string const& settingsPath) {
-    FILE* const file = fopen(settingsPath.c_str(), "r");
+    FILE* const file = fopen(configPath, "r");
 
     if (file == nullptr) {
-        _logger->error("Error opening \"%s\" for reading: %s", settingsPath.c_str(), strerror(errno));
+        _logger->error("Error opening \"%s\" for reading: %s", configPath, strerror(errno));
         return false;
     }
-
-    _logger->info("Reading settings from \"%s\"", settingsPath.c_str());
 
     char line[1024];
 
@@ -270,13 +261,13 @@ bool Config::initOptions(std::string const& settingsPath) {
             return false;
         }
 
-        if (_options.find(key) != _options.end()) {
+        if (options->find(key) != options->end()) {
             _logger->warn("Duplicated key \"%s\"", key.c_str());
         }
         else {
             const std::string value(valueBegin, valueEnd - valueBegin);
             _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
-            _options.emplace(key, value);
+            options->emplace(key, value);
         }
     }
 
@@ -287,6 +278,30 @@ bool Config::initOptions(std::string const& settingsPath) {
     }
 
     fclose(file);
+    return true;
+}
+
+bool Config::initCoreDir(std::string const& corePath, std::string* coreDir) {
+#if 0
+    char* const slash = strrchr(path, '/');
+    char* const bslash = strrchr(path, '\\');
+
+    if (slash != nullptr && bslash != nullptr) {
+        (slash > bslash ? slash : bslash)[1] = 0;
+    }
+    else if (slash != nullptr) {
+        slash[1] = 0;
+    }
+    else if (bslash != nullptr) {
+        bslash[1] = 0;
+    }
+    else {
+        _logger->error("Invalid core path \"%s\"", corePath.c_str());
+        return false;
+    }
+
+    *coreDir = path;
+#endif
     return true;
 }
 
