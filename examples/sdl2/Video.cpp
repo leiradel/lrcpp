@@ -7,10 +7,14 @@ Video::Video() {
 bool Video::init(lrcpp::Logger* logger) {
     reset();
 
+    _logger = logger;
+
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
         logger->error("SDL_InitSubSystem(SDL_INIT_VIDEO) failed: %s", SDL_GetError());
         return false;
     }
+
+    _logger->info("Video subsystem initialized");
 
     _window = SDL_CreateWindow("lrcpp example with SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                800, 600, SDL_WINDOW_RESIZABLE);
@@ -21,6 +25,8 @@ bool Video::init(lrcpp::Logger* logger) {
         return false;
     }
 
+    _logger->info("Window created");
+
     _renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
 
     if (_renderer == nullptr) {
@@ -29,7 +35,7 @@ bool Video::init(lrcpp::Logger* logger) {
         return false;
     }
 
-    _logger = logger;
+    _logger->info("Renderer created");
     return true;
 }
 
@@ -48,6 +54,12 @@ void Video::destroy() {
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     reset();
+}
+
+void Video::clear() {
+    if (SDL_RenderClear(_renderer) != 0) {
+        _logger->error("SDL_RenderClear() failed: %s", SDL_GetError());
+    }
 }
 
 void Video::present() {
@@ -73,9 +85,14 @@ void Video::present() {
     dest.w = width;
     dest.h = height;
 
+    _logger->debug("Rendering %d x %d texture to %f x %f window at (%f, %f)", src.w, src.h, dest.w, dest.h, dest.x, dest.y);
+
     if (SDL_RenderCopyF(_renderer, _texture, &src, &dest) != 0) {
         _logger->error("SDL_RenderCopyF() failed: %s", SDL_GetError());
     }
+
+    _logger->debug("Presenting rendered framebuffer");
+    SDL_RenderPresent(_renderer);
 }
 
 bool Video::setRotation(unsigned rotation) {
@@ -158,7 +175,9 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
         case RETRO_PIXEL_FORMAT_XRGB8888: format = SDL_PIXELFORMAT_RGB888; break;
         case RETRO_PIXEL_FORMAT_RGB565: format = SDL_PIXELFORMAT_RGB565; break;
 
-        default: return false;
+        default:
+            _logger->error("Unknown pixel format, cannot create texture");
+            return false;
     }
 
     _texture = SDL_CreateTexture(_renderer, format, SDL_TEXTUREACCESS_STREAMING, geometry->max_width, geometry->max_height);
@@ -223,11 +242,22 @@ void Video::refresh(void const* data, unsigned width, unsigned height, size_t pi
     void* texturePixels = nullptr;
     int texturePitch = 0;
 
+    _logger->debug("Refreshing %d x %d texture", rect.w, rect.h);
+
     if (SDL_LockTexture(_texture, &rect, &texturePixels, &texturePitch) != 0) {
+        _logger->error("SDL_LockTexture() failed: %s", SDL_GetError());
         return;
     }
 
-    SDL_UpdateTexture(_texture, &rect, data, pitch);
+    auto source = static_cast<uint8_t const*>(data);
+    auto dest = static_cast<uint8_t*>(texturePixels);
+
+    for (unsigned y = 0; y < height; y++) {
+        memcpy(dest, source, pitch);
+        source += pitch;
+        dest += texturePitch;
+    }
+
     SDL_UnlockTexture(_texture);
 }
 

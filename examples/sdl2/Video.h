@@ -2,13 +2,14 @@
 
 #include <SDL2/SDL.h>
 
-class Video : lrcpp::Video {
+class Video : public lrcpp::Video {
 public:
     Video();
 
     bool init(lrcpp::Logger* logger);
     void destroy();
 
+    void clear();
     void present();
 
     // lrcpp::Video
