@@ -11,6 +11,7 @@ public:
 
     void setLevel(retro_log_level level);
 
+    // lrcpp::Logger
     virtual void vprintf(retro_log_level level, char const* format, va_list args) override;
 
 protected:

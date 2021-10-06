@@ -39,7 +39,7 @@ void Logger::sdlLog(void* userdata, int category, SDL_LogPriority priority, char
         default: level = "?????"; break;
     }
 
-    fprintf(stderr, "[%s] %s", level, message);
+    fprintf(stderr, "[%s] %s\n", level, message);
 }
 
 SDL_LogPriority Logger::levelToPriority(retro_log_level level) {
