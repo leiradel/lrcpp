@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <string>
 
-class Config : lrcpp::Config {
+class Config : public lrcpp::Config {
 public:
     Config();
 

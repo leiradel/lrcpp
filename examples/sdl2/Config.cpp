@@ -27,10 +27,13 @@ bool Config::init(char const* configPath, char const* contentPath, char const* c
         return false;
     }
 
+    _logger->info("Content directory is \"%s\"", _contentDir.c_str());
+
     if (!getDirectory(corePath, &_coreDir)) {
         return false;
     }
 
+    _logger->info("Core directory is \"%s\"", _coreDir.c_str());
     return true;
 }
 
@@ -47,6 +50,8 @@ bool Config::getOption(char const* key, char const** value) const {
     }
 
     *value = it->second.c_str();
+
+    _logger->debug("Found value \"%s\" for key \"%s\"", *value, key);
     return true;
 }
 
@@ -186,8 +191,6 @@ bool Config::getDirectory(char const* path, std::string* directory) {
         return false;
     }
 
-    _logger->info("Real path for \"%s\" is \"%s\"", path, real);
-
     char* const slash = strrchr(real, '/');
     char* const bslash = strrchr(real, '\\');
 
@@ -212,6 +215,8 @@ bool Config::getDirectory(char const* path, std::string* directory) {
     }
 
     *directory = std::string(real);
+
+    _logger->debug("Real path for \"%s\" is \"%s\"", path, real);
     return true;
 }
 
