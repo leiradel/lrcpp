@@ -56,6 +56,10 @@ void Video::destroy() {
     reset();
 }
 
+double Video::getCoreFps() const {
+    return _coreFps;
+}
+
 void Video::clear() {
     if (SDL_RenderClear(_renderer) != 0) {
         _logger->error("SDL_RenderClear() failed: %s", SDL_GetError());

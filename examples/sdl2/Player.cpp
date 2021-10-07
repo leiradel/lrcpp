@@ -123,7 +123,10 @@ void Player::destroy() {
 }
 
 void Player::run() {
+    uint64_t const coreUsPerFrame = 1000000 / _video.getCoreFps();
+    uint64_t nextFrameTime = Perf::getTimeUs() + coreUsPerFrame;
     bool done = false;
+
     auto& frontend = lrcpp::Frontend::getInstance();
 
     do {
@@ -137,11 +140,19 @@ void Player::run() {
             }
         }
 
-        _video.clear();
-        frontend.run();
-        _video.present();
+        if (Perf::getTimeUs() >= nextFrameTime) {
+            nextFrameTime += coreUsPerFrame;
 
-        _logger.debug("Ran one frame");
+            _audio.clear();
+            _video.clear();
+            frontend.run();
+            _audio.present();
+            _video.present();
+
+            _logger.debug("Ran one frame");
+        }
+
+        // TODO pause for less time for greater granularity
         SDL_Delay(1);
     }
     while (!done);

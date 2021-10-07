@@ -21,7 +21,7 @@ LDFLAGS+=-ldl -lSDL2 -lSDL2main
 	g++ $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 OBJECTS=\
-	Config.o dynlib.o Logger.o Main.o Perf.o Player.o Video.o \
+	Audio.o Config.o dynlib.o Logger.o Main.o Perf.o Player.o Video.o \
 	../../src/Components.o ../../src/Core.o ../../src/CoreFsm.o ../../src/Frontend.o
 
 all: sdl2lrcpp

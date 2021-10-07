@@ -1,3 +1,5 @@
+#pragma once
+
 #include <lrcpp/Components.h>
 
 #include <SDL2/SDL.h>
@@ -8,6 +10,8 @@ public:
 
     bool init(lrcpp::Logger* logger);
     void destroy();
+
+    double getCoreFps() const;
 
     void clear();
     void present();
