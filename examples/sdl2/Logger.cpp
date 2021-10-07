@@ -13,6 +13,7 @@ void Logger::destroy() {}
 
 void Logger::setLevel(retro_log_level level) {
     _priority = levelToPriority(level);
+    SDL_LogSetAllPriority(_priority);
 }
 
 void Logger::vprintf(retro_log_level level, char const* format, va_list args) {
@@ -20,11 +21,7 @@ void Logger::vprintf(retro_log_level level, char const* format, va_list args) {
 }
 
 void Logger::sdlLog(void* userdata, int category, SDL_LogPriority priority, char const* message) {
-    auto self = static_cast<Logger*>(userdata);
-
-    if (priority < self->_priority) {
-        return;
-    }
+    (void)userdata;
 
     char const* level = nullptr;
 
