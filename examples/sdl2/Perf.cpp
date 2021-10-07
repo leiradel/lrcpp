@@ -1,5 +1,6 @@
 #include "Perf.h"
 
+#include <SDL2/SDL.h>
 #include <chrono>
 
 bool Perf::init() {
@@ -23,8 +24,18 @@ retro_time_t Perf::getTimeUsec() {
 }
 
 uint64_t Perf::getCpuFeatures() {
-    // TODO actually probe the CPU for features
-    return 0;
+    // TODO detect other CPU features.
+    uint64_t features = 0;
+
+    features |= SDL_HasAVX() ? RETRO_SIMD_AVX : 0;
+    features |= SDL_HasAVX2() ? RETRO_SIMD_AVX2 : 0;
+    features |= SDL_HasMMX() ? RETRO_SIMD_MMX : 0;
+    features |= SDL_HasSSE() ? RETRO_SIMD_SSE : 0;
+    features |= SDL_HasSSE2() ? RETRO_SIMD_SSE2 : 0;
+    features |= SDL_HasSSE3() ? RETRO_SIMD_SSE3 : 0;
+    features |= SDL_HasSSE42() ? RETRO_SIMD_SSE42 : 0;
+
+    return features;
 }
 
 retro_perf_tick_t Perf::getCounter() {
