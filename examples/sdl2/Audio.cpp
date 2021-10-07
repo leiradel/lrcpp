@@ -45,6 +45,10 @@ void Audio::present() {
 }
 
 bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
+    if (info->timing.sample_rate == _coreSampleRate) {
+        return true;
+    }
+
     _coreSampleRate = info->timing.sample_rate;
     _logger->info("Core sample rate set to %f", _coreSampleRate);
 
