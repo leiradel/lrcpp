@@ -9,6 +9,9 @@ public:
     bool init();
     void destroy();
 
+    static uint64_t getTimeUs();
+    static uint64_t getTimeNs();
+
     // lrcpp::Perf
     virtual retro_time_t getTimeUsec() override;
     virtual uint64_t getCpuFeatures() override;
