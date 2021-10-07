@@ -41,7 +41,7 @@ void Audio::present() {
         return;
     }
 
-    _logger->debug("%zu audio samples presented, %u bytes in output queue", _samples.size(), SDL_GetQueuedAudioSize(_audioDev));
+    _logger->debug("%zu audio samples queued, %u bytes in output queue", _samples.size(), SDL_GetQueuedAudioSize(_audioDev));
 }
 
 bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
