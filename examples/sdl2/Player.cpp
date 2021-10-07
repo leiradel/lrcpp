@@ -12,16 +12,26 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
 
     _logger.setLevel(level);
 
+    if (SDL_InitSubSystem(SDL_INIT_EVENTS) != 0) {
+        _logger.error("SDL_InitSubSystem(SDL_INIT_EVENTS) failed: %s", SDL_GetError());
+        SDL_Quit();
+        return false;
+    }
+
     if (!_perf.init()) {
         _logger.error("Could not initialize the perf component");
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
     if (!_config.init(configPath, contentPath, corePath, &_logger)) {
         _logger.error("Could not initialize the configuration component");
         _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
@@ -29,7 +39,9 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
         _logger.error("Could not initialize the audio component");
         _config.destroy();
         _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
@@ -38,7 +50,21 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
         _audio.destroy();
         _config.destroy();
         _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _logger.destroy();
+        SDL_Quit();
+        return false;
+    }
+
+    if (!_input.init(&_logger)) {
+        _logger.error("Could not initialize the input component");
+        _video.destroy();
+        _audio.destroy();
+        _config.destroy();
+        _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
@@ -48,15 +74,18 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
         _logger.error("Could not set components in the frontend");
 
 error:
+        _input.destroy();
         _video.destroy();
         _audio.destroy();
         _config.destroy();
         _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
-    if (!frontend.setPerf(&_perf) || !frontend.setAudio(&_audio)) {
+    if (!frontend.setPerf(&_perf) || !frontend.setAudio(&_audio) || !frontend.setInput(&_input)) {
         _logger.error("Could not set components in the frontend");
         goto error;
     }
@@ -115,11 +144,15 @@ void Player::destroy() {
     frontend.unloadGame();
     frontend.unload();
 
+    _input.destroy();
     _video.destroy();
     _audio.destroy();
     _config.destroy();
     _perf.destroy();
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
     _logger.destroy();
+
+    SDL_Quit();
 }
 
 void Player::run() {
@@ -137,6 +170,9 @@ void Player::run() {
 
             if (event.type == SDL_QUIT) {
                 done = true;
+            }
+            else {
+                _input.process(&event);
             }
         }
 

@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "Audio.h"
 #include "Video.h"
+#include "Input.h"
 
 class Player {
 public:
@@ -21,4 +22,5 @@ protected:
     Config _config;
     Audio _audio;
     Video _video;
+    Input _input;
 };
