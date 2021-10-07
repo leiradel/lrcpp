@@ -25,8 +25,17 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
         return false;
     }
 
+    if (!_audio.init(&_logger)) {
+        _logger.error("Could not initialize the audio component");
+        _config.destroy();
+        _perf.destroy();
+        _logger.destroy();
+        return false;
+    }
+
     if (!_video.init(&_logger)) {
         _logger.error("Could not initialize the video component");
+        _audio.destroy();
         _config.destroy();
         _perf.destroy();
         _logger.destroy();
@@ -40,13 +49,14 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
 
 error:
         _video.destroy();
+        _audio.destroy();
         _config.destroy();
         _perf.destroy();
         _logger.destroy();
         return false;
     }
 
-    if (!frontend.setPerf(&_perf)) {
+    if (!frontend.setPerf(&_perf) || !frontend.setAudio(&_audio)) {
         _logger.error("Could not set components in the frontend");
         goto error;
     }
@@ -106,6 +116,7 @@ void Player::destroy() {
     frontend.unload();
 
     _video.destroy();
+    _audio.destroy();
     _config.destroy();
     _perf.destroy();
     _logger.destroy();
