@@ -230,7 +230,7 @@ bool Video::getPreferredHwRender(unsigned* preferred) {
 
 void Video::refresh(void const* data, unsigned width, unsigned height, size_t pitch) {
     if (data == nullptr) {
-        // Duplicate frame.
+        _logger->debug("Last frame duplicated");
         return;
     }
 
