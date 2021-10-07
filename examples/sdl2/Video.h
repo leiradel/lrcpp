@@ -51,4 +51,6 @@ protected:
     unsigned _textureHeight;
     unsigned _usedWidth;
     unsigned _usedHeight;
+
+    void* _swFramebuffer;
 };
