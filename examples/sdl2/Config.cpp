@@ -1,13 +1,12 @@
 #include "Config.h"
 
 #include <string.h>
+#include <sys/stat.h>
 
-#ifdef WIN32
-    #define _MAX_PATH PATH_MAX
-
-    extern "C" {
-        #include "realpath.c"
-    }
+#ifdef _WIN32
+#define SEPARATOR '\\'
+#else
+#define SEPARATOR '/'
 #endif
 
 Config::Config() {
@@ -184,39 +183,46 @@ bool Config::setCoreOptionsDisplay(retro_core_option_display const* display) {
 }
 
 bool Config::getDirectory(char const* path, std::string* directory) {
-    char real[PATH_MAX];
+    size_t const length = strlen(path);
 
-    if (realpath(path, real) == nullptr) {
-        _logger->error("Could not get the real path for \"%s\": %s", path, strerror(errno));
+    if (length == 0) {
+        _logger->error("Cannot get directory from an empty path");
         return false;
     }
 
-    char* const slash = strrchr(real, '/');
-    char* const bslash = strrchr(real, '\\');
+    struct stat statbuf;
 
-    if (slash == nullptr && bslash == nullptr) {
-        _logger->error("Real path for \"%s\" doesn't have slashes: \"%s\"", path, real);
+    if (stat(path, &statbuf) != 0) {
+        _logger->error("Error info for path \"%s\": %s", path, strerror(errno));
         return false;
     }
 
-    if (slash != nullptr && bslash != nullptr) {
-        if (slash > bslash) {
-            *slash = 0;
-        }
-        else {
-            *bslash = 0;
+    if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
+        // It's a directory.
+        *directory = path;
+
+        if (path[length - 1] != SEPARATOR) {
+            directory->append(1, SEPARATOR);
         }
     }
-    else if (slash != nullptr) {
-        *slash = 0;
-    }
-    else if (bslash != nullptr) {
-        *bslash = 0;
+    else {
+        bool separator = false;
+
+        // Assume it's a file.
+        for (size_t i = length - 1; i > 0; i--) {
+            if (path[i] == SEPARATOR) {
+                *directory = std::string(path, i + 1);
+                separator = true;
+                break;
+            }
+        }
+
+        if (!separator) {
+            *directory = ".";
+        }
     }
 
-    *directory = std::string(real);
-
-    _logger->debug("Real path for \"%s\" is \"%s\"", path, real);
+    _logger->debug("Directory for \"%s\" is \"%s\"", path, directory->c_str());
     return true;
 }
 
