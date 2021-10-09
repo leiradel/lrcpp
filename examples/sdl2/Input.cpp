@@ -580,6 +580,11 @@ unsigned Input::keycodeToLibretro(SDL_Keycode code) {
 }
 
 Input::Gamepad::Gamepad() {
+    deviceIndex = 0;
+    instanceId = 0;
+    controller = nullptr;
+    joystick = nullptr;
+
     lastDir[0] = 0; lastDir[1] = 0; lastDir[2] = 0;
     lastDir[3] = 0; lastDir[4] = 0; lastDir[5] = 0;
 
