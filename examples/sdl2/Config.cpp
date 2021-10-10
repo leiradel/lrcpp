@@ -71,6 +71,22 @@ bool Config::getOption(char const* key, unsigned long* value) const {
         return false;
     }
 
+    errno = 0;
+    char* endptr = nullptr;
+    unsigned long const val = strtoul(valueStr, &endptr, 0);
+
+    if (*valueStr == 0 || *endptr != 0) {
+        errno = EINVAL;
+    }
+
+    if (errno != 0) {
+        _logger->error("Could not convert \"%s\" to a number: %s", strerror(errno));
+        return false;
+    }
+
+    *value = val;
+    return true;
+}
     char* endptr = nullptr;
     errno = 0;
     *value = strtoul(valueStr, &endptr, 0);
