@@ -1,6 +1,6 @@
 #include "Perf.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <chrono>
 
 bool Perf::init() {

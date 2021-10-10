@@ -1,18 +1,7 @@
-ifeq ($(shell uname -s),)
-else ifneq ($(findstring MINGW,$(shell uname -a)),)
-    CFLAGS=-mwin32
-    CXXFLAGS=-mwin32
-else ifneq ($(findstring MSYS,$(shell uname -a)),)
-    CFLAGS=-mwin32 -I/mingw64/include
-    CXXFLAGS=-mwin32 -I/mingw64/include
-    LDFLAGS=-L/mingw64/lib
-else ifneq ($(findstring win,$(shell uname -a)),)
-endif
-
-INCLUDES+=-I../../include -I.
-CFLAGS+=-O2 -std=c99 -Werror -Wall -Wpedantic
-CXXFLAGS+=-O2 -std=c++11 -Werror -Wall -Wpedantic
-LDFLAGS+=-ldl -lSDL2 -lSDL2main
+INCLUDES=-I../../include -I.
+CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic `sdl2-config --cflags`
+CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic `sdl2-config --cflags`
+LDFLAGS=`sdl2-config --libs`
 
 %.o: %.c
 	gcc $(INCLUDES) $(CFLAGS) -c $< -o $@

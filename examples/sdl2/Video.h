@@ -2,7 +2,7 @@
 
 #include <lrcpp/Components.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 class Video : public lrcpp::Video {
 public:

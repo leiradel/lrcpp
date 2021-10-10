@@ -1,6 +1,6 @@
 #include <lrcpp/Components.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 class Logger : public lrcpp::Logger {
 public:
