@@ -3,6 +3,10 @@ CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic `sdl2-config --cflags`
 CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic `sdl2-config --cflags`
 LDFLAGS=`sdl2-config --libs`
 
+ifneq ($(findstring Linux,$(shell uname -a)),)
+	LDFLAGS+=-ldl
+endif
+
 %.o: %.c
 	gcc $(INCLUDES) $(CFLAGS) -c $< -o $@
 
