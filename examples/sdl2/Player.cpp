@@ -55,7 +55,7 @@ bool Player::init(std::vector<std::string> const& configPaths, char const* coreP
         return false;
     }
 
-    if (!_audio.init(&_logger)) {
+    if (!_audio.init(&_config, &_logger)) {
         _logger.error("Could not initialize the audio component");
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);

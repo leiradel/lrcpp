@@ -4,7 +4,7 @@ Audio::Audio() {
     reset();
 }
 
-bool Audio::init(lrcpp::Logger* logger) {
+bool Audio::init(Config* config, lrcpp::Logger* logger) {
     reset();
 
     _logger = logger;
@@ -16,10 +16,16 @@ bool Audio::init(lrcpp::Logger* logger) {
 
     _logger->info("Audio subsystem initialized");
 
-    int const numdrivers = SDL_GetNumAudioDrivers();
+    char const* driverName = nullptr;
 
-    for (int i = 0; i < numdrivers; i++) {
-        _logger->info("Audio driver %d: %s", i, SDL_GetAudioDriver(i));
+    if (config->getOption("sdl2lrcpp_audio_device", &driverName)) {
+        _driverName = driverName;
+    }
+
+    int const count = SDL_GetNumAudioDevices(0);
+
+    for (int i = 0; i < count; i++) {
+        _logger->info("Audio device %d: %s", i, SDL_GetAudioDeviceName(i, 0));
     }
 
     return true;
@@ -75,7 +81,14 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
     desired.callback = nullptr;
     desired.userdata = nullptr;
 
-    _audioDev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, 0);
+    if (_driverName.length() != 0) {
+        _logger->info("Using audio driver %s", _driverName.c_str());
+        _audioDev = SDL_OpenAudioDevice(_driverName.c_str(), 0, &desired, &obtained, 0);
+    }
+    else {
+        _logger->info("Using default audio driver");
+        _audioDev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, 0);
+    }
 
     if (_audioDev == 0) {
         _logger->error("SDL_OpenAudioDevice() failed: %s", SDL_GetError());
@@ -84,7 +97,7 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
 
     SDL_PauseAudioDevice(_audioDev, 0);
 
-    _logger->info("Created audio device %s", SDL_GetCurrentAudioDriver());
+    _logger->info("Opened audio device %s", SDL_GetCurrentAudioDriver());
     _logger->info("    %d Hz", obtained.freq);
     _logger->info("    %u channels", obtained.channels);
     _logger->info("    %u bits per sample", SDL_AUDIO_BITSIZE(obtained.format));
@@ -123,6 +136,7 @@ void Audio::sample(int16_t left, int16_t right) {
 void Audio::reset() {
     _logger = nullptr;
 
+    _driverName.clear();
     _coreSampleRate = 0.0;
     _audioDev = 0;
 

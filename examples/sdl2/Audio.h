@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Config.h"
+
 #include <lrcpp/Components.h>
 
 #include <SDL.h>
 
+#include <string>
 #include <vector>
 #include <stdint.h>
 
@@ -11,7 +14,7 @@ class Audio : public lrcpp::Audio {
 public:
     Audio();
 
-    bool init(lrcpp::Logger* logger);
+    bool init(Config* config, lrcpp::Logger* logger);
     void destroy();
 
     double getCoreSampleRate() const;
@@ -30,6 +33,7 @@ protected:
 
     lrcpp::Logger* _logger;
 
+    std::string _driverName;
     double _coreSampleRate;
     SDL_AudioDeviceID _audioDev;
 
