@@ -48,7 +48,7 @@ extern "C" int Main(int argc, char const* argv[]) {
                 return EXIT_FAILURE;
             }
 
-            configPaths.emplace_back(argv[i]);
+            configPaths.emplace(configPaths.begin(), argv[i]);
             configSpecified = true;
         }
         else if (strcmp(argv[i], "--appendconfig") == 0) {
