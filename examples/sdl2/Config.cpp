@@ -19,7 +19,7 @@ bool Config::init(char const* configPath, char const* contentPath, char const* c
 
     _logger = logger;
 
-    if (configPath != nullptr && !initOptions(configPath, &_options)) {
+    if (configPath != nullptr && !initOptions(configPath)) {
         return false;
     }
 
@@ -235,7 +235,7 @@ bool Config::getDirectory(char const* path, std::string* directory) {
     return true;
 }
 
-bool Config::initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options) {
+bool Config::initOptions(char const* configPath) {
     _logger->info("Reading settings from \"%s\"", configPath);
 
     FILE* const file = fopen(configPath, "r");
@@ -311,13 +311,13 @@ bool Config::initOptions(char const* configPath, std::unordered_map<std::string,
             return false;
         }
 
-        if (options->find(key) != options->end()) {
+        if (_options.find(key) != _options.end()) {
             _logger->warn("Duplicated key \"%s\"", key.c_str());
         }
         else {
             const std::string value(valueBegin, valueEnd - valueBegin);
             _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
-            options->emplace(key, value);
+            _options.emplace(key, value);
         }
     }
 

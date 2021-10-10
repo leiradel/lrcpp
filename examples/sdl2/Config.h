@@ -39,7 +39,7 @@ public:
 
 protected:
     bool getDirectory(char const* path, std::string* directory);
-    bool initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options);
+    bool initOptions(char const* configPath);
     void reset();
 
     lrcpp::Logger* _logger;
