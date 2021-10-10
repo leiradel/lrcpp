@@ -86,6 +86,13 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
     }
 
     _logger->info("Renderer created");
+
+    char const* smooth = nullptr;
+
+    if (config->getOption("video_smooth", &smooth)) {
+        _smooth = strcmp(smooth, "true") == 0;
+    }
+
     return true;
 }
 
@@ -234,6 +241,17 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
             return false;
     }
 
+    if (_smooth) {
+        if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
+            _logger->error("SDL_SetHint() failed: %s", SDL_GetError());
+        }
+    }
+    else {
+        if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0")) {
+            _logger->error("SDL_SetHint() failed: %s", SDL_GetError());
+        }
+    }
+
     _texture = SDL_CreateTexture(_renderer, format, SDL_TEXTUREACCESS_STREAMING, geometry->max_width, geometry->max_height);
     
     if (_texture == nullptr) {
@@ -335,6 +353,7 @@ void Video::reset() {
     _coreFps = 0.0;
     _aspectRatio = 0.0f;
 
+    _smooth = true;
     _texture = nullptr;
     _textureWidth = _textureHeight = 0;
     _usedWidth = _usedHeight = 0;
