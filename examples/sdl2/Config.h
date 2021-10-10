@@ -16,6 +16,7 @@ public:
 
     bool getOption(char const* key, char const** value) const;
     bool getOption(char const* key, unsigned long* value) const;
+    bool getOption(char const* key, bool* value) const;
 
     // lrcpp::Config
     virtual bool setPerformanceLevel(unsigned level) override;

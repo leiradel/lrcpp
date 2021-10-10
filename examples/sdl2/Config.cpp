@@ -80,17 +80,33 @@ bool Config::getOption(char const* key, unsigned long* value) const {
     }
 
     if (errno != 0) {
-        _logger->error("Could not convert \"%s\" to a number: %s", strerror(errno));
+        _logger->error("Could not convert \"%s\" to a number: %s", valueStr, strerror(errno));
         return false;
     }
 
     *value = val;
     return true;
 }
-    char* endptr = nullptr;
-    errno = 0;
-    *value = strtoul(valueStr, &endptr, 0);
-    return *valueStr != 0 && *endptr == 0 && errno == 0;
+
+bool Config::getOption(char const* key, bool* value) const {
+    char const* valueStr = nullptr;
+
+    if (!getOption(key, &valueStr)) {
+        return false;
+    }
+
+    if (strcmp(valueStr, "true") == 0) {
+        *value = true;
+    }
+    else if (strcmp(valueStr, "false") == 0) {
+        *value = false;
+    }
+    else {
+        _logger->error("Could not convert \"%s\" to a boolean", valueStr);
+        return false;
+    }
+
+    return true;
 }
 
 bool Config::setPerformanceLevel(unsigned level) {
