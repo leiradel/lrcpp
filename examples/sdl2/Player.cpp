@@ -65,7 +65,7 @@ bool Player::init(std::vector<std::string> const& configPaths, char const* coreP
         return false;
     }
 
-    if (!_video.init(&_logger)) {
+    if (!_video.init(&_config, &_logger)) {
         _logger.error("Could not initialize the video component");
         _audio.destroy();
         _perf.destroy();

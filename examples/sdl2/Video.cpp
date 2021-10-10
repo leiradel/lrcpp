@@ -4,7 +4,7 @@ Video::Video() {
     reset();
 }
 
-bool Video::init(lrcpp::Logger* logger) {
+bool Video::init(Config* config, lrcpp::Logger* logger) {
     reset();
 
     _logger = logger;
@@ -27,16 +27,23 @@ bool Video::init(lrcpp::Logger* logger) {
 
     _logger->info("Window created");
 
-    int const numdrivers = SDL_GetNumRenderDrivers();
+    int const count = SDL_GetNumRenderDrivers();
+    int renderer = -1;
+    char const* rendererName = nullptr;
+    config->getOption("sdl2lrcpp_video_renderer", &rendererName);
 
-    if (numdrivers > 0) {
-        for (int i = 0; i < numdrivers; i++) {
+    if (count > 0) {
+        for (int i = 0; i < count; i++) {
             SDL_RendererInfo info;
 
             if (SDL_GetRenderDriverInfo(i, &info) != 0) {
                 _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
             }
             else {
+                if (rendererName != nullptr && strcmp(rendererName, info.name) == 0) {
+                    renderer = i;
+                }
+
                 _logger->info("Render driver %d: %s", i, info.name);
 
                 _logger->info(
@@ -56,7 +63,21 @@ bool Video::init(lrcpp::Logger* logger) {
         }
     }
 
-    _renderer = SDL_CreateRenderer(_window, 0, SDL_RENDERER_ACCELERATED);
+    if (renderer == -1) {
+        _logger->info("Using default video renderer");
+    }
+    else {
+        SDL_RendererInfo info;
+
+        if (SDL_GetRenderDriverInfo(renderer, &info) != 0) {
+            _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
+        }
+        else {
+            _logger->info("Using video renderer %s", info.name);
+        }
+    }
+
+    _renderer = SDL_CreateRenderer(_window, renderer, SDL_RENDERER_ACCELERATED);
 
     if (_renderer == nullptr) {
         logger->error("SDL_CreateRenderer() failed: %s", SDL_GetError());
