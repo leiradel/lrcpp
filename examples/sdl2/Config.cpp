@@ -1,6 +1,7 @@
 #include "Config.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 
 #ifdef _WIN32
@@ -149,6 +150,19 @@ bool Config::getOption(char const* key, char const** value) const {
 
     _logger->debug("Found value \"%s\" for key \"%s\"", *value, key);
     return true;
+}
+
+bool Config::getOption(char const* key, unsigned long* value) const {
+    char const* valueStr = nullptr;
+
+    if (!getOption(key, &valueStr)) {
+        return false;
+    }
+
+    char* endptr = nullptr;
+    errno = 0;
+    *value = strtoul(valueStr, &endptr, 0);
+    return *valueStr != 0 && *endptr == 0 && errno == 0;
 }
 
 bool Config::setPerformanceLevel(unsigned level) {
