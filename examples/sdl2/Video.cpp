@@ -154,9 +154,9 @@ bool Video::setPixelFormat(retro_pixel_format format) {
     _pixelFormat = format;
 
     switch (_pixelFormat) {
-        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to 0RGB1555"); break;
-        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RGB888"); break;
-        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RGB565"); break;
+        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_0RGB1555"); break;
+        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_XRGB8888"); break;
+        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_RGB565"); break;
 
         default: _pixelFormat = RETRO_PIXEL_FORMAT_UNKNOWN; return false;
     }
