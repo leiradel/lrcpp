@@ -19,7 +19,7 @@ bool Audio::init(Config* config, lrcpp::Logger* logger) {
     char const* driverName = nullptr;
 
     if (config->getOption("sdl2lrcpp_audio_device", &driverName)) {
-        _driverName = driverName;
+        _deviceName = driverName;
     }
 
     int const count = SDL_GetNumAudioDevices(0);
@@ -81,12 +81,12 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
     desired.callback = nullptr;
     desired.userdata = nullptr;
 
-    if (_driverName.length() != 0) {
-        _logger->info("Using audio driver %s", _driverName.c_str());
-        _audioDev = SDL_OpenAudioDevice(_driverName.c_str(), 0, &desired, &obtained, 0);
+    if (_deviceName.length() != 0) {
+        _logger->info("Using audio device %s", _deviceName.c_str());
+        _audioDev = SDL_OpenAudioDevice(_deviceName.c_str(), 0, &desired, &obtained, 0);
     }
     else {
-        _logger->info("Using default audio driver");
+        _logger->info("Using default audio device");
         _audioDev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, 0);
     }
 
@@ -97,7 +97,7 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
 
     SDL_PauseAudioDevice(_audioDev, 0);
 
-    _logger->info("Opened audio device %s", SDL_GetCurrentAudioDriver());
+    _logger->info("Opened audio driver %s", SDL_GetCurrentAudioDriver());
     _logger->info("    %d Hz", obtained.freq);
     _logger->info("    %u channels", obtained.channels);
     _logger->info("    %u bits per sample", SDL_AUDIO_BITSIZE(obtained.format));
@@ -136,7 +136,7 @@ void Audio::sample(int16_t left, int16_t right) {
 void Audio::reset() {
     _logger = nullptr;
 
-    _driverName.clear();
+    _deviceName.clear();
     _coreSampleRate = 0.0;
     _audioDev = 0;
 

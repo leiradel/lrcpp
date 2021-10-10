@@ -33,7 +33,7 @@ protected:
 
     lrcpp::Logger* _logger;
 
-    std::string _driverName;
+    std::string _deviceName;
     double _coreSampleRate;
     SDL_AudioDeviceID _audioDev;
 
