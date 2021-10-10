@@ -52,7 +52,6 @@ protected:
     double _coreFps;
     float _aspectRatio;
 
-    bool _smooth;
     SDL_Texture* _texture;
     unsigned _textureWidth;
     unsigned _textureHeight;
