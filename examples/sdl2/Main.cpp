@@ -14,7 +14,7 @@ static void Usage(FILE* out) {
     fprintf(out, "<content path>   The path to the content file to use with the core\n");
 }
 
-int main(int argc, char const* argv[]) {
+extern "C" int Main(int argc, char const* argv[]) {
     char const* corePath = nullptr;
     char const* configPath = nullptr;
     char const* contentPath = nullptr;
