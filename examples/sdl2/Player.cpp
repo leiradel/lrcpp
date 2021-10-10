@@ -16,8 +16,16 @@ bool Player::init(std::vector<std::string> const& configPaths,
 
     _logger.setLevel(level);
 
+    if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
+        _logger.error("Could not initialize the configuration component");
+        _logger.destroy();
+        return false;
+    }
+
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) != 0) {
         _logger.error("SDL_InitSubSystem(SDL_INIT_EVENTS) failed: %s", SDL_GetError());
+        _config.destroy();
+        _logger.destroy();
         SDL_Quit();
         return false;
     }
@@ -25,15 +33,7 @@ bool Player::init(std::vector<std::string> const& configPaths,
     if (!_perf.init()) {
         _logger.error("Could not initialize the perf component");
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
-        _logger.destroy();
-        SDL_Quit();
-        return false;
-    }
-
-    if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
-        _logger.error("Could not initialize the configuration component");
-        _perf.destroy();
-        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
         _logger.destroy();
         SDL_Quit();
         return false;
@@ -41,9 +41,9 @@ bool Player::init(std::vector<std::string> const& configPaths,
 
     if (!_audio.init(&_logger)) {
         _logger.error("Could not initialize the audio component");
-        _config.destroy();
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
         _logger.destroy();
         SDL_Quit();
         return false;
@@ -52,9 +52,9 @@ bool Player::init(std::vector<std::string> const& configPaths,
     if (!_video.init(&_logger)) {
         _logger.error("Could not initialize the video component");
         _audio.destroy();
-        _config.destroy();
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
         _logger.destroy();
         SDL_Quit();
         return false;
@@ -64,9 +64,9 @@ bool Player::init(std::vector<std::string> const& configPaths,
         _logger.error("Could not initialize the input component");
         _video.destroy();
         _audio.destroy();
-        _config.destroy();
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
         _logger.destroy();
         SDL_Quit();
         return false;
@@ -81,9 +81,9 @@ error:
         _input.destroy();
         _video.destroy();
         _audio.destroy();
-        _config.destroy();
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
         _logger.destroy();
         SDL_Quit();
         return false;
