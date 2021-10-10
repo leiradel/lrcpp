@@ -5,6 +5,7 @@
 
 #ifdef _WIN32
 #define SEPARATOR '\\'
+#define SEPARATOR2 '/'
 #else
 #define SEPARATOR '/'
 #endif
@@ -201,7 +202,11 @@ bool Config::getDirectory(char const* path, std::string* directory) {
         // It's a directory.
         *directory = path;
 
+#ifdef SEPARATOR2
+        if (path[length - 1] != SEPARATOR && path[length - 1] != SEPARATOR2) {
+#else
         if (path[length - 1] != SEPARATOR) {
+#endif
             directory->append(1, SEPARATOR);
         }
     }
@@ -210,7 +215,11 @@ bool Config::getDirectory(char const* path, std::string* directory) {
 
         // Assume it's a file.
         for (size_t i = length - 1; i > 0; i--) {
+#ifdef SEPARATOR2
+            if (path[i] == SEPARATOR || path[i] == SEPARATOR2) {
+#else
             if (path[i] == SEPARATOR) {
+#endif
                 *directory = std::string(path, i + 1);
                 separator = true;
                 break;
