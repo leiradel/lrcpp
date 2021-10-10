@@ -27,7 +27,36 @@ bool Video::init(lrcpp::Logger* logger) {
 
     _logger->info("Window created");
 
-    _renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
+    int const numdrivers = SDL_GetNumRenderDrivers();
+
+    if (numdrivers > 0) {
+        for (int i = 0; i < numdrivers; i++) {
+            SDL_RendererInfo info;
+
+            if (SDL_GetRenderDriverInfo(i, &info) != 0) {
+                _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
+            }
+            else {
+                _logger->info("Render driver %d: %s", i, info.name);
+
+                _logger->info(
+                    "    flags:%s%s%s%s",
+                    (info.flags & SDL_RENDERER_SOFTWARE) != 0 ? " SDL_RENDERER_SOFTWARE" : "",
+                    (info.flags & SDL_RENDERER_ACCELERATED) != 0 ? " SDL_RENDERER_ACCELERATED" : "",
+                    (info.flags & SDL_RENDERER_PRESENTVSYNC) != 0 ? " SDL_RENDERER_PRESENTVSYNC" : "",
+                    (info.flags & SDL_RENDERER_TARGETTEXTURE) != 0 ? " SDL_RENDERER_TARGETTEXTURE" : ""
+                );
+
+                for (Uint32 j = 0; j < info.num_texture_formats; j++) {
+                    _logger->info("    texture_formats[%u]: %s", j, SDL_GetPixelFormatName(info.texture_formats[j]));
+                }
+
+                _logger->info("    max_texture: %d x %d", info.max_texture_width, info.max_texture_height);
+            }
+        }
+    }
+
+    _renderer = SDL_CreateRenderer(_window, 0, SDL_RENDERER_ACCELERATED);
 
     if (_renderer == nullptr) {
         logger->error("SDL_CreateRenderer() failed: %s", SDL_GetError());
