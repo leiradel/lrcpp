@@ -11,7 +11,7 @@ static void Usage(FILE* out) {
     fprintf(out, "-L, --libretro   The path to the libretro core\n");
     fprintf(out, "-c, --config     The path to the configuration file (optional)\n");
     fprintf(out, "--appendconfig   Paths for additional configuration files, separated by commas\n");
-    fprintf(out, "-v, --verbose    Increase the verboseness one level (up to two levels)\n");
+    fprintf(out, "-v, --verbose    Increase the verboseness\n");
     fprintf(out, "-h, --help       Shows this help screen and exit\n");
     fprintf(out, "<content path>   The path to the content file to use with the core\n");
 }
@@ -21,7 +21,7 @@ extern "C" int Main(int argc, char const* argv[]) {
     std::vector<std::string> configPaths;
     bool configSpecified = false;
     char const* contentPath = nullptr;
-    retro_log_level level = RETRO_LOG_WARN;
+    int verboseness = 0;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-L") == 0 || strcmp(argv[i], "--libretro") == 0) {
@@ -72,16 +72,7 @@ extern "C" int Main(int argc, char const* argv[]) {
             }
         }
         else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
-            if (level == RETRO_LOG_WARN) {
-                level = RETRO_LOG_INFO;
-            }
-            else if (level == RETRO_LOG_INFO) {
-                level = RETRO_LOG_DEBUG;
-            }
-            else {
-                fprintf(stderr, "Error: cannot be more verbose\n");
-                return EXIT_FAILURE;
-            }
+            verboseness++;
         }
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             Usage(stdout);
@@ -104,7 +95,7 @@ extern "C" int Main(int argc, char const* argv[]) {
 
     Player player;
 
-    if (!player.init(configPaths, corePath, contentPath, level)) {
+    if (!player.init(configPaths, corePath, contentPath, verboseness)) {
         return EXIT_FAILURE;
     }
 

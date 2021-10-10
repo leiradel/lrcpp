@@ -4,22 +4,38 @@
 
 #include <sys/stat.h>
 
-bool Player::init(std::vector<std::string> const& configPaths,
-                  char const* corePath,
-                  char const* contentPath,
-                  retro_log_level level) {
+bool Player::init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness) {
 
     if (!_logger.init()) {
         // Doesn't really happen
         return false;
     }
 
-    _logger.setLevel(level);
+    _logger.setLevel(RETRO_LOG_WARN);
 
     if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
         _logger.error("Could not initialize the configuration component");
         _logger.destroy();
         return false;
+    }
+
+    {
+        unsigned long level = 2;
+        _config.getOption("libretro_log_level", &level);
+        long realLevel = (long)level - verboseness;
+
+        if (realLevel <= 0) {
+            _logger.setLevel(RETRO_LOG_DEBUG);
+        }
+        else if (realLevel == 1) {
+            _logger.setLevel(RETRO_LOG_INFO);
+        }
+        else if (realLevel == 2) {
+            _logger.setLevel(RETRO_LOG_WARN);
+        }
+        else if (realLevel >= 3) {
+            _logger.setLevel(RETRO_LOG_ERROR);
+        }
     }
 
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) != 0) {

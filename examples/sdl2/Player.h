@@ -12,7 +12,7 @@
 
 class Player {
 public:
-    bool init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, retro_log_level level);
+    bool init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness);
     void destroy();
 
     void run();
