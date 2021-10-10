@@ -19,7 +19,7 @@ bool Config::init(char const* configPath, char const* contentPath, char const* c
 
     _logger = logger;
 
-    if (configPath != nullptr && !initOptions(configPath)) {
+    if (configPath != nullptr && !loadOptions(configPath)) {
         return false;
     }
 
@@ -39,6 +39,102 @@ bool Config::init(char const* configPath, char const* contentPath, char const* c
 
 void Config::destroy() {
     reset();
+}
+
+bool Config::loadOptions(char const* configPath) {
+    _logger->info("Reading settings from \"%s\"", configPath);
+
+    FILE* const file = fopen(configPath, "r");
+
+    if (file == nullptr) {
+        _logger->error("Error opening \"%s\" for reading: %s", configPath, strerror(errno));
+        return false;
+    }
+
+    char line[1024];
+
+    while (fgets(line, sizeof(line), file) != nullptr) {
+        line[sizeof(line) - 1] = 0;
+
+        const char* keyBegin = line;
+
+        while ((*keyBegin == ' ' || *keyBegin == '\t') && (*keyBegin != '\n' && *keyBegin != 0)) {
+            keyBegin++;
+        }
+
+        if (*keyBegin == '\n' || *keyBegin == 0) {
+            // Empty line.
+            continue;
+        }
+
+        const char* keyEnd = keyBegin;
+
+        while ((*keyEnd != ' ' && *keyEnd != '\t' && *keyEnd != '=') && (*keyEnd != '\n' && *keyEnd != 0)) {
+            keyEnd++;
+        }
+
+        if (*keyEnd == '\n' || *keyEnd == 0) {
+            _logger->error("Missing value for key \"%.*s\"", keyBegin, (int)(keyEnd - keyBegin));
+            fclose(file);
+            return false;
+        }
+
+        const std::string key(keyBegin, keyEnd - keyBegin);
+        const char* valueBegin = keyEnd;
+
+        while ((*valueBegin == ' ' || *valueBegin == '\t') && (*valueBegin != '=' && *valueBegin != '\n' && *valueBegin != 0)) {
+            valueBegin++;
+        }
+
+        if (*valueBegin != '=') {
+            _logger->error("Missing value for key \"%s\"", key.c_str());
+            fclose(file);
+            return false;
+        }
+
+        valueBegin++;
+
+        while ((*valueBegin == ' ' || *valueBegin == '\t') && (*valueBegin != '"' && *valueBegin != '\n' && *valueBegin != 0)) {
+            valueBegin++;
+        }
+
+        if (*valueBegin != '"') {
+            _logger->error("Missing value for key \"%s\"", key.c_str());
+            fclose(file);
+            return false;
+        }
+
+        valueBegin++;
+        const char* valueEnd = valueBegin;
+
+        while (*valueEnd != '"' && *valueEnd != '\n' && *valueEnd != 0) {
+            valueEnd++;
+        }
+
+        if (*valueEnd != '"') {
+            _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
+            fclose(file);
+            return false;
+        }
+
+        if (_options.find(key) != _options.end()) {
+            _logger->warn("Duplicated key \"%s\"", key.c_str());
+        }
+        else {
+            const std::string value(valueBegin, valueEnd - valueBegin);
+            _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
+            _options.emplace(key, value);
+        }
+    }
+
+    if (ferror(file)) {
+        _logger->error("Error reading from configuration file");
+        fclose(file);
+        return false;
+    }
+
+    fclose(file);
+    return true;
 }
 
 bool Config::getOption(char const* key, char const** value) const {
@@ -232,102 +328,6 @@ bool Config::getDirectory(char const* path, std::string* directory) {
     }
 
     _logger->debug("Directory for \"%s\" is \"%s\"", path, directory->c_str());
-    return true;
-}
-
-bool Config::initOptions(char const* configPath) {
-    _logger->info("Reading settings from \"%s\"", configPath);
-
-    FILE* const file = fopen(configPath, "r");
-
-    if (file == nullptr) {
-        _logger->error("Error opening \"%s\" for reading: %s", configPath, strerror(errno));
-        return false;
-    }
-
-    char line[1024];
-
-    while (fgets(line, sizeof(line), file) != nullptr) {
-        line[sizeof(line) - 1] = 0;
-
-        const char* keyBegin = line;
-
-        while ((*keyBegin == ' ' || *keyBegin == '\t') && (*keyBegin != '\n' && *keyBegin != 0)) {
-            keyBegin++;
-        }
-
-        if (*keyBegin == '\n' || *keyBegin == 0) {
-            // Empty line.
-            continue;
-        }
-
-        const char* keyEnd = keyBegin;
-
-        while ((*keyEnd != ' ' && *keyEnd != '\t' && *keyEnd != '=') && (*keyEnd != '\n' && *keyEnd != 0)) {
-            keyEnd++;
-        }
-
-        if (*keyEnd == '\n' || *keyEnd == 0) {
-            _logger->error("Missing value for key \"%.*s\"", keyBegin, (int)(keyEnd - keyBegin));
-            fclose(file);
-            return false;
-        }
-
-        const std::string key(keyBegin, keyEnd - keyBegin);
-        const char* valueBegin = keyEnd;
-
-        while ((*valueBegin == ' ' || *valueBegin == '\t') && (*valueBegin != '=' && *valueBegin != '\n' && *valueBegin != 0)) {
-            valueBegin++;
-        }
-
-        if (*valueBegin != '=') {
-            _logger->error("Missing value for key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
-        }
-
-        valueBegin++;
-
-        while ((*valueBegin == ' ' || *valueBegin == '\t') && (*valueBegin != '"' && *valueBegin != '\n' && *valueBegin != 0)) {
-            valueBegin++;
-        }
-
-        if (*valueBegin != '"') {
-            _logger->error("Missing value for key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
-        }
-
-        valueBegin++;
-        const char* valueEnd = valueBegin;
-
-        while (*valueEnd != '"' && *valueEnd != '\n' && *valueEnd != 0) {
-            valueEnd++;
-        }
-
-        if (*valueEnd != '"') {
-            _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
-        }
-
-        if (_options.find(key) != _options.end()) {
-            _logger->warn("Duplicated key \"%s\"", key.c_str());
-        }
-        else {
-            const std::string value(valueBegin, valueEnd - valueBegin);
-            _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
-            _options.emplace(key, value);
-        }
-    }
-
-    if (ferror(file)) {
-        _logger->error("Error reading from configuration file");
-        fclose(file);
-        return false;
-    }
-
-    fclose(file);
     return true;
 }
 

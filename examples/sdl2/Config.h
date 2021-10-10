@@ -13,6 +13,7 @@ public:
     bool init(char const* configPath, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
     void destroy();
 
+    bool loadOptions(char const* configPath);
     bool getOption(char const* key, char const** value) const;
 
     // lrcpp::Config
@@ -39,7 +40,6 @@ public:
 
 protected:
     bool getDirectory(char const* path, std::string* directory);
-    bool initOptions(char const* configPath);
     void reset();
 
     lrcpp::Logger* _logger;
