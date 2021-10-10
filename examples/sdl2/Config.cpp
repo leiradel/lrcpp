@@ -314,23 +314,27 @@ bool Config::loadOptions(char const* configPath) {
             valueBegin++;
         }
 
-        if (*valueBegin != '"') {
-            _logger->error("Missing value for key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
-        }
+        char const* valueEnd = valueBegin;
 
-        valueBegin++;
-        const char* valueEnd = valueBegin;
-
-        while (*valueEnd != '"' && *valueEnd != '\n' && *valueEnd != 0) {
+        if (*valueBegin == '"') {
+            // String value.
+            valueBegin++;
             valueEnd++;
-        }
 
-        if (*valueEnd != '"') {
-            _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
+            while (*valueEnd != '"' && *valueEnd != '\n' && *valueEnd != 0) {
+                valueEnd++;
+            }
+
+            if (*valueEnd != '"') {
+                _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
+                fclose(file);
+                return false;
+            }
+        }
+        else {
+            while (*valueEnd != ' ' && *valueEnd != '\t' && *valueEnd != '\n' && *valueEnd != 0) {
+                valueEnd++;
+            }
         }
 
         if (_options.find(key) != _options.end()) {
