@@ -10,7 +10,7 @@ LDFLAGS=`sdl2-config --libs`
 	g++ $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 OBJECTS=\
-	Audio.o Config.o dynlib.o Entry.o  Input.o Logger.o Main.o Perf.o Player.o Video.o \
+	Audio.o Config.o dynlib.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
 	../../src/Components.o ../../src/Core.o ../../src/CoreFsm.o ../../src/Frontend.o
 
 all: sdl2lrcpp
