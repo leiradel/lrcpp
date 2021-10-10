@@ -274,12 +274,12 @@ bool Config::loadOptions(char const* configPath) {
 
         const char* keyBegin = line;
 
-        while ((*keyBegin == ' ' || *keyBegin == '\t') && (*keyBegin != '\n' && *keyBegin != 0)) {
+        while ((*keyBegin == ' ' || *keyBegin == '\t') && (*keyBegin != '#' && *keyBegin != '\n' && *keyBegin != 0)) {
             keyBegin++;
         }
 
-        if (*keyBegin == '\n' || *keyBegin == 0) {
-            // Empty line.
+        if (*keyBegin == '#' || *keyBegin == '\n' || *keyBegin == 0) {
+            // Comment or empty line.
             continue;
         }
 
