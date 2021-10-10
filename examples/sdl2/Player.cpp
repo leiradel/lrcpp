@@ -4,7 +4,11 @@
 
 #include <sys/stat.h>
 
-bool Player::init(char const* configPath, char const* corePath, char const* contentPath, retro_log_level level) {
+bool Player::init(std::vector<std::string> const& configPaths,
+                  char const* corePath,
+                  char const* contentPath,
+                  retro_log_level level) {
+
     if (!_logger.init()) {
         // Doesn't really happen
         return false;
@@ -26,7 +30,7 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
         return false;
     }
 
-    if (!_config.init(configPath, contentPath, corePath, &_logger)) {
+    if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
         _logger.error("Could not initialize the configuration component");
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);

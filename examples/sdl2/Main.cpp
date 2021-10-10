@@ -4,11 +4,13 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string>
+#include <vector>
 
 static void Usage(FILE* out) {
     fprintf(out, "Usage: sdl2lrcpp [options...] <content path>\n\n");
     fprintf(out, "-L, --libretro   The path to the libretro core\n");
     fprintf(out, "-c, --config     The path to the configuration file (optional)\n");
+    fprintf(out, "--appendconfig   Paths for additional configuration files, separated by commas\n");
     fprintf(out, "-v, --verbose    Increase the verboseness one level (up to two levels)\n");
     fprintf(out, "-h, --help       Shows this help screen and exit\n");
     fprintf(out, "<content path>   The path to the content file to use with the core\n");
@@ -16,7 +18,8 @@ static void Usage(FILE* out) {
 
 extern "C" int Main(int argc, char const* argv[]) {
     char const* corePath = nullptr;
-    char const* configPath = nullptr;
+    std::vector<std::string> configPaths;
+    bool configSpecified = false;
     char const* contentPath = nullptr;
     retro_log_level level = RETRO_LOG_WARN;
 
@@ -40,12 +43,33 @@ extern "C" int Main(int argc, char const* argv[]) {
                 return EXIT_FAILURE;
             }
 
-            if (configPath != nullptr) {
+            if (configSpecified) {
                 fprintf(stderr, "Error: configuration path already specified\n");
                 return EXIT_FAILURE;
             }
 
-            configPath = argv[i];
+            configPaths.emplace_back(argv[i]);
+            configSpecified = true;
+        }
+        else if (strcmp(argv[i], "--appendconfig") == 0) {
+            if (++i == argc) {
+                fprintf(stderr, "Error: missing configuration path after --config\n");
+                return EXIT_FAILURE;
+            }
+
+            char const* aux = argv[i];
+
+            while (*aux != 0) {
+                char const* const comma = strchr(aux, ',');
+
+                if (comma == nullptr) {
+                    configPaths.emplace_back(aux);
+                    break;
+                }
+
+                configPaths.emplace_back(aux, comma - aux);
+                aux = comma + 1;
+            }
         }
         else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0) {
             if (level == RETRO_LOG_WARN) {
@@ -80,7 +104,7 @@ extern "C" int Main(int argc, char const* argv[]) {
 
     Player player;
 
-    if (!player.init(configPath, corePath, contentPath, level)) {
+    if (!player.init(configPaths, corePath, contentPath, level)) {
         return EXIT_FAILURE;
     }
 

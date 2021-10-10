@@ -5,15 +5,15 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 class Config : public lrcpp::Config {
 public:
     Config();
 
-    bool init(char const* configPath, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
+    bool init(std::vector<std::string> const& configPaths, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
     void destroy();
 
-    bool loadOptions(char const* configPath);
     bool getOption(char const* key, char const** value) const;
     bool getOption(char const* key, unsigned long* value) const;
 
@@ -41,6 +41,7 @@ public:
 
 protected:
     bool getDirectory(char const* path, std::string* directory);
+    bool loadOptions(char const* configPath);
     void reset();
 
     lrcpp::Logger* _logger;

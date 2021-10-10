@@ -7,9 +7,12 @@
 #include "Video.h"
 #include "Input.h"
 
+#include <string>
+#include <vector>
+
 class Player {
 public:
-    bool init(char const* configPath, char const* corePath, char const* contentPath, retro_log_level level);
+    bool init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, retro_log_level level);
     void destroy();
 
     void run();
