@@ -22,7 +22,7 @@ const char* dynlib_error( void )
 
   if ( res == 0 )
   {
-    snprintf( msg, sizeof( msg ) - 1, "Error %u", err );
+    snprintf( msg, sizeof( msg ) - 1, "Error %lu", err );
     msg[ sizeof( msg ) - 1 ] = 0;
   }
   

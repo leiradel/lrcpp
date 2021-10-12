@@ -1,13 +1,19 @@
+#pragma once
+
+#include "Config.h"
+
 #include <lrcpp/Components.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 class Video : public lrcpp::Video {
 public:
     Video();
 
-    bool init(lrcpp::Logger* logger);
+    bool init(Config* config, lrcpp::Logger* logger);
     void destroy();
+
+    double getCoreFps() const;
 
     void clear();
     void present();

@@ -1,18 +1,11 @@
-ifeq ($(shell uname -s),)
-else ifneq ($(findstring MINGW,$(shell uname -a)),)
-    CFLAGS=-mwin32
-    CXXFLAGS=-mwin32
-else ifneq ($(findstring MSYS,$(shell uname -a)),)
-    CFLAGS=-mwin32 -I/mingw64/include
-    CXXFLAGS=-mwin32 -I/mingw64/include
-    LDFLAGS=-L/mingw64/lib
-else ifneq ($(findstring win,$(shell uname -a)),)
-endif
+INCLUDES=-I../../include -I.
+CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic `sdl2-config --cflags`
+CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic `sdl2-config --cflags`
+LDFLAGS=`sdl2-config --libs`
 
-INCLUDES+=-I../../include -I.
-CFLAGS+=-O2 -std=c99 -Werror -Wall -Wpedantic
-CXXFLAGS+=-O2 -std=c++11 -Werror -Wall -Wpedantic
-LDFLAGS+=-ldl -lSDL2 -lSDL2main
+ifneq ($(findstring Linux,$(shell uname -a)),)
+	LDFLAGS+=-ldl
+endif
 
 %.o: %.c
 	gcc $(INCLUDES) $(CFLAGS) -c $< -o $@
@@ -21,7 +14,7 @@ LDFLAGS+=-ldl -lSDL2 -lSDL2main
 	g++ $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 OBJECTS=\
-	Config.o dynlib.o Logger.o Main.o Perf.o Player.o Video.o \
+	Audio.o Config.o dynlib.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
 	../../src/Components.o ../../src/Core.o ../../src/CoreFsm.o ../../src/Frontend.o
 
 all: sdl2lrcpp

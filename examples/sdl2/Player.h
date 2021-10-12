@@ -3,11 +3,16 @@
 #include "Logger.h"
 #include "Perf.h"
 #include "Config.h"
+#include "Audio.h"
 #include "Video.h"
+#include "Input.h"
+
+#include <string>
+#include <vector>
 
 class Player {
 public:
-    bool init(char const* configPath, char const* corePath, char const* contentPath, retro_log_level level);
+    bool init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness);
     void destroy();
 
     void run();
@@ -18,5 +23,7 @@ protected:
     Logger _logger;
     Perf _perf;
     Config _config;
+    Audio _audio;
     Video _video;
+    Input _input;
 };

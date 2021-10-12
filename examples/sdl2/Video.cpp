@@ -4,7 +4,7 @@ Video::Video() {
     reset();
 }
 
-bool Video::init(lrcpp::Logger* logger) {
+bool Video::init(Config* config, lrcpp::Logger* logger) {
     reset();
 
     _logger = logger;
@@ -27,7 +27,57 @@ bool Video::init(lrcpp::Logger* logger) {
 
     _logger->info("Window created");
 
-    _renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
+    int const count = SDL_GetNumRenderDrivers();
+    int renderer = -1;
+    char const* rendererName = nullptr;
+    config->getOption("sdl2lrcpp_video_renderer", &rendererName);
+
+    if (count > 0) {
+        for (int i = 0; i < count; i++) {
+            SDL_RendererInfo info;
+
+            if (SDL_GetRenderDriverInfo(i, &info) != 0) {
+                _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
+            }
+            else {
+                if (rendererName != nullptr && strcmp(rendererName, info.name) == 0) {
+                    renderer = i;
+                }
+
+                _logger->info("Render driver %d: %s", i, info.name);
+
+                _logger->info(
+                    "    flags:%s%s%s%s",
+                    (info.flags & SDL_RENDERER_SOFTWARE) != 0 ? " SDL_RENDERER_SOFTWARE" : "",
+                    (info.flags & SDL_RENDERER_ACCELERATED) != 0 ? " SDL_RENDERER_ACCELERATED" : "",
+                    (info.flags & SDL_RENDERER_PRESENTVSYNC) != 0 ? " SDL_RENDERER_PRESENTVSYNC" : "",
+                    (info.flags & SDL_RENDERER_TARGETTEXTURE) != 0 ? " SDL_RENDERER_TARGETTEXTURE" : ""
+                );
+
+                for (Uint32 j = 0; j < info.num_texture_formats; j++) {
+                    _logger->info("    texture_formats[%u]: %s", j, SDL_GetPixelFormatName(info.texture_formats[j]));
+                }
+
+                _logger->info("    max_texture: %d x %d", info.max_texture_width, info.max_texture_height);
+            }
+        }
+    }
+
+    if (renderer == -1) {
+        _logger->info("Using default video renderer");
+    }
+    else {
+        SDL_RendererInfo info;
+
+        if (SDL_GetRenderDriverInfo(renderer, &info) != 0) {
+            _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
+        }
+        else {
+            _logger->info("Using video renderer %s", info.name);
+        }
+    }
+
+    _renderer = SDL_CreateRenderer(_window, renderer, SDL_RENDERER_ACCELERATED);
 
     if (_renderer == nullptr) {
         logger->error("SDL_CreateRenderer() failed: %s", SDL_GetError());
@@ -36,6 +86,14 @@ bool Video::init(lrcpp::Logger* logger) {
     }
 
     _logger->info("Renderer created");
+
+    bool smooth = true;
+    config->getOption("video_smooth", &smooth);
+
+    if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, smooth ? "1" : "0")) {
+        _logger->error("SDL_SetHint() failed: %s", SDL_GetError());
+    }
+
     return true;
 }
 
@@ -54,6 +112,10 @@ void Video::destroy() {
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     reset();
+}
+
+double Video::getCoreFps() const {
+    return _coreFps;
 }
 
 void Video::clear() {
@@ -121,9 +183,9 @@ bool Video::setPixelFormat(retro_pixel_format format) {
     _pixelFormat = format;
 
     switch (_pixelFormat) {
-        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to 0RGB1555"); break;
-        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RGB888"); break;
-        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RGB565"); break;
+        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_0RGB1555"); break;
+        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_XRGB8888"); break;
+        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_RGB565"); break;
 
         default: _pixelFormat = RETRO_PIXEL_FORMAT_UNKNOWN; return false;
     }
@@ -252,7 +314,7 @@ bool Video::getPreferredHwRender(unsigned* preferred) {
 
 void Video::refresh(void const* data, unsigned width, unsigned height, size_t pitch) {
     if (data == nullptr) {
-        // Duplicate frame.
+        _logger->debug("Last frame duplicated");
         return;
     }
 

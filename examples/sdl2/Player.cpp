@@ -4,32 +4,87 @@
 
 #include <sys/stat.h>
 
-bool Player::init(char const* configPath, char const* corePath, char const* contentPath, retro_log_level level) {
+bool Player::init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness) {
+
     if (!_logger.init()) {
         // Doesn't really happen
         return false;
     }
 
-    _logger.setLevel(level);
+    _logger.setLevel(RETRO_LOG_WARN);
+
+    if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
+        _logger.error("Could not initialize the configuration component");
+        _logger.destroy();
+        return false;
+    }
+
+    {
+        unsigned long level = 2;
+        _config.getOption("libretro_log_level", &level);
+        long realLevel = (long)level - verboseness;
+
+        if (realLevel <= 0) {
+            _logger.setLevel(RETRO_LOG_DEBUG);
+        }
+        else if (realLevel == 1) {
+            _logger.setLevel(RETRO_LOG_INFO);
+        }
+        else if (realLevel == 2) {
+            _logger.setLevel(RETRO_LOG_WARN);
+        }
+        else if (realLevel >= 3) {
+            _logger.setLevel(RETRO_LOG_ERROR);
+        }
+    }
+
+    if (SDL_InitSubSystem(SDL_INIT_EVENTS) != 0) {
+        _logger.error("SDL_InitSubSystem(SDL_INIT_EVENTS) failed: %s", SDL_GetError());
+        _config.destroy();
+        _logger.destroy();
+        SDL_Quit();
+        return false;
+    }
 
     if (!_perf.init()) {
         _logger.error("Could not initialize the perf component");
-        _logger.destroy();
-        return false;
-    }
-
-    if (!_config.init(configPath, contentPath, corePath, &_logger)) {
-        _logger.error("Could not initialize the configuration component");
-        _perf.destroy();
-        _logger.destroy();
-        return false;
-    }
-
-    if (!_video.init(&_logger)) {
-        _logger.error("Could not initialize the video component");
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _config.destroy();
-        _perf.destroy();
         _logger.destroy();
+        SDL_Quit();
+        return false;
+    }
+
+    if (!_audio.init(&_config, &_logger)) {
+        _logger.error("Could not initialize the audio component");
+        _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
+        _logger.destroy();
+        SDL_Quit();
+        return false;
+    }
+
+    if (!_video.init(&_config, &_logger)) {
+        _logger.error("Could not initialize the video component");
+        _audio.destroy();
+        _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
+        _logger.destroy();
+        SDL_Quit();
+        return false;
+    }
+
+    if (!_input.init(&_logger)) {
+        _logger.error("Could not initialize the input component");
+        _video.destroy();
+        _audio.destroy();
+        _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
+        _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
@@ -39,14 +94,18 @@ bool Player::init(char const* configPath, char const* corePath, char const* cont
         _logger.error("Could not set components in the frontend");
 
 error:
+        _input.destroy();
         _video.destroy();
-        _config.destroy();
+        _audio.destroy();
         _perf.destroy();
+        SDL_QuitSubSystem(SDL_INIT_EVENTS);
+        _config.destroy();
         _logger.destroy();
+        SDL_Quit();
         return false;
     }
 
-    if (!frontend.setPerf(&_perf)) {
+    if (!frontend.setPerf(&_perf) || !frontend.setAudio(&_audio) || !frontend.setInput(&_input)) {
         _logger.error("Could not set components in the frontend");
         goto error;
     }
@@ -105,14 +164,22 @@ void Player::destroy() {
     frontend.unloadGame();
     frontend.unload();
 
+    _input.destroy();
     _video.destroy();
+    _audio.destroy();
     _config.destroy();
     _perf.destroy();
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
     _logger.destroy();
+
+    SDL_Quit();
 }
 
 void Player::run() {
+    uint64_t const coreUsPerFrame = 1000000 / _video.getCoreFps();
+    uint64_t nextFrameTime = Perf::getTimeUs() + coreUsPerFrame;
     bool done = false;
+
     auto& frontend = lrcpp::Frontend::getInstance();
 
     do {
@@ -124,13 +191,24 @@ void Player::run() {
             if (event.type == SDL_QUIT) {
                 done = true;
             }
+            else {
+                _input.process(&event);
+            }
         }
 
-        _video.clear();
-        frontend.run();
-        _video.present();
+        if (Perf::getTimeUs() >= nextFrameTime) {
+            nextFrameTime += coreUsPerFrame;
 
-        _logger.debug("Ran one frame");
+            _audio.clear();
+            _video.clear();
+            frontend.run();
+            _audio.present();
+            _video.present();
+
+            _logger.debug("Ran one frame");
+        }
+
+        // TODO pause for less time for greater granularity
         SDL_Delay(1);
     }
     while (!done);

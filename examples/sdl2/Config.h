@@ -5,15 +5,18 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 class Config : public lrcpp::Config {
 public:
     Config();
 
-    bool init(char const* configPath, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
+    bool init(std::vector<std::string> const& configPaths, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
     void destroy();
 
     bool getOption(char const* key, char const** value) const;
+    bool getOption(char const* key, unsigned long* value) const;
+    bool getOption(char const* key, bool* value) const;
 
     // lrcpp::Config
     virtual bool setPerformanceLevel(unsigned level) override;
@@ -39,7 +42,7 @@ public:
 
 protected:
     bool getDirectory(char const* path, std::string* directory);
-    bool initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options);
+    bool loadOptions(char const* configPath);
     void reset();
 
     lrcpp::Logger* _logger;

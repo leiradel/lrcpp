@@ -1,26 +1,35 @@
 #include "Config.h"
 
 #include <string.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 
-#ifdef WIN32
-    #define _MAX_PATH PATH_MAX
-
-    extern "C" {
-        #include "realpath.c"
-    }
+#ifdef _WIN32
+#define SEPARATOR '\\'
+#define SEPARATOR2 '/'
+#else
+#define SEPARATOR '/'
 #endif
 
 Config::Config() {
     reset();
 }
 
-bool Config::init(char const* configPath, char const* contentPath, char const* corePath, lrcpp::Logger* logger) {
+bool Config::init(std::vector<std::string> const& configPaths,
+                  char const* contentPath,
+                  char const* corePath,
+                  lrcpp::Logger* logger) {
+
     reset();
 
     _logger = logger;
 
-    if (configPath != nullptr && !initOptions(configPath, &_options)) {
-        return false;
+    for (auto const& path : configPaths) {
+        _logger->info("Loading configuration from \"%s\"", path.c_str());
+
+        if (!loadOptions(path.c_str())) {
+            return false;
+        }
     }
 
     if (!getDirectory(contentPath, &_contentDir)) {
@@ -52,6 +61,51 @@ bool Config::getOption(char const* key, char const** value) const {
     *value = it->second.c_str();
 
     _logger->debug("Found value \"%s\" for key \"%s\"", *value, key);
+    return true;
+}
+
+bool Config::getOption(char const* key, unsigned long* value) const {
+    char const* valueStr = nullptr;
+
+    if (!getOption(key, &valueStr)) {
+        return false;
+    }
+
+    errno = 0;
+    char* endptr = nullptr;
+    unsigned long const val = strtoul(valueStr, &endptr, 0);
+
+    if (*valueStr == 0 || *endptr != 0) {
+        errno = EINVAL;
+    }
+
+    if (errno != 0) {
+        _logger->error("Could not convert \"%s\" to a number: %s", valueStr, strerror(errno));
+        return false;
+    }
+
+    *value = val;
+    return true;
+}
+
+bool Config::getOption(char const* key, bool* value) const {
+    char const* valueStr = nullptr;
+
+    if (!getOption(key, &valueStr)) {
+        return false;
+    }
+
+    if (strcmp(valueStr, "true") == 0) {
+        *value = true;
+    }
+    else if (strcmp(valueStr, "false") == 0) {
+        *value = false;
+    }
+    else {
+        _logger->error("Could not convert \"%s\" to a boolean", valueStr);
+        return false;
+    }
+
     return true;
 }
 
@@ -184,43 +238,58 @@ bool Config::setCoreOptionsDisplay(retro_core_option_display const* display) {
 }
 
 bool Config::getDirectory(char const* path, std::string* directory) {
-    char real[PATH_MAX];
+    size_t const length = strlen(path);
 
-    if (realpath(path, real) == nullptr) {
-        _logger->error("Could not get the real path for \"%s\": %s", path, strerror(errno));
+    if (length == 0) {
+        _logger->error("Cannot get directory from an empty path");
         return false;
     }
 
-    char* const slash = strrchr(real, '/');
-    char* const bslash = strrchr(real, '\\');
+    struct stat statbuf;
 
-    if (slash == nullptr && bslash == nullptr) {
-        _logger->error("Real path for \"%s\" doesn't have slashes: \"%s\"", path, real);
+    if (stat(path, &statbuf) != 0) {
+        _logger->error("Error info for path \"%s\": %s", path, strerror(errno));
         return false;
     }
 
-    if (slash != nullptr && bslash != nullptr) {
-        if (slash > bslash) {
-            *slash = 0;
-        }
-        else {
-            *bslash = 0;
+    if ((statbuf.st_mode & S_IFMT) == S_IFDIR) {
+        // It's a directory.
+        *directory = path;
+
+#ifdef SEPARATOR2
+        if (path[length - 1] != SEPARATOR && path[length - 1] != SEPARATOR2) {
+#else
+        if (path[length - 1] != SEPARATOR) {
+#endif
+            directory->append(1, SEPARATOR);
         }
     }
-    else if (slash != nullptr) {
-        *slash = 0;
-    }
-    else if (bslash != nullptr) {
-        *bslash = 0;
+    else {
+        bool separator = false;
+
+        // Assume it's a file.
+        for (size_t i = length - 1; i > 0; i--) {
+#ifdef SEPARATOR2
+            if (path[i] == SEPARATOR || path[i] == SEPARATOR2) {
+#else
+            if (path[i] == SEPARATOR) {
+#endif
+                *directory = std::string(path, i + 1);
+                separator = true;
+                break;
+            }
+        }
+
+        if (!separator) {
+            *directory = ".";
+        }
     }
 
-    *directory = std::string(real);
-
-    _logger->debug("Real path for \"%s\" is \"%s\"", path, real);
+    _logger->debug("Directory for \"%s\" is \"%s\"", path, directory->c_str());
     return true;
 }
 
-bool Config::initOptions(char const* configPath, std::unordered_map<std::string, std::string>* options) {
+bool Config::loadOptions(char const* configPath) {
     _logger->info("Reading settings from \"%s\"", configPath);
 
     FILE* const file = fopen(configPath, "r");
@@ -237,12 +306,12 @@ bool Config::initOptions(char const* configPath, std::unordered_map<std::string,
 
         const char* keyBegin = line;
 
-        while ((*keyBegin == ' ' || *keyBegin == '\t') && (*keyBegin != '\n' && *keyBegin != 0)) {
+        while ((*keyBegin == ' ' || *keyBegin == '\t') && (*keyBegin != '#' && *keyBegin != '\n' && *keyBegin != 0)) {
             keyBegin++;
         }
 
-        if (*keyBegin == '\n' || *keyBegin == 0) {
-            // Empty line.
+        if (*keyBegin == '#' || *keyBegin == '\n' || *keyBegin == 0) {
+            // Comment or empty line.
             continue;
         }
 
@@ -277,32 +346,36 @@ bool Config::initOptions(char const* configPath, std::unordered_map<std::string,
             valueBegin++;
         }
 
-        if (*valueBegin != '"') {
-            _logger->error("Missing value for key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
-        }
+        char const* valueEnd = valueBegin;
 
-        valueBegin++;
-        const char* valueEnd = valueBegin;
-
-        while (*valueEnd != '"' && *valueEnd != '\n' && *valueEnd != 0) {
+        if (*valueBegin == '"') {
+            // String value.
+            valueBegin++;
             valueEnd++;
+
+            while (*valueEnd != '"' && *valueEnd != '\n' && *valueEnd != 0) {
+                valueEnd++;
+            }
+
+            if (*valueEnd != '"') {
+                _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
+                fclose(file);
+                return false;
+            }
+        }
+        else {
+            while (*valueEnd != ' ' && *valueEnd != '\t' && *valueEnd != '\n' && *valueEnd != 0) {
+                valueEnd++;
+            }
         }
 
-        if (*valueEnd != '"') {
-            _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
-            fclose(file);
-            return false;
-        }
-
-        if (options->find(key) != options->end()) {
+        if (_options.find(key) != _options.end()) {
             _logger->warn("Duplicated key \"%s\"", key.c_str());
         }
         else {
             const std::string value(valueBegin, valueEnd - valueBegin);
             _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
-            options->emplace(key, value);
+            _options.emplace(key, value);
         }
     }
 
