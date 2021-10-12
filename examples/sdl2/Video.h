@@ -55,6 +55,7 @@ protected:
     SDL_Texture* _texture;
     unsigned _textureWidth;
     unsigned _textureHeight;
+    retro_pixel_format _textureFormat;
     unsigned _usedWidth;
     unsigned _usedHeight;
 

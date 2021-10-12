@@ -249,8 +249,26 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
         return false;
     }
 
-    _textureWidth = geometry->max_width;
-    _textureHeight = geometry->max_height;
+    int width = 0, height = 0, access = 0;
+    Uint32 uformat = SDL_PIXELFORMAT_UNKNOWN;
+
+    if (SDL_QueryTexture(_texture, &uformat, &access, &width, &height) != 0) {
+        _logger->error("SDL_QueryTexture() failed: %s", SDL_GetError());
+        SDL_DestroyTexture(_texture);
+        _texture = nullptr;
+        return false;
+    }
+
+    _textureWidth = width;
+    _textureHeight = height;
+
+    switch (uformat) {
+        case SDL_PIXELFORMAT_RGB555: _textureFormat = RETRO_PIXEL_FORMAT_0RGB1555; break;
+        case SDL_PIXELFORMAT_RGB888: _textureFormat = RETRO_PIXEL_FORMAT_XRGB8888; break;
+        case SDL_PIXELFORMAT_RGB565: _textureFormat = RETRO_PIXEL_FORMAT_RGB565; break;
+
+        default: _textureFormat = RETRO_PIXEL_FORMAT_UNKNOWN; break;
+    }
 
     _logger->info("Texture created with %u x %u pixels", _textureWidth, _textureHeight);
     return true;
@@ -277,7 +295,7 @@ bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
 
     framebuffer->data = texturePixels;
     framebuffer->pitch = texturePitch;
-    framebuffer->format = _pixelFormat;
+    framebuffer->format = _textureFormat;
     framebuffer->memory_flags = RETRO_MEMORY_ACCESS_WRITE | RETRO_MEMORY_TYPE_CACHED;
 
     _swFramebuffer = texturePixels;
