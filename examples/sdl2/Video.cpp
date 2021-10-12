@@ -94,6 +94,15 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
         _logger->error("SDL_SetHint() failed: %s", SDL_GetError());
     }
 
+    unsigned long rotation = 0;
+
+    if (config->getOption("screen_orientation", &rotation)) {
+        _rotation = rotation;
+        _rotationForced = true;
+
+        _logger->info("Rotation forced to %u", _rotation * 90);
+    }
+
     return true;
 }
 
@@ -158,9 +167,14 @@ void Video::present() {
 }
 
 bool Video::setRotation(unsigned rotation) {
-    (void)rotation;
-    _logger->warn("RETRO_ENVIRONMENT_SET_ROTATION not implemented");
-    return false;
+    if (!_rotationForced) {
+        _rotation = rotation;
+        _logger->info("Rotation set to %u degrees", rotation * 90);
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool Video::getOverscan(bool* overscan) {
@@ -339,6 +353,8 @@ void Video::reset() {
     _window = nullptr;
     _renderer = nullptr;
 
+    _rotation = 0;
+    _rotationForced = false;
     _pixelFormat = RETRO_PIXEL_FORMAT_UNKNOWN;
     _coreFps = 0.0;
     _aspectRatio = 0.0f;

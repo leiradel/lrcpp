@@ -48,6 +48,8 @@ protected:
     SDL_Window* _window;
     SDL_Renderer* _renderer;
 
+    unsigned _rotation;
+    bool _rotationForced;
     retro_pixel_format _pixelFormat;
     double _coreFps;
     float _aspectRatio;
