@@ -259,18 +259,26 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
         return false;
     }
 
-    _textureWidth = width;
-    _textureHeight = height;
-
     switch (uformat) {
         case SDL_PIXELFORMAT_RGB555: _textureFormat = RETRO_PIXEL_FORMAT_0RGB1555; break;
         case SDL_PIXELFORMAT_RGB888: _textureFormat = RETRO_PIXEL_FORMAT_XRGB8888; break;
         case SDL_PIXELFORMAT_RGB565: _textureFormat = RETRO_PIXEL_FORMAT_RGB565; break;
 
-        default: _textureFormat = RETRO_PIXEL_FORMAT_UNKNOWN; break;
+        default:
+            _logger->error(
+                "Could not create a texture with the correct pixel format, requested %s, got %s",
+                SDL_GetPixelFormatName(format), SDL_GetPixelFormatName(uformat)
+            );
+
+            SDL_DestroyTexture(_texture);
+            _texture = nullptr;
+            return false;
     }
 
-    _logger->info("Texture created with %u x %u pixels", _textureWidth, _textureHeight);
+    _textureWidth = width;
+    _textureHeight = height;
+
+    _logger->info("Texture created with %d x %d pixels with format %s", width, height, SDL_GetPixelFormatName(uformat));
     return true;
 }
 
@@ -280,15 +288,24 @@ bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
         return false;
     }
 
-    SDL_Rect rect;
-    rect.x = rect.y = 0;
-    rect.w = _usedWidth = framebuffer->width;
-    rect.h = _usedHeight = framebuffer->height;
+    if (framebuffer->width != _textureWidth || framebuffer->height != _textureHeight) {
+        SDL_DestroyTexture(_texture);
+        _texture = nullptr;
+
+        retro_game_geometry geometry;
+        geometry.base_width = geometry.max_width = _usedWidth = framebuffer->width;
+        geometry.base_height = geometry.max_height = _usedHeight = framebuffer->height;
+        geometry.aspect_ratio = _aspectRatio; // maintain the aspect ration
+
+        if (!setGeometry(&geometry)) {
+            return false;
+        }
+    }
 
     void* texturePixels = nullptr;
     int texturePitch = 0;
 
-    if (SDL_LockTexture(_texture, &rect, &texturePixels, &texturePitch) != 0) {
+    if (SDL_LockTexture(_texture, nullptr, &texturePixels, &texturePitch) != 0) {
         _logger->error("SDL_LockTexture() failed: %s", SDL_GetError());
         return false;
     }
@@ -299,6 +316,7 @@ bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
     framebuffer->memory_flags = RETRO_MEMORY_ACCESS_WRITE | RETRO_MEMORY_TYPE_CACHED;
 
     _swFramebuffer = texturePixels;
+    _logger->debug("Returning software framebuffer %p", texturePixels);
     return true;
 }
 
@@ -342,32 +360,40 @@ void Video::refresh(void const* data, unsigned width, unsigned height, size_t pi
     }
 
     if (data != _swFramebuffer) {
-        // Not using the software framebuffer, copy the pixels.
-        SDL_Rect rect;
-        rect.x = rect.y = 0;
-        rect.w = _usedWidth = width;
-        rect.h = _usedHeight = height;
+        if (_texture != nullptr) {
+            // Not using the software framebuffer, copy the pixels.
+            SDL_Rect rect;
+            rect.x = rect.y = 0;
+            rect.w = _usedWidth = width;
+            rect.h = _usedHeight = height;
 
-        void* texturePixels = nullptr;
-        int texturePitch = 0;
+            void* texturePixels = nullptr;
+            int texturePitch = 0;
 
-        _logger->debug("Refreshing %d x %d texture", rect.w, rect.h);
+            _logger->debug("Refreshing %d x %d rectangle in the texture", rect.w, rect.h);
 
-        if (SDL_LockTexture(_texture, &rect, &texturePixels, &texturePitch) != 0) {
-            _logger->error("SDL_LockTexture() failed: %s", SDL_GetError());
-            return;
+            if (SDL_LockTexture(_texture, &rect, &texturePixels, &texturePitch) != 0) {
+                _logger->error("SDL_LockTexture() failed: %s", SDL_GetError());
+                return;
+            }
+
+            auto source = static_cast<uint8_t const*>(data);
+            auto dest = static_cast<uint8_t*>(texturePixels);
+
+            for (unsigned y = 0; y < height; y++) {
+                memcpy(dest, source, pitch);
+                source += pitch;
+                dest += texturePitch;
+            }
+
+            SDL_UnlockTexture(_texture);
         }
-
-        auto source = static_cast<uint8_t const*>(data);
-        auto dest = static_cast<uint8_t*>(texturePixels);
-
-        for (unsigned y = 0; y < height; y++) {
-            memcpy(dest, source, pitch);
-            source += pitch;
-            dest += texturePitch;
+        else {
+            _logger->error("Could not refresh the texture, it's null");
         }
-
-        SDL_UnlockTexture(_texture);
+    }
+    else {
+        _logger->debug("No need to refresh the texture, core rendered directly to the frontend framebuffer");
     }
 
     _swFramebuffer = nullptr;
@@ -395,6 +421,7 @@ void Video::reset() {
 
     _texture = nullptr;
     _textureWidth = _textureHeight = 0;
+    _textureFormat = RETRO_PIXEL_FORMAT_UNKNOWN;
     _usedWidth = _usedHeight = 0;
 
     _swFramebuffer = nullptr;
