@@ -67,7 +67,7 @@ static lrcpp::Frontend singleton(fsmMemory);
 
 lrcpp::Frontend& lrcpp::Frontend::getInstance() {
 #ifndef __circle__
-    static uint8_t fsmMemory[sizeof(CoreFsm)] alignas(CoreFsm);
+    static uint64_t fsmMemory[(sizeof(CoreFsm) + sizeof(uint64_t) - 1) & -sizeof(uint64_t)];
     static Frontend singleton(fsmMemory);
 #endif
 
