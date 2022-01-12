@@ -3,7 +3,7 @@
 #include <lrcpp/Components.h>
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -51,6 +51,6 @@ protected:
     std::string _coreDir;
     bool _supportsNoGame;
 
-    std::unordered_map<std::string, std::string> _options;
+    std::map<std::string, std::string> _options;
     bool _optionsUpdated;
 };

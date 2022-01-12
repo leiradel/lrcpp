@@ -5,7 +5,7 @@
 #include <SDL.h>
 
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 class Input: public lrcpp::Input {
@@ -61,7 +61,7 @@ protected:
 
     lrcpp::Logger* _logger;
 
-    std::unordered_map<Sint32, Gamepad> _gamepads;
+    std::map<Sint32, Gamepad> _gamepads;
     std::vector<Gamepad*> _ports;
 
     int _mouseX;
