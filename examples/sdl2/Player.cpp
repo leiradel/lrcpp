@@ -2,6 +2,7 @@
 
 #include <lrcpp/Frontend.h>
 
+#include <errno.h>
 #include <sys/stat.h>
 
 bool Player::init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness) {
