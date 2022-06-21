@@ -257,6 +257,7 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
     ok = ok && _fsm->getSystemAvInfo(&avinfo);
     ok = ok && setSystemAvInfo(&avinfo);
 
+    _shutdownRequested = false;
     return ok;
 }
 
@@ -272,18 +273,12 @@ bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info 
     ok = ok && _fsm->getSystemAvInfo(&avinfo);
     ok = ok && setSystemAvInfo(&avinfo);
 
+    _shutdownRequested = false;
     return ok;
 }
 
 bool lrcpp::Frontend::run() {
-    _shutdownRequested = false;
-    bool const ok = _fsm->run();
-
-    if (ok && _shutdownRequested) {
-        return _fsm->unload();
-    }
-
-    return ok;
+    return _fsm->run();
 }
 
 bool lrcpp::Frontend::reset() {
@@ -341,6 +336,11 @@ bool lrcpp::Frontend::getMemoryData(unsigned id, void** data) {
 bool lrcpp::Frontend::getMemorySize(unsigned id, size_t* size) {
     return _fsm->getMemorySize(id, size);
 }
+
+bool lrcpp::Frontend::shutdownRequested() const {
+    return _shutdownRequested;
+}
+
 
 bool lrcpp::Frontend::setControllerPortDevice(unsigned port, unsigned device) {
     return _fsm->setControllerPortDevice(port, device);
