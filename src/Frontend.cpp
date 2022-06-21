@@ -51,6 +51,7 @@ lrcpp::Frontend::Frontend(void* fsmMemory)
     , _perf(nullptr)
     , _fsm(new (fsmMemory) CoreFsm(_core))
     , _supportsNoGame(false)
+    , _shutdownRequested(false)
 {}
 
 lrcpp::Frontend::~Frontend() {
@@ -275,7 +276,14 @@ bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info 
 }
 
 bool lrcpp::Frontend::run() {
-    return _fsm->run();
+    _shutdownRequested = false;
+    bool const ok = _fsm->run();
+
+    if (ok && _shutdownRequested) {
+        return _fsm->unload();
+    }
+
+    return ok;
 }
 
 bool lrcpp::Frontend::reset() {
@@ -355,7 +363,8 @@ bool lrcpp::Frontend::showMessage(struct retro_message const* data) {
 }
 
 bool lrcpp::Frontend::shutdown() {
-    return _fsm->unload();
+    _shutdownRequested = true;
+    return true;
 }
 
 bool lrcpp::Frontend::setPerformanceLevel(unsigned data) {

@@ -214,6 +214,8 @@ namespace lrcpp {
 
         struct retro_vfs_interface _virtualFileSystemInterface;
         struct retro_midi_interface _midiInterface;
+
+        bool volatile _shutdownRequested;
     };
 } // namespace lrcpp
 
