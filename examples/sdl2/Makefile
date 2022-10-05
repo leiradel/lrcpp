@@ -1,6 +1,6 @@
 INCLUDES=-I../../include -I.
-CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic `sdl2-config --cflags`
-CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic `sdl2-config --cflags`
+CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic -I/home/leiradel/SDL2-2.0.20/include -D_REENTRANT
+CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic -I/home/leiradel/SDL2-2.0.20/include -D_REENTRANT
 LDFLAGS=`sdl2-config --libs`
 
 ifneq ($(findstring Linux,$(shell uname -a)),)

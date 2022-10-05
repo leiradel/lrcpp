@@ -16,7 +16,45 @@ static void Usage(FILE* out) {
     fprintf(out, "<content path>   The path to the content file to use with the core\n");
 }
 
-extern "C" int Main(int argc, char const* argv[]) {
+static void CopyFiles() {
+    static char const* const files[] = {
+        "mdkPSX_10.bin", "mdkPSX_11.bin", "mdkPSX_12.bin", "mdkPSX_13.bin", "mdkPSX_14.bin", "mdkPSX_15.bin",
+        "mdkPSX_16.bin", "mdkPSX_17.bin", "mdkPSX_18.bin", "mdkPSX_19.bin", "mdkPSX_1.bin", "mdkPSX_20.bin",
+        "mdkPSX_21.bin", "mdkPSX_22.bin", "mdkPSX_23.bin", "mdkPSX_24.bin", "mdkPSX_25.bin", "mdkPSX_26.bin",
+        "mdkPSX_27.bin", "mdkPSX_28.bin", "mdkPSX_29.bin", "mdkPSX_2.bin", "mdkPSX_30.bin", "mdkPSX_3.bin",
+        "mdkPSX_4.bin", "mdkPSX_5.bin", "mdkPSX_6.bin", "mdkPSX_7.bin", "mdkPSX_8.bin", "mdkPSX_9.bin",
+        "mdkPSX.cue", "swanstation_libretro_android.so", "scph5501.bin"
+    };
+
+    auto const prefPath = std::string(SDL_GetPrefPath("antstream", "pacman"));
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Pref path: \"%s\"", prefPath.c_str());
+
+    for (size_t i = 0; i < sizeof(files) / sizeof(files[0]); i++) {
+        auto const outPath = prefPath + files[i];
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Extracting to \"%s\"", outPath.c_str());
+
+        SDL_RWops* const in = SDL_RWFromFile(files[i], "rb");
+        FILE* const out = fopen(outPath.c_str(), "wb");
+
+        for (;;) {
+            uint8_t buffer[4096];
+            size_t const num_read = SDL_RWread(in, buffer, 1, sizeof(buffer));
+
+            if (num_read == 0) {
+                break;
+            }
+
+            fwrite(buffer, 1, num_read, out);
+        }
+
+        fclose(out);
+        SDL_FreeRW(in);
+    }
+}
+
+extern "C" int Main(int argc, char* argv[]) {
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+
     char const* corePath = nullptr;
     std::vector<std::string> configPaths;
     bool configSpecified = false;
@@ -87,6 +125,16 @@ extern "C" int Main(int argc, char const* argv[]) {
             contentPath = argv[i];
         }
     }
+
+    CopyFiles();
+
+    auto const prefPath = std::string(SDL_GetPrefPath("antstream", "mdk"));
+
+    std::string const& corePathStr = prefPath + "swanstation_libretro_android.so";
+    corePath = corePathStr.c_str();
+
+    std::string const& contentPathStr = prefPath + "mdkPSX.cue";
+    contentPath = contentPathStr.c_str();
 
     if (corePath == nullptr || contentPath == nullptr) {
         Usage(stderr);

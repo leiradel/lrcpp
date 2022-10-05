@@ -1,5 +1,7 @@
 #include "Audio.h"
 
+#include <string.h>
+
 Audio::Audio() {
     reset();
 }

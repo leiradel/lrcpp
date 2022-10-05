@@ -1,5 +1,9 @@
 #include "Input.h"
 
+#include <lrcpp/Frontend.h>
+
+#include <string.h>
+
 Input::Input() {
     reset();
 }
@@ -225,6 +229,10 @@ void Input::process(SDL_ControllerDeviceEvent const* event) {
 
         _ports.emplace_back(gamepad);
         _logger->info("Controller %s (%s) added", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+
+        auto& frontend = lrcpp::Frontend::getInstance();
+        frontend.setControllerPortDevice(_ports.size() - 1, RETRO_DEVICE_JOYPAD);
+        _logger->info("    Controller mapped to port %zu", _ports.size() - 1);
 
         size_t const count = _ports.size();
 

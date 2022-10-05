@@ -1,6 +1,8 @@
-// It seems SDL doesn't like main being in a C++ file.
-int Main(int argc, char const* argv[]);
+#include <SDL.h>
 
-int main(int argc, char const* argv[]) {
+// It seems SDL doesn't like main being in a C++ file.
+int Main(int argc, char* argv[]);
+
+int main(int argc, char* argv[]) {
     return Main(argc, argv);
 }

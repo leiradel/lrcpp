@@ -3,6 +3,7 @@
 #include <lrcpp/Frontend.h>
 
 #include <errno.h>
+#include <string.h>
 #include <sys/stat.h>
 
 bool Player::init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness) {
@@ -12,7 +13,7 @@ bool Player::init(std::vector<std::string> const& configPaths, char const* coreP
         return false;
     }
 
-    _logger.setLevel(RETRO_LOG_WARN);
+    _logger.setLevel(RETRO_LOG_DEBUG);
 
     if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
         _logger.error("Could not initialize the configuration component");

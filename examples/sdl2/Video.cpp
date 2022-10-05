@@ -1,5 +1,7 @@
 #include "Video.h"
 
+#include <string.h>
+
 Video::Video() {
     reset();
 }
