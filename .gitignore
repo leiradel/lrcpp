@@ -2,6 +2,7 @@
 examples/sdl2/sdl2lrcpp
 .gradle/
 build/
+examples/sdl2/android/app/src/main/assets/
 
 # Created by https://www.toptal.com/developers/gitignore/api/c,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=c,c++
