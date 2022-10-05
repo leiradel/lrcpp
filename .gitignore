@@ -1,4 +1,5 @@
-# Ignore files related to Android
+.vscode/
+examples/sdl2/sdl2lrcpp
 .gradle/
 build/
 
