@@ -59,6 +59,9 @@ namespace lrcpp {
         bool getMemorySize(unsigned id, size_t* size);
         bool setControllerPortDevice(unsigned port, unsigned device);
 
+        // lrcpp API
+        bool shutdownRequested() const;
+
 #ifdef __circle__
     public:
 #else
@@ -214,6 +217,8 @@ namespace lrcpp {
 
         struct retro_vfs_interface _virtualFileSystemInterface;
         struct retro_midi_interface _midiInterface;
+
+        bool _shutdownRequested;
     };
 } // namespace lrcpp
 
