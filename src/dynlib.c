@@ -1,4 +1,4 @@
-#include "dynlib.h"
+#include <lrcpp/dynlib.h>
 
 #ifdef _WIN32
 
