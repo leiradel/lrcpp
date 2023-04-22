@@ -82,6 +82,21 @@ namespace lrcpp {
         static void setCurrent(Frontend* frontend);
 
         // Components
+        Logger* getLogger();
+        Config* getConfig();
+        Video* getVideo();
+        Led* getLed();
+        Audio* getAudio();
+        Midi* getMidi();
+        Input* getInput();
+        Rumble* getRumble();
+        Sensor* getSensor();
+        Camera* getCamera();
+        Location* getLocation();
+        VirtualFileSystem* getVirtualFileSystem();
+        DiskControl* getDiskControl();
+        Perf* getPerf();
+
         bool setLogger(Logger* logger);
         bool setConfig(Config* config);
         bool setVideo(Video* video);

@@ -53,6 +53,60 @@ lrcpp::Frontend::~Frontend() {
     CoreFsm_Transition_unset(&_fsm);
 }
 
+lrcpp::Logger* lrcpp::Frontend::getLogger() {
+    return _logger;
+}
+
+lrcpp::Config* lrcpp::Frontend::getConfig() {
+    return _config;
+}
+
+lrcpp::Video* lrcpp::Frontend::getVideo() {
+    return _video;
+}
+
+lrcpp::Led* lrcpp::Frontend::getLed() {
+    return _led;
+}
+
+lrcpp::Audio* lrcpp::Frontend::getAudio() {
+    return _audio;
+}
+
+lrcpp::Midi* lrcpp::Frontend::getMidi() {
+    return _midi;
+}
+
+lrcpp::Input* lrcpp::Frontend::getInput() {
+    return _input;
+}
+
+lrcpp::Rumble* lrcpp::Frontend::getRumble() {
+    return _rumble;
+}
+
+lrcpp::Sensor* lrcpp::Frontend::getSensor() {
+    return _sensor;
+}
+
+lrcpp::Camera* lrcpp::Frontend::getCamera() {
+    return _camera;
+}
+
+lrcpp::Location* lrcpp::Frontend::getLocation() {
+    return _location;
+}
+
+lrcpp::VirtualFileSystem* lrcpp::Frontend::getVirtualFileSystem() {
+    return _virtualFileSystem;
+}
+
+lrcpp::DiskControl* lrcpp::Frontend::getDiskControl() {
+    return _diskControl;
+}
+
+lrcpp::Perf* lrcpp::Frontend::getPerf() {
+    return _perf;
 }
 
 bool lrcpp::Frontend::setLogger(Logger* logger) {
