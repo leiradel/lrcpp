@@ -68,12 +68,18 @@ namespace lrcpp {
 
     class Frontend final {
     public:
+        Frontend();
+
         Frontend(Frontend const&) = delete;
-        Frontend& operator=(Frontend const&) = delete;
+        Frontend(Frontend&&) = delete;
+        void operator=(Frontend const&) = delete;
+        void operator=(Frontend&&) = delete;
 
         ~Frontend();
 
-        static Frontend& getInstance();
+        // Get thread local storage for the current frontend
+        static Frontend* getCurrent();
+        static void setCurrent(Frontend* frontend);
 
         // Components
         bool setLogger(Logger* logger);
@@ -120,9 +126,6 @@ namespace lrcpp {
         bool shutdownRequested() const;
 
     protected:
-        // Frontend is a singleton
-        Frontend();
-
         // Environment functions
         bool setRotation(unsigned data);
         bool getOverscan(bool* data);
