@@ -10,20 +10,16 @@ CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic
 
 all: liblrcpp.a
 
-liblrcpp.a: src/Components.o src/Core.o src/CoreFsm.o src/dynlib.o src/Frontend.o
+liblrcpp.a: src/Components.o src/CoreFsm.o src/Frontend.o
 	ar -crs $@ $+
 
-src/Components.o: src/Components.cpp src/Components.h src/libretro.h
+src/Components.o: src/Components.cpp include/lrcpp/Components.h include/lrcpp/libretro.h
 
-src/Core.o: src/Core.cpp src/Core.h src/libretro.h src/dynlib.h
+src/CoreFsm.o: src/CoreFsm.cpp include/lrcpp/CoreFsm.h include/lrcpp/libretro.h
 
-src/CoreFsm.o: src/CoreFsm.cpp src/CoreFsm.h src/libretro.h src/dynlib.h
-
-src/dynlib.o: src/dynlib.c src/dynlib.h
-
-src/Frontend.o: src/Frontend.cpp src/Frontend.h src/Components.h src/libretro.h src/Core.h src/dynlib.h src/CoreFsm.h
+src/Frontend.o: src/Frontend.cpp include/lrcpp/Frontend.h src/lrcpp/Components.h src/lrcpp/libretro.h include/lrcpp/CoreFsm.h
 
 clean:
-	rm -f liblrcpp.a src/Components.o src/Core.o src/CoreFsm.o src/dynlib.o src/Frontend.o
+	rm -f liblrcpp.a src/Components.o src/CoreFsm.o src/Frontend.o
 
 .PHONY: clean

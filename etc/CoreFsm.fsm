@@ -26,131 +26,116 @@ header {
     #include <lrcpp/libretro.h>
 
     namespace lrcpp {
-        class Core;
-        class CoreFunctions;
+        struct Core;
     }
 
-    typedef lrcpp::Core Core;
-    typedef lrcpp::CoreFunctions const* const_core_functions_ptr_t;
-    typedef size_t* size_ptr_t;
-    typedef char const* const_char_ptr_t;
-    typedef retro_game_info const* const_retro_game_info_ptr_t;
-    typedef void* void_ptr_t;
-    typedef void const* const_void_ptr_t;
-    typedef void** void_ptr_ptr_t;
-    typedef unsigned* unsigned_ptr_t;
-    typedef struct retro_system_info* retro_system_info_ptr_t;
-    typedef struct retro_system_av_info* retro_system_av_info_ptr_t;
+    typedef lrcpp::Core* CorePtr;
+    typedef size_t* SizePtr;
+    typedef char const* ConstCharPtr;
+    typedef retro_game_info const* ConstRetroGameInfoPtr;
+    typedef void* VoidPtr;
+    typedef void const* ConstVoidPtr;
+    typedef void** VoidPtrPtr;
+    typedef unsigned* UnsignedPtr;
+    typedef struct retro_system_info* RetroSystemInfoPtr;
+    typedef struct retro_system_av_info* RetroSystemAvInfoPtr;
 }
 
-cpp {
-    #include <lrcpp/Core.h>
+implementation {
+    #include <lrcpp/CoreFsm.h>
+    #include <lrcpp/Frontend.h>
 }
 
-fsm CoreFsm {
-    class Core as _ctx;
-
+fsm CoreFsm(CorePtr core) {
     Start {
-        load(const_char_ptr_t path) => CoreLoaded {
-            if (!_ctx.load(path)) {
-                forbid;
-            }
-        }
-
-        use(const_core_functions_ptr_t functions) => CoreLoaded {
-            if (!_ctx.use(functions)) {
-                forbid;
-            }
-        }
+        coreSet() => CoreSet;
     }
 
-    CoreLoaded {
-        apiVersion(unsigned_ptr_t version) => CoreLoaded {
-            *version = _ctx.apiVersion();
+    CoreSet {
+        apiVersion(UnsignedPtr version) => CoreSet {
+            *version = self->core->apiVersion();
         }
 
-        getSystemInfo(retro_system_info_ptr_t info) => CoreLoaded {
-            _ctx.getSystemInfo(info);
+        getSystemInfo(RetroSystemInfoPtr info) => CoreSet {
+            self->core->getSystemInfo(info);
         }
 
         setEnvironment(retro_environment_t cb) => EnvironmentSet {
-            _ctx.setEnvironment(cb);
+            self->core->setEnvironment(cb);
         }
 
-        unload() => Start {
-            _ctx.unload();
-        }
+        unset() => Start;
     }
 
     EnvironmentSet {
-        apiVersion(unsigned_ptr_t version) => EnvironmentSet {
-            *version = _ctx.apiVersion();
+        apiVersion(UnsignedPtr version) => EnvironmentSet {
+            *version = self->core->apiVersion();
         }
 
-        getSystemInfo(retro_system_info_ptr_t info) => EnvironmentSet {
-            _ctx.getSystemInfo(info);
+        getSystemInfo(RetroSystemInfoPtr info) => EnvironmentSet {
+            self->core->getSystemInfo(info);
         }
 
         setControllerPortDevice(unsigned port, unsigned device) => EnvironmentSet {
-            _ctx.setControllerPortDevice(port, device);
+            self->core->setControllerPortDevice(port, device);
         }
 
         init() => CoreInitialized {
-            _ctx.init();
+            self->core->init();
         }
 
-        gotoCoreLoaded() => CoreLoaded; // Only so that the state goes to CoreLoaded;
+        gotoCoreSet() => CoreSet; // Only so that the state goes to CoreSet;
 
-        unload() => gotoCoreLoaded() => unload();
+        unset() => gotoCoreSet() => unset();
     }
 
     CoreInitialized {
-        apiVersion(unsigned_ptr_t version) => CoreInitialized {
-            *version = _ctx.apiVersion();
+        apiVersion(UnsignedPtr version) => CoreInitialized {
+            *version = self->core->apiVersion();
         }
 
-        getSystemInfo(retro_system_info_ptr_t info) => CoreInitialized {
-            _ctx.getSystemInfo(info);
+        getSystemInfo(RetroSystemInfoPtr info) => CoreInitialized {
+            self->core->getSystemInfo(info);
         }
 
         setControllerPortDevice(unsigned port, unsigned device) => CoreInitialized {
-            _ctx.setControllerPortDevice(port, device);
+            self->core->setControllerPortDevice(port, device);
         }
 
-        loadGame(const_retro_game_info_ptr_t gameInfo) => GameLoaded {
-            if (!_ctx.loadGame(gameInfo)) {
+        loadGame(ConstRetroGameInfoPtr gameInfo) => GameLoaded {
+            if (!self->core->loadGame(gameInfo)) {
                 forbid;
             }
         }
 
-        loadGameSpecial(unsigned gameType, const_retro_game_info_ptr_t info, size_t numInfo) => GameLoaded {
-            if (!_ctx.loadGameSpecial(gameType, info, numInfo)) {
+        loadGameSpecial(unsigned gameType, ConstRetroGameInfoPtr info, size_t numInfo) => GameLoaded {
+            if (!self->core->loadGameSpecial(gameType, info, numInfo)) {
                 forbid;
             }
         }
 
         deinit() => EnvironmentSet {
-            _ctx.deinit();
+            self->core->deinit();
         }
 
-        unload() => deinit() => unload();
+        unset() => deinit() => unset();
     }
 
     GameLoaded {
-        apiVersion(unsigned_ptr_t version) => GameLoaded {
-            *version = _ctx.apiVersion();
+        apiVersion(UnsignedPtr version) => GameLoaded {
+            *version = self->core->apiVersion();
         }
 
-        getSystemInfo(retro_system_info_ptr_t info) => GameLoaded {
-            _ctx.getSystemInfo(info);
+        getSystemInfo(RetroSystemInfoPtr info) => GameLoaded {
+            self->core->getSystemInfo(info);
         }
 
         setControllerPortDevice(unsigned port, unsigned device) => GameLoaded {
-            _ctx.setControllerPortDevice(port, device);
+            self->core->setControllerPortDevice(port, device);
         }
 
-        getSystemAvInfo(retro_system_av_info_ptr_t info) => GameLoaded {
-            _ctx.getSystemAvInfo(info);
+        getSystemAvInfo(RetroSystemAvInfoPtr info) => GameLoaded {
+            self->core->getSystemAvInfo(info);
         }
 
         setCallbacks(
@@ -160,101 +145,101 @@ fsm CoreFsm {
             retro_input_poll_t inputPoll,
             retro_input_state_t inputState
         ) => GameRunning {
-            _ctx.setVideoRefresh(videoRefresh);
-            _ctx.setAudioSample(audioSample);
-            _ctx.setAudioSampleBatch(audioSampleBatch);
-            _ctx.setInputPoll(inputPoll);
-            _ctx.setInputState(inputState);
+            self->core->setVideoRefresh(videoRefresh);
+            self->core->setAudioSample(audioSample);
+            self->core->setAudioSampleBatch(audioSampleBatch);
+            self->core->setInputPoll(inputPoll);
+            self->core->setInputState(inputState);
         }
 
         unloadGame() => CoreInitialized {
-            _ctx.unloadGame();
+            self->core->unloadGame();
         }
 
-        getRegion(unsigned_ptr_t region) => GameLoaded {
-            *region = _ctx.getRegion();
+        getRegion(UnsignedPtr region) => GameLoaded {
+            *region = self->core->getRegion();
         }
 
-        getMemoryData(unsigned id, void_ptr_ptr_t data) => GameLoaded {
-            *data = _ctx.getMemoryData(id);
+        getMemoryData(unsigned id, VoidPtrPtr data) => GameLoaded {
+            *data = self->core->getMemoryData(id);
         }
 
-        getMemorySize(unsigned id, size_ptr_t size) => GameLoaded {
-            *size = _ctx.getMemorySize(id);
+        getMemorySize(unsigned id, SizePtr size) => GameLoaded {
+            *size = self->core->getMemorySize(id);
         }
 
         deinit() => unloadGame() => deinit();
 
-        unload() => unloadGame() => unload();
+        unset() => unloadGame() => unset();
     }
     
     GameRunning {
-        apiVersion(unsigned_ptr_t version) => GameRunning {
-            *version = _ctx.apiVersion();
+        apiVersion(UnsignedPtr version) => GameRunning {
+            *version = self->core->apiVersion();
         }
 
-        getSystemInfo(retro_system_info_ptr_t info) => GameRunning {
-            _ctx.getSystemInfo(info);
+        getSystemInfo(RetroSystemInfoPtr info) => GameRunning {
+            self->core->getSystemInfo(info);
         }
 
         setControllerPortDevice(unsigned port, unsigned device) => GameRunning {
-            _ctx.setControllerPortDevice(port, device);
+            self->core->setControllerPortDevice(port, device);
         }
 
-        getSystemAvInfo(retro_system_av_info_ptr_t info) => GameRunning {
-            _ctx.getSystemAvInfo(info);
+        getSystemAvInfo(RetroSystemAvInfoPtr info) => GameRunning {
+            self->core->getSystemAvInfo(info);
         }
 
         run() => GameRunning {
-            _ctx.run();
+            self->core->run();
         }
 
         reset() => GameRunning {
-            _ctx.reset();
+            self->core->reset();
         }
 
-        serializeSize(size_ptr_t size) => GameRunning {
-            *size = _ctx.serializeSize();
+        serializeSize(SizePtr size) => GameRunning {
+            *size = self->core->serializeSize();
         }
 
-        serialize(void_ptr_t data, size_t size) => GameRunning {
-            if (!_ctx.serialize(data, size)) {
+        serialize(VoidPtr data, size_t size) => GameRunning {
+            if (!self->core->serialize(data, size)) {
                 forbid;
             }
         }
 
-        unserialize(const_void_ptr_t data, size_t size) => GameRunning {
-            if (!_ctx.unserialize(data, size)) {
+        unserialize(ConstVoidPtr data, size_t size) => GameRunning {
+            if (!self->core->unserialize(data, size)) {
                 forbid;
             }
         }
 
         cheatReset() => GameRunning {
-            _ctx.cheatReset();
+            self->core->cheatReset();
         }
 
-        cheatSet(unsigned index, bool enabled, const_char_ptr_t code) => GameRunning {
-            _ctx.cheatSet(index, enabled, code);
+        cheatSet(unsigned index, bool enabled, ConstCharPtr code) => GameRunning {
+            self->core->cheatSet(index, enabled, code);
         }
 
-        getRegion(unsigned_ptr_t region) => GameRunning {
-            *region = _ctx.getRegion();
+        getRegion(UnsignedPtr region) => GameRunning {
+            *region = self->core->getRegion();
         }
 
-        getMemoryData(unsigned id, void_ptr_ptr_t data) => GameRunning {
-            *data = _ctx.getMemoryData(id);
+        getMemoryData(unsigned id, VoidPtrPtr data) => GameRunning {
+            *data = self->core->getMemoryData(id);
         }
 
-        getMemorySize(unsigned id, size_ptr_t size) => GameRunning {
-            *size = _ctx.getMemorySize(id);
+        getMemorySize(unsigned id, SizePtr size) => GameRunning {
+            *size = self->core->getMemorySize(id);
         }
 
         unloadGame() => CoreInitialized {
-            _ctx.unloadGame();
+            self->core->unloadGame();
         }
 
         deinit() => unloadGame() => deinit();
 
-        unload() => unloadGame() => unload();
+        unset() => unloadGame() => unset();
     }
 }

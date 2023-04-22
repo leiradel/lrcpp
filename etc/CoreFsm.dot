@@ -2,7 +2,7 @@
 
 digraph CoreFsm {
     CoreInitialized [label="CoreInitialized"];
-    CoreLoaded [label="CoreLoaded"];
+    CoreSet [label="CoreSet"];
     EnvironmentSet [label="EnvironmentSet"];
     GameLoaded [label="GameLoaded"];
     GameRunning [label="GameRunning"];
@@ -14,13 +14,13 @@ digraph CoreFsm {
     CoreInitialized -> GameLoaded [label="loadGame"];
     CoreInitialized -> GameLoaded [label="loadGameSpecial"];
     CoreInitialized -> CoreInitialized [label="setControllerPortDevice"];
-    CoreLoaded -> CoreLoaded [label="apiVersion"];
-    CoreLoaded -> CoreLoaded [label="getSystemInfo"];
-    CoreLoaded -> EnvironmentSet [label="setEnvironment"];
-    CoreLoaded -> Start [label="unload"];
+    CoreSet -> CoreSet [label="apiVersion"];
+    CoreSet -> CoreSet [label="getSystemInfo"];
+    CoreSet -> EnvironmentSet [label="setEnvironment"];
+    CoreSet -> Start [label="unset"];
     EnvironmentSet -> EnvironmentSet [label="apiVersion"];
     EnvironmentSet -> EnvironmentSet [label="getSystemInfo"];
-    EnvironmentSet -> CoreLoaded [label="gotoCoreLoaded"];
+    EnvironmentSet -> CoreSet [label="gotoCoreSet"];
     EnvironmentSet -> CoreInitialized [label="init"];
     EnvironmentSet -> EnvironmentSet [label="setControllerPortDevice"];
     GameLoaded -> GameLoaded [label="apiVersion"];
@@ -47,6 +47,5 @@ digraph CoreFsm {
     GameRunning -> GameRunning [label="setControllerPortDevice"];
     GameRunning -> CoreInitialized [label="unloadGame"];
     GameRunning -> GameRunning [label="unserialize"];
-    Start -> CoreLoaded [label="load"];
-    Start -> CoreLoaded [label="use"];
+    Start -> CoreSet [label="coreSet"];
 }

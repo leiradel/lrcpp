@@ -2,11 +2,69 @@
 #define LRCPP_FRONTEND_H__
 
 #include <lrcpp/Components.h>
-#include <lrcpp/Core.h>
+#include <lrcpp/CoreFsm.h>
+#include <lrcpp/libretro.h>
 
-class CoreFsm;
+#define LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, prefix) \
+    do { \
+        functions.init = prefix ## init; \
+        functions.deinit = prefix ## deinit; \
+        functions.apiVersion = prefix ## api_version; \
+        functions.getSystemInfo = prefix ## get_system_info; \
+        functions.getSystemAvInfo = prefix ## get_system_av_info; \
+        functions.setEnvironment = prefix ## set_environment; \
+        functions.setVideoRefresh = prefix ## set_video_refresh; \
+        functions.setAudioSample = prefix ## set_audio_sample; \
+        functions.setAudioSampleBatch = prefix ## set_audio_sample_batch; \
+        functions.setInputPoll = prefix ## set_input_poll; \
+        functions.setInputState = prefix ## set_input_state; \
+        functions.setControllerPortDevice = prefix ## set_controller_port_device; \
+        functions.reset = prefix ## reset; \
+        functions.run = prefix ## run; \
+        functions.serializeSize = prefix ## serialize_size; \
+        functions.serialize = prefix ## serialize; \
+        functions.unserialize = prefix ## unserialize; \
+        functions.cheatReset = prefix ## cheat_reset; \
+        functions.cheatSet = prefix ## cheat_set; \
+        functions.loadGame = prefix ## load_game; \
+        functions.loadGameSpecial = prefix ## load_game_special; \
+        functions.unloadGame = prefix ## unload_game; \
+        functions.getRegion = prefix ## get_region; \
+        functions.getMemoryData = prefix ## get_memory_data; \
+        functions.getMemorySize = prefix ## get_memory_size; \
+    } while (0)
+
+#define LRCPP_CORE_INIT_FUNCTIONS_DEFAULT(functions) LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, retro_)
+#define LRCPP_CORE_INIT_FUNCTIONS(functions, prefix) LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, prefix ## retro_)
 
 namespace lrcpp {
+    struct Core final {
+        void (*init)();
+        void (*deinit)();
+        unsigned (*apiVersion)();
+        void (*getSystemInfo)(struct retro_system_info*);
+        void (*getSystemAvInfo)(struct retro_system_av_info*);
+        void (*setEnvironment)(retro_environment_t);
+        void (*setVideoRefresh)(retro_video_refresh_t);
+        void (*setAudioSample)(retro_audio_sample_t);
+        void (*setAudioSampleBatch)(retro_audio_sample_batch_t);
+        void (*setInputPoll)(retro_input_poll_t);
+        void (*setInputState)(retro_input_state_t);
+        void (*setControllerPortDevice)(unsigned, unsigned);
+        void (*reset)();
+        void (*run)();
+        size_t (*serializeSize)();
+        bool (*serialize)(void*, size_t);
+        bool (*unserialize)(void const*, size_t);
+        void (*cheatReset)();
+        void (*cheatSet)(unsigned, bool, char const*);
+        bool (*loadGame)(struct retro_game_info const*);
+        bool (*loadGameSpecial)(unsigned, struct retro_game_info const*, size_t);
+        void (*unloadGame)();
+        unsigned (*getRegion)();
+        void* (*getMemoryData)(unsigned);
+        size_t (*getMemorySize)(unsigned);
+    };
 
     class Frontend final {
     public:
@@ -34,8 +92,7 @@ namespace lrcpp {
         bool setPerf(Perf* perf);
 
         // Core life-cycle
-        bool load(char const* corePath);
-        bool use(CoreFunctions const* coreFunctions);
+        bool setCore(Core const* core);
         bool loadGame();
         bool loadGame(char const* gamePath);
         bool loadGame(char const* gamePath, void const* data, size_t size);
@@ -43,7 +100,7 @@ namespace lrcpp {
         bool run();
         bool reset();
         bool unloadGame();
-        bool unload();
+        bool unset();
 
         // Other Libretro API calls
         bool apiVersion(unsigned* version);
@@ -62,15 +119,10 @@ namespace lrcpp {
         // lrcpp API
         bool shutdownRequested() const;
 
-#ifdef __circle__
-    public:
-#else
     protected:
-#endif
         // Frontend is a singleton
-        Frontend(void* fsmMemory);
+        Frontend();
 
-    protected:
         // Environment functions
         bool setRotation(unsigned data);
         bool getOverscan(bool* data);
@@ -211,7 +263,7 @@ namespace lrcpp {
         Perf* _perf;
 
         Core _core;
-        CoreFsm* _fsm;
+        CoreFsm_Context _fsm;
 
         bool _supportsNoGame;
 
