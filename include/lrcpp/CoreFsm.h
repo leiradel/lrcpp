@@ -11,9 +11,11 @@
 
     namespace lrcpp {
         struct Core;
+        class Frontend;
     }
 
     typedef lrcpp::Core* CorePtr;
+    typedef lrcpp::Frontend* FrontendPtr;
     typedef size_t* SizePtr;
     typedef char const* ConstCharPtr;
     typedef retro_game_info const* ConstRetroGameInfoPtr;
@@ -40,6 +42,7 @@ CoreFsm_State;
 typedef struct {
     CoreFsm_State state;
     CorePtr core;
+    FrontendPtr frontend;
 
 #ifdef DEBUG_FSM
     /* Set those after calling CoreFsm_Init when DEBUG_FSM is defined */
@@ -50,7 +53,7 @@ typedef struct {
 CoreFsm_Context;
 
 /* Initialization */
-void CoreFsm_Init(CoreFsm_Context* const self, CorePtr const core);
+void CoreFsm_Init(CoreFsm_Context* const self, CorePtr const core, FrontendPtr const frontend);
 
 /* Query */
 CoreFsm_State CoreFsm_CurrentState(CoreFsm_Context const* const self);

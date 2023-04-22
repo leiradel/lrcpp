@@ -27,9 +27,11 @@ header {
 
     namespace lrcpp {
         struct Core;
+        class Frontend;
     }
 
     typedef lrcpp::Core* CorePtr;
+    typedef lrcpp::Frontend* FrontendPtr;
     typedef size_t* SizePtr;
     typedef char const* ConstCharPtr;
     typedef retro_game_info const* ConstRetroGameInfoPtr;
@@ -46,7 +48,15 @@ implementation {
     #include <lrcpp/Frontend.h>
 }
 
-fsm CoreFsm(CorePtr core) {
+fsm CoreFsm(CorePtr core, FrontendPtr frontend) {
+    before {
+        lrcpp::Frontend::setCurrent(self->frontend);
+    }
+
+    after {
+        lrcpp::Frontend::setCurrent(nullptr);
+    }
+
     Start {
         coreSet() => CoreSet;
     }
