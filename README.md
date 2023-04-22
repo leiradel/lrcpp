@@ -1,11 +1,10 @@
 # **lrcpp**
 
-**lrcpp** is a library meant to ease the development of Libretro frontends. It has four blocks:
+**lrcpp** is a library meant to ease the development of Libretro front-ends. It has three blocks:
 
-* A `Core` class that can load a Libretro core from disk, and has methods that map 1:1 with the ones of the Libretro API.
-* A [Finite State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) (FSM) that manages the state of the core, preventing it from entering an invalid state or running code before required pre-requisites have been fulfilled.
+* A `Frontend` class that manages a Libretro core instance via the FSM, and takes care of all the callbacks and environment calls. It delegates all functionalities to the component classes, which must be implemented and passed to the `Frontend` instance.
 * Components, classes that provide front-end functionalities to the core.
-* A `Frontend` class that manages a `Core` instance via the FSM, and takes care of all the callbacks and environment calls. It delegates all functionalities to the component classes, which must be implemented and passed to the `Frontend` instance.
+* A [Finite State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) (FSM) that manages the state of the core, preventing it from entering an invalid state like running a frame before initializing the core.
 
 ## Usage
 
@@ -13,45 +12,23 @@ In order to have a working application several classes must be implemented. Thei
 
 The minimum set of components required to run the more simple cores are`Audio` and `Video` (only the software framebuffer methods need be implemented for most of the cores, so `setHwRender` can return `false`). `Input` must also be provided in order to be able to interact with the emulation, of course. Some cores will also need configuration information to run, and thus will need a `Config` component. It doesn't hurt to provide a `Logger` component since it's easy to implement.
 
-After implementing the components, get the front-end instance with `getInstance()`, set the implemented components, and use the front-end's managed core life-cycle methods to load a core, load a game, emulate one frame, save and load states etc.
+Due to how the Libretro API was designed, `lrcpp` needs to know the "current" front-end is being utilized in Libretro API calls. This is managed automatically by `lrcpp` via two user-implemented functions:
+
+```cpp
+void lrcpp::Frontend::setCurrent(Frontend* frontend) {
+    // set the current frontend instance
+}
+
+lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
+    // return the current frontend instance
+}
+```
+
+The storage for the `Frontend` instance can be just a static `Frontend*` variable, maybe decorated with `thread_local` if `lrcpp` front-ends will be used in different threads.
+
+After implementing the components and the instance storage, create a `Frontend` instance, set the implemented components, and use the front-end's managed core life-cycle methods to load a core, load a game, emulate one frame, save and load states etc.
 
 ## API
-
-### Core
-
-The `Core` class manages the loading and unloading of a shared object that exposts the functions of the Libretro API. It has the following methods:
-
-* Life-cycle
-  * `Core()`: Contructs an empty core.
-  * `~Core()`: Destructs the core, unloading the shared object that was load by `load`.
-  * `bool load(char const* path)`: Loads a shared object and gets all the symbols of the Libretro API from it. Returns true if on success.
-  * `void unload()` Unloads the shared object.
-* Libretro API
-  * `void init()`
-  * `void deinit()`
-  * `unsigned apiVersion()`
-  * `void getSystemInfo(struct retro_system_info* info)`
-  * `void getSystemAvInfo(struct retro_system_av_info* info)`
-  * `void setEnvironment(retro_environment_t cb)`
-  * `void setVideoRefresh(retro_video_refresh_t cb)`
-  * `void setAudioSample(retro_audio_sample_t cb)`
-  * `void setAudioSampleBatch(retro_audio_sample_batch_t cb)`
-  * `void setInputPoll(retro_input_poll_t cb)`
-  * `void setInputState(retro_input_state_t cb)`
-  * `void setControllerPortDevice(unsigned port, unsigned device)`
-  * `void reset()`
-  * `void run()`
-  * `size_t serializeSize()`
-  * `bool serialize(void* data, size_t size)`
-  * `bool unserialize(void const* data, size_t size)`
-  * `void cheatReset()`
-  * `void cheatSet(unsigned index, bool enabled, char const* code)`
-  * `bool loadGame(struct retro_game_info const* game)`
-  * `bool loadGameSpecial(unsigned game_type, struct retro_game_info const* info, size_t num_info)`
-  * `void unloadGame()`
-  * `unsigned getRegion()`
-  * `void* getMemoryData(unsigned id)`
-  * `size_t getMemorySize(unsigned id)`
 
 ### Frontend
 
@@ -75,6 +52,21 @@ The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the plat
   * `bool setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)`
   * `bool setDiskControl(DiskControl* diskControl)`
   * `bool serPerf(Perf* perf)`
+* There are also getters for each of the components.
+  * `Logger* getLogger()`
+  * `Config* getConfig()`
+  * `Video* getVideo()`
+  * `Led* getLed()`
+  * `Audio* getAudio()`
+  * `Midi* getMidi()`
+  * `Input* getInput()`
+  * `Rumble* getRumble()`
+  * `Sensor* getSensor()`
+  * `Camera* getCamera()`
+  * `Location* getLocation()`
+  * `VirtualFileSystem* getVirtualFileSystem()`
+  * `DiskControl* getDiskControl()`
+  * `Perf* getPerf()`
 * Managed core life-cycle. These methods take into account the current state of the core and will return `false` if it detects inconsistencies like trying to run a frame with a core that has not being loaded. They also return `false` if they fail for any other reason.
   * `bool load(char const* corePath)`: Loads a core from the file system.
   * `bool loadGame()`: Starts the core without a game, only available for cores that call `RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME` with `true`.
