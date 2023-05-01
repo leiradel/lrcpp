@@ -48,13 +48,15 @@ implementation {
     #include <lrcpp/Frontend.h>
 }
 
-fsm CoreFsm(CorePtr core, FrontendPtr frontend) {
+fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
     before {
+        self->previous = lrcpp::Frontend::getCurrent();
         lrcpp::Frontend::setCurrent(self->frontend);
     }
 
     after {
-        lrcpp::Frontend::setCurrent(nullptr);
+        lrcpp::Frontend::setCurrent(self->previous);
+        self->previous = nullptr;
     }
 
     Start {

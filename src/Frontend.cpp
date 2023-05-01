@@ -46,7 +46,7 @@ lrcpp::Frontend::Frontend()
     , _supportsNoGame(false)
     , _shutdownRequested(false)
 {
-    CoreFsm_Init(&_fsm, &_core, this);
+    CoreFsm_Init(&_fsm, &_core, this, nullptr);
 }
 
 lrcpp::Frontend::~Frontend() {

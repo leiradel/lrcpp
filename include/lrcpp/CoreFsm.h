@@ -43,6 +43,7 @@ typedef struct {
     CoreFsm_State state;
     CorePtr core;
     FrontendPtr frontend;
+    FrontendPtr previous;
 
 #ifdef DEBUG_FSM
     /* Set those after calling CoreFsm_Init when DEBUG_FSM is defined */
@@ -53,7 +54,7 @@ typedef struct {
 CoreFsm_Context;
 
 /* Initialization */
-void CoreFsm_Init(CoreFsm_Context* const self, CorePtr const core, FrontendPtr const frontend);
+void CoreFsm_Init(CoreFsm_Context* const self, CorePtr const core, FrontendPtr const frontend, FrontendPtr const previous);
 
 /* Query */
 CoreFsm_State CoreFsm_CurrentState(CoreFsm_Context const* const self);

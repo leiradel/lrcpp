@@ -24,11 +24,12 @@ static void fsmprintf(CoreFsm_Context* const self, const char* fmt, ...) {
 #endif
 
 /* Initialization */
-void CoreFsm_Init(CoreFsm_Context* const self, CorePtr const core, FrontendPtr const frontend) {
+void CoreFsm_Init(CoreFsm_Context* const self, CorePtr const core, FrontendPtr const frontend, FrontendPtr const previous) {
     self->state = CoreFsm_State_Start;
 
     self->core = core;
     self->frontend = frontend;
+    self->previous = previous;
 }
 
 CoreFsm_State CoreFsm_CurrentState(CoreFsm_Context const* const self) {
@@ -110,6 +111,7 @@ static int global_before(CoreFsm_Context* const self) {
     (void)self;
 /*#line 52 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
+        self->previous = lrcpp::Frontend::getCurrent();
         lrcpp::Frontend::setCurrent(self->frontend);
     
     return 1;
@@ -125,9 +127,10 @@ static int local_before(CoreFsm_Context* const self) {
 
 static void global_after(CoreFsm_Context* const self) {
     (void)self;
-/*#line 56 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 57 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
-        lrcpp::Frontend::setCurrent(nullptr);
+        lrcpp::Frontend::setCurrent(self->previous);
+        self->previous = nullptr;
     
 }
 
@@ -160,7 +163,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
                 return 0;
             }
 
-/*#line 103 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 105 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *version = self->core->apiVersion();
         
@@ -201,7 +204,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
                 return 0;
             }
 
-/*#line 65 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 67 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *version = self->core->apiVersion();
         
@@ -242,7 +245,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
                 return 0;
             }
 
-/*#line 81 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 83 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *version = self->core->apiVersion();
         
@@ -283,7 +286,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
                 return 0;
             }
 
-/*#line 135 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 137 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *version = self->core->apiVersion();
         
@@ -324,7 +327,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
                 return 0;
             }
 
-/*#line 187 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 189 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *version = self->core->apiVersion();
         
@@ -373,7 +376,7 @@ int CoreFsm_Transition_cheatReset(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 227 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 229 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->cheatReset();
         
@@ -422,7 +425,7 @@ int CoreFsm_Transition_cheatSet(CoreFsm_Context* const self, unsigned index, boo
                 return 0;
             }
 
-/*#line 231 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 233 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->cheatSet(index, enabled, code);
         
@@ -516,7 +519,7 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 127 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 129 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->deinit();
         
@@ -649,7 +652,7 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
                 return 0;
             }
 
-/*#line 173 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 175 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *data = self->core->getMemoryData(id);
         
@@ -690,7 +693,7 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
                 return 0;
             }
 
-/*#line 239 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 241 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *data = self->core->getMemoryData(id);
         
@@ -739,7 +742,7 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
                 return 0;
             }
 
-/*#line 177 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 179 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *size = self->core->getMemorySize(id);
         
@@ -780,7 +783,7 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
                 return 0;
             }
 
-/*#line 243 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 245 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *size = self->core->getMemorySize(id);
         
@@ -829,7 +832,7 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
                 return 0;
             }
 
-/*#line 169 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 171 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *region = self->core->getRegion();
         
@@ -870,7 +873,7 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
                 return 0;
             }
 
-/*#line 235 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 237 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *region = self->core->getRegion();
         
@@ -919,7 +922,7 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
                 return 0;
             }
 
-/*#line 147 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 149 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemAvInfo(info);
         
@@ -960,7 +963,7 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
                 return 0;
             }
 
-/*#line 199 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 201 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemAvInfo(info);
         
@@ -1009,7 +1012,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
                 return 0;
             }
 
-/*#line 107 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 109 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemInfo(info);
         
@@ -1050,7 +1053,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
                 return 0;
             }
 
-/*#line 69 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 71 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemInfo(info);
         
@@ -1091,7 +1094,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
                 return 0;
             }
 
-/*#line 85 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 87 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemInfo(info);
         
@@ -1132,7 +1135,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
                 return 0;
             }
 
-/*#line 139 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 141 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemInfo(info);
         
@@ -1173,7 +1176,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
                 return 0;
             }
 
-/*#line 191 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 193 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->getSystemInfo(info);
         
@@ -1267,7 +1270,7 @@ int CoreFsm_Transition_init(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 93 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 95 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->init();
         
@@ -1316,7 +1319,7 @@ int CoreFsm_Transition_loadGame(CoreFsm_Context* const self, ConstRetroGameInfoP
                 return 0;
             }
 
-/*#line 115 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 117 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             if (!self->core->loadGame(gameInfo)) {
                 return 0;
@@ -1367,7 +1370,7 @@ int CoreFsm_Transition_loadGameSpecial(CoreFsm_Context* const self, unsigned gam
                 return 0;
             }
 
-/*#line 121 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 123 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             if (!self->core->loadGameSpecial(gameType, info, numInfo)) {
                 return 0;
@@ -1418,7 +1421,7 @@ int CoreFsm_Transition_reset(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 207 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 209 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->reset();
         
@@ -1467,7 +1470,7 @@ int CoreFsm_Transition_run(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 203 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 205 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->run();
         
@@ -1516,7 +1519,7 @@ int CoreFsm_Transition_serialize(CoreFsm_Context* const self, VoidPtr data, size
                 return 0;
             }
 
-/*#line 215 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 217 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             if (!self->core->serialize(data, size)) {
                 return 0;
@@ -1567,7 +1570,7 @@ int CoreFsm_Transition_serializeSize(CoreFsm_Context* const self, SizePtr size) 
                 return 0;
             }
 
-/*#line 211 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 213 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             *size = self->core->serializeSize();
         
@@ -1616,7 +1619,7 @@ int CoreFsm_Transition_setCallbacks(CoreFsm_Context* const self, retro_video_ref
                 return 0;
             }
 
-/*#line 157 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 159 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->setVideoRefresh(videoRefresh);
             self->core->setAudioSample(audioSample);
@@ -1669,7 +1672,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
                 return 0;
             }
 
-/*#line 111 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 113 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->setControllerPortDevice(port, device);
         
@@ -1710,7 +1713,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
                 return 0;
             }
 
-/*#line 89 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 91 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->setControllerPortDevice(port, device);
         
@@ -1751,7 +1754,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
                 return 0;
             }
 
-/*#line 143 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 145 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->setControllerPortDevice(port, device);
         
@@ -1792,7 +1795,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
                 return 0;
             }
 
-/*#line 195 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 197 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->setControllerPortDevice(port, device);
         
@@ -1841,7 +1844,7 @@ int CoreFsm_Transition_setEnvironment(CoreFsm_Context* const self, retro_environ
                 return 0;
             }
 
-/*#line 73 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 75 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->setEnvironment(cb);
         
@@ -1890,7 +1893,7 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 165 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 167 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->unloadGame();
         
@@ -1931,7 +1934,7 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
                 return 0;
             }
 
-/*#line 247 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 249 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             self->core->unloadGame();
         
@@ -1980,7 +1983,7 @@ int CoreFsm_Transition_unserialize(CoreFsm_Context* const self, ConstVoidPtr dat
                 return 0;
             }
 
-/*#line 221 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
+/*#line 223 "/home/leiradel/Develop/retromancer/TinyDungeons/src/retromancer/src/3rdparty/lrcpp/module/etc/CoreFsm.fsm"*/
 
             if (!self->core->unserialize(data, size)) {
                 return 0;
