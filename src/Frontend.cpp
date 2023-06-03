@@ -28,6 +28,9 @@ SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 
+// Storage for the current Frontend instance
+static thread_local lrcpp::Frontend* s_frontend;
+
 lrcpp::Frontend::Frontend()
     : _logger(nullptr)
     , _config(nullptr)
@@ -1076,4 +1079,12 @@ void lrcpp::Frontend::inputPoll() {
     if (getCurrent()->_input != nullptr) {
         getCurrent()->_input->poll();
     }
+}
+
+lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
+    return s_frontend;
+}
+
+void lrcpp::Frontend::setCurrent(Frontend* frontend) {
+    s_frontend = frontend;
 }

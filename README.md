@@ -12,22 +12,6 @@ In order to have a working application several classes must be implemented. Thei
 
 The minimum set of components required to run the more simple cores are`Audio` and `Video` (only the software framebuffer methods need be implemented for most of the cores, so `setHwRender` can return `false`). `Input` must also be provided in order to be able to interact with the emulation, of course. Some cores will also need configuration information to run, and thus will need a `Config` component. It doesn't hurt to provide a `Logger` component since it's easy to implement.
 
-Due to how the Libretro API was designed, `lrcpp` needs to know the "current" front-end is being utilized in Libretro API calls. This is managed automatically by `lrcpp` via two user-implemented functions:
-
-```cpp
-void lrcpp::Frontend::setCurrent(Frontend* frontend) {
-    // set the current frontend instance
-}
-
-lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
-    // return the current frontend instance
-}
-```
-
-The storage for the `Frontend` instance can be just a static `Frontend*` variable, maybe decorated with `thread_local` if `lrcpp` front-ends will be used in different threads.
-
-After implementing the components and the instance storage, create a `Frontend` instance, set the implemented components, and use the front-end's managed core life-cycle methods to load a core, load a game, emulate one frame, save and load states etc.
-
 ## API
 
 ### Frontend
