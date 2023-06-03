@@ -56,6 +56,14 @@ lrcpp::Frontend::~Frontend() {
     CoreFsm_Transition_unset(&_fsm);
 }
 
+lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
+    return s_frontend;
+}
+
+void lrcpp::Frontend::setCurrent(Frontend* frontend) {
+    s_frontend = frontend;
+}
+
 lrcpp::Logger* lrcpp::Frontend::getLogger() {
     return _logger;
 }
@@ -1079,12 +1087,4 @@ void lrcpp::Frontend::inputPoll() {
     if (getCurrent()->_input != nullptr) {
         getCurrent()->_input->poll();
     }
-}
-
-lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
-    return s_frontend;
-}
-
-void lrcpp::Frontend::setCurrent(Frontend* frontend) {
-    s_frontend = frontend;
 }

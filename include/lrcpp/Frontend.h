@@ -77,6 +77,10 @@ namespace lrcpp {
 
         ~Frontend();
 
+        // Get thread local storage for the current frontend
+        static Frontend* getCurrent();
+        static void setCurrent(Frontend* frontend);
+
         // Components
         Logger* getLogger();
         Config* getConfig();
@@ -260,10 +264,6 @@ namespace lrcpp {
 
         static int16_t inputState(unsigned port, unsigned device, unsigned index, unsigned id);
         static void inputPoll();
-
-        // Get thread local storage for the current frontend
-        static Frontend* getCurrent();
-        static void setCurrent(Frontend* frontend);
 
         Logger* _logger;
         Config* _config;
