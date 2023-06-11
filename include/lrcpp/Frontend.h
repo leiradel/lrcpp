@@ -5,37 +5,63 @@
 #include <lrcpp/CoreFsm.h>
 #include <lrcpp/libretro.h>
 
-#define LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, prefix) \
-    do { \
-        functions.init = prefix ## init; \
-        functions.deinit = prefix ## deinit; \
-        functions.apiVersion = prefix ## api_version; \
-        functions.getSystemInfo = prefix ## get_system_info; \
-        functions.getSystemAvInfo = prefix ## get_system_av_info; \
-        functions.setEnvironment = prefix ## set_environment; \
-        functions.setVideoRefresh = prefix ## set_video_refresh; \
-        functions.setAudioSample = prefix ## set_audio_sample; \
-        functions.setAudioSampleBatch = prefix ## set_audio_sample_batch; \
-        functions.setInputPoll = prefix ## set_input_poll; \
-        functions.setInputState = prefix ## set_input_state; \
-        functions.setControllerPortDevice = prefix ## set_controller_port_device; \
-        functions.reset = prefix ## reset; \
-        functions.run = prefix ## run; \
-        functions.serializeSize = prefix ## serialize_size; \
-        functions.serialize = prefix ## serialize; \
-        functions.unserialize = prefix ## unserialize; \
-        functions.cheatReset = prefix ## cheat_reset; \
-        functions.cheatSet = prefix ## cheat_set; \
-        functions.loadGame = prefix ## load_game; \
-        functions.loadGameSpecial = prefix ## load_game_special; \
-        functions.unloadGame = prefix ## unload_game; \
-        functions.getRegion = prefix ## get_region; \
-        functions.getMemoryData = prefix ## get_memory_data; \
-        functions.getMemorySize = prefix ## get_memory_size; \
-    } while (0)
+#define LRCPP_DECLARE_CORE_FUNCTIONS(prefix) \
+    extern "C" { \
+        void prefix ## retro_init(void); \
+        void prefix ## retro_deinit(void); \
+        unsigned prefix ## retro_api_version(void); \
+        void prefix ## retro_get_system_info(struct retro_system_info*); \
+        void prefix ## retro_get_system_av_info(struct retro_system_av_info*); \
+        void prefix ## retro_set_environment(retro_environment_t); \
+        void prefix ## retro_set_video_refresh(retro_video_refresh_t); \
+        void prefix ## retro_set_audio_sample(retro_audio_sample_t); \
+        void prefix ## retro_set_audio_sample_batch(retro_audio_sample_batch_t); \
+        void prefix ## retro_set_input_poll(retro_input_poll_t); \
+        void prefix ## retro_set_input_state(retro_input_state_t); \
+        void prefix ## retro_set_controller_port_device(unsigned, unsigned); \
+        void prefix ## retro_reset(void); \
+        void prefix ## retro_run(void); \
+        size_t prefix ## retro_serialize_size(void); \
+        bool prefix ## retro_serialize(void*, size_t); \
+        bool prefix ## retro_unserialize(void const*, size_t); \
+        void prefix ## retro_cheat_reset(void); \
+        void prefix ## retro_cheat_set(unsigned, bool, char const*); \
+        bool prefix ## retro_load_game(struct retro_game_info const*); \
+        bool prefix ## retro_load_game_special(unsigned, struct retro_game_info const*, size_t); \
+        void prefix ## retro_unload_game(void); \
+        unsigned prefix ## retro_get_region(void); \
+        void* prefix ## retro_get_memory_data(unsigned); \
+        size_t prefix ## retro_get_memory_size(unsigned); \
+    }
 
-#define LRCPP_CORE_INIT_FUNCTIONS_DEFAULT(functions) LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, retro_)
-#define LRCPP_CORE_INIT_FUNCTIONS(functions, prefix) LRCPP_CORE_INIT_FUNCTIONS_INTERNAL(functions, prefix ## retro_)
+#define LRCPP_INIT_CORE_FUNCTIONS(core, prefix) \
+    do { \
+        core.init = prefix ## retro_init; \
+        core.deinit = prefix ## retro_deinit; \
+        core.apiVersion = prefix ## retro_api_version; \
+        core.getSystemInfo = prefix ## retro_get_system_info; \
+        core.getSystemAvInfo = prefix ## retro_get_system_av_info; \
+        core.setEnvironment = prefix ## retro_set_environment; \
+        core.setVideoRefresh = prefix ## retro_set_video_refresh; \
+        core.setAudioSample = prefix ## retro_set_audio_sample; \
+        core.setAudioSampleBatch = prefix ## retro_set_audio_sample_batch; \
+        core.setInputPoll = prefix ## retro_set_input_poll; \
+        core.setInputState = prefix ## retro_set_input_state; \
+        core.setControllerPortDevice = prefix ## retro_set_controller_port_device; \
+        core.reset = prefix ## retro_reset; \
+        core.run = prefix ## retro_run; \
+        core.serializeSize = prefix ## retro_serialize_size; \
+        core.serialize = prefix ## retro_serialize; \
+        core.unserialize = prefix ## retro_unserialize; \
+        core.cheatReset = prefix ## retro_cheat_reset; \
+        core.cheatSet = prefix ## retro_cheat_set; \
+        core.loadGame = prefix ## retro_load_game; \
+        core.loadGameSpecial = prefix ## retro_load_game_special; \
+        core.unloadGame = prefix ## retro_unload_game; \
+        core.getRegion = prefix ## retro_get_region; \
+        core.getMemoryData = prefix ## retro_get_memory_data; \
+        core.getMemorySize = prefix ## retro_get_memory_size; \
+    } while (0)
 
 namespace lrcpp {
     struct Core final {
