@@ -41,7 +41,7 @@ namespace {
 
 // Storage for the current Frontend instance
 static thread_local lrcpp::Frontend* s_frontend;
-// Dummy logger to
+// Dummy logger to use if the caller doesn't set one
 static DummyLogger s_logger;
 
 lrcpp::Frontend::Frontend()
