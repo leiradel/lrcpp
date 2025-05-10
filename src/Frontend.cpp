@@ -263,17 +263,17 @@ bool lrcpp::Frontend::setCore(Core const* core) {
     _core = *core;
 
     if (!CoreFsm_Transition_coreSet(&_fsm)) {
-        _logger->error("Error in coreSet transition");
+        _logger->error("Error in coreSet transition\n");
         return false;
     }
 
     if (!CoreFsm_Transition_setEnvironment(&_fsm, staticEnvironmentCallback)) {
-        _logger->error("Error in setEnvironment transition");
+        _logger->error("Error in setEnvironment transition\n");
         return false;
     }
 
     if (!CoreFsm_Transition_init(&_fsm)) {
-        _logger->error("Error in init transition");
+        _logger->error("Error in init transition\n");
         return false;
     }
 
@@ -281,10 +281,10 @@ bool lrcpp::Frontend::setCore(Core const* core) {
 }
 
 bool lrcpp::Frontend::loadGame() {
-    _logger->debug("Starting core without a content");
+    _logger->debug("Starting core without a content\n");
 
     if (!_supportsNoGame) {
-        _logger->error("Core does not support being started without a content");
+        _logger->error("Core does not support being started without a content\n");
         return false;
     }
 
@@ -292,17 +292,17 @@ bool lrcpp::Frontend::loadGame() {
 }
 
 bool lrcpp::Frontend::loadGame(char const* gamePath) {
-    _logger->debug("Asking core to load \"%s\"", gamePath);
+    _logger->debug("Asking core to load \"%s\"\n", gamePath);
 
     retro_system_info info;
 
     if (!CoreFsm_Transition_getSystemInfo(&_fsm, &info)) {
-        _logger->error("Error in getSystemInfo transition");
+        _logger->error("Error in getSystemInfo transition\n");
         return false;
     }
 
     if (!info.need_fullpath) {
-        _logger->error("Core needs the content handed by the frontend");
+        _logger->error("Core needs the content handed by the frontend\n");
         return false;
     }
 
@@ -310,7 +310,7 @@ bool lrcpp::Frontend::loadGame(char const* gamePath) {
 }
 
 bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t size) {
-    _logger->debug("Asking core to load \"%s\" (%p and %zu)", gamePath, data, size);
+    _logger->debug("Asking core to load \"%s\" (%p and %zu)\n", gamePath, data, size);
 
     retro_game_info game;
     game.path = gamePath;
@@ -319,7 +319,7 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
     game.meta = nullptr;
 
     if (!CoreFsm_Transition_loadGame(&_fsm, &game)) {
-        _logger->error("Error in loadGame transition");
+        _logger->error("Error in loadGame transition\n");
         return false;
     }
 
@@ -333,14 +333,14 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
     );
 
     if (!ok) {
-        _logger->error("Error in setCallbacks transition");
+        _logger->error("Error in setCallbacks transition\n");
         return false;
     }
 
     retro_system_av_info avinfo;
 
     if (!CoreFsm_Transition_getSystemAvInfo(&_fsm, &avinfo)) {
-        _logger->error("Error in getSystemAvInfo transition");
+        _logger->error("Error in getSystemAvInfo transition\n");
         return false;
     }
 
