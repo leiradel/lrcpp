@@ -1,4 +1,4 @@
-INCLUDES=-Isrc
+INCLUDES=-Iinclude
 CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic
 CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic
 
@@ -17,7 +17,7 @@ src/Components.o: src/Components.cpp include/lrcpp/Components.h include/lrcpp/li
 
 src/CoreFsm.o: src/CoreFsm.cpp include/lrcpp/CoreFsm.h include/lrcpp/libretro.h
 
-src/Frontend.o: src/Frontend.cpp include/lrcpp/Frontend.h src/lrcpp/Components.h src/lrcpp/libretro.h include/lrcpp/CoreFsm.h
+src/Frontend.o: src/Frontend.cpp include/lrcpp/Frontend.h include/lrcpp/Components.h include/lrcpp/libretro.h include/lrcpp/CoreFsm.h
 
 clean:
 	rm -f liblrcpp.a src/Components.o src/CoreFsm.o src/Frontend.o
