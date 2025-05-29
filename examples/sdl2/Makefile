@@ -15,7 +15,7 @@ endif
 
 OBJECTS=\
 	Audio.o Config.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
-	../../src/Components.o ../../src/CoreFsm.o ../../src/Frontend.o ../../src/dynlib.o
+	../../src/Components.o ../../src/CoreFsm.o ../../src/Frontend.o
 
 all: sdl2lrcpp
 
