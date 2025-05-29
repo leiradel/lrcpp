@@ -162,6 +162,7 @@ error:
 
     if (!_frontend.setCore(&_core)) {
         _logger.error("Could not load the core from \"%s\"", corePath);
+        _dynlib.unload();
         goto error;
     }
 
@@ -170,6 +171,7 @@ error:
     if (!_frontend.getSystemInfo(&sysinfo)) {
         _logger.error("Could not get the system info from the core");
         _frontend.unset();
+        _dynlib.unload();
         goto error;
     }
 
@@ -200,6 +202,7 @@ error:
     if (!ok) {
         _logger.error("Could not load content from \"%s\"", contentPath);
         _frontend.unset();
+        _dynlib.unload();
         goto error;
     }
 
