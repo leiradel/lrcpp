@@ -1,9 +1,53 @@
 #include "Player.h"
 
-#include <lrcpp/Frontend.h>
-
 #include <errno.h>
 #include <sys/stat.h>
+
+bool Player::loadCore(char const *path)
+{
+    if (!_dynlib.load(path)) {
+        _logger.error("Failed to load library: ");
+        return false;
+    }
+
+#define LOAD_CORE_FUNC(member_name, name) \
+    _core.member_name = reinterpret_cast<decltype(_core.member_name)>(_dynlib.getSymbol("retro_" #name)); \
+    if (!_core.member_name) { \
+        _logger.error("Missing symbol: retro_" #name); \
+        return false; \
+    }
+
+    LOAD_CORE_FUNC(init, init)
+    LOAD_CORE_FUNC(deinit, deinit)
+    LOAD_CORE_FUNC(apiVersion, api_version)
+    LOAD_CORE_FUNC(getSystemInfo, get_system_info)
+    LOAD_CORE_FUNC(getSystemAvInfo, get_system_av_info)
+    LOAD_CORE_FUNC(setEnvironment, set_environment)
+    LOAD_CORE_FUNC(setVideoRefresh, set_video_refresh)
+    LOAD_CORE_FUNC(setAudioSample, set_audio_sample)
+    LOAD_CORE_FUNC(setAudioSampleBatch, set_audio_sample_batch)
+    LOAD_CORE_FUNC(setInputPoll, set_input_poll)
+    LOAD_CORE_FUNC(setInputState, set_input_state)
+    LOAD_CORE_FUNC(setControllerPortDevice, set_controller_port_device)
+    LOAD_CORE_FUNC(reset, reset)
+    LOAD_CORE_FUNC(run, run)
+    LOAD_CORE_FUNC(serializeSize, serialize_size)
+    LOAD_CORE_FUNC(serialize, serialize)
+    LOAD_CORE_FUNC(unserialize, unserialize)
+    LOAD_CORE_FUNC(cheatReset, cheat_reset)
+    LOAD_CORE_FUNC(cheatSet, cheat_set)
+    LOAD_CORE_FUNC(loadGame, load_game)
+    LOAD_CORE_FUNC(loadGameSpecial, load_game_special)
+    LOAD_CORE_FUNC(unloadGame, unload_game)
+    LOAD_CORE_FUNC(getRegion, get_region)
+    LOAD_CORE_FUNC(getMemoryData, get_memory_data)
+    LOAD_CORE_FUNC(getMemorySize, get_memory_size)
+
+#undef LOAD_CORE_FUNC
+
+    // If needed: keep lib alive by returning it or capturing in a smart pointer
+    return true;
+}
 
 bool Player::init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness) {
 
@@ -89,9 +133,7 @@ bool Player::init(std::vector<std::string> const& configPaths, char const* coreP
         return false;
     }
 
-    auto& frontend = lrcpp::Frontend::getInstance();
-
-    if (!frontend.setLogger(&_logger) || !frontend.setConfig(&_config) || !frontend.setVideo(&_video)) {
+    if (!_frontend.setLogger(&_logger) || !_frontend.setConfig(&_config) || !_frontend.setVideo(&_video)) {
         _logger.error("Could not set components in the frontend");
 
 error:
@@ -106,23 +148,28 @@ error:
         return false;
     }
 
-    if (!frontend.setPerf(&_perf) || !frontend.setAudio(&_audio) || !frontend.setInput(&_input)) {
+    if (!_frontend.setPerf(&_perf) || !_frontend.setAudio(&_audio) || !_frontend.setInput(&_input)) {
         _logger.error("Could not set components in the frontend");
         goto error;
     }
 
     _logger.info("Loading core from \"%s\"", corePath);
 
-    if (!frontend.load(corePath)) {
+    if (!loadCore(corePath)) {
+        _logger.error("Failed to initialize core.");
+        goto error;
+    }
+
+    if (!_frontend.setCore(&_core)) {
         _logger.error("Could not load the core from \"%s\"", corePath);
         goto error;
     }
 
     retro_system_info sysinfo;
 
-    if (!frontend.getSystemInfo(&sysinfo)) {
+    if (!_frontend.getSystemInfo(&sysinfo)) {
         _logger.error("Could not get the system info from the core");
-        frontend.unload();
+        _frontend.unset();
         goto error;
     }
 
@@ -138,21 +185,21 @@ error:
     bool ok = false;
 
     if (sysinfo.need_fullpath) {
-        ok = frontend.loadGame(contentPath);
+        ok = _frontend.loadGame(contentPath);
     }
     else {
         size_t size = 0;
         void const* data = readAll(contentPath, &size);
 
         if (data != nullptr) {
-            ok = frontend.loadGame(contentPath, data, size);
+            ok = _frontend.loadGame(contentPath, data, size);
             free(const_cast<void*>(data));
         }
     }
 
     if (!ok) {
         _logger.error("Could not load content from \"%s\"", contentPath);
-        frontend.unload();
+        _frontend.unset();
         goto error;
     }
 
@@ -160,10 +207,8 @@ error:
 }
 
 void Player::destroy() {
-    auto& frontend = lrcpp::Frontend::getInstance();
-
-    frontend.unloadGame();
-    frontend.unload();
+    _frontend.unloadGame();
+    _frontend.unset();
 
     _input.destroy();
     _video.destroy();
@@ -173,6 +218,8 @@ void Player::destroy() {
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
     _logger.destroy();
 
+    _dynlib.unload();
+
     SDL_Quit();
 }
 
@@ -180,8 +227,6 @@ void Player::run() {
     uint64_t const coreUsPerFrame = 1000000 / _video.getCoreFps();
     uint64_t nextFrameTime = Perf::getTimeUs() + coreUsPerFrame;
     bool done = false;
-
-    auto& frontend = lrcpp::Frontend::getInstance();
 
     do {
         SDL_Event event;
@@ -202,7 +247,7 @@ void Player::run() {
 
             _audio.clear();
             _video.clear();
-            frontend.run();
+            _frontend.run();
             _audio.present();
             _video.present();
 

@@ -14,8 +14,8 @@ endif
 	g++ $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 OBJECTS=\
-	Audio.o Config.o dynlib.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
-	../../src/Components.o ../../src/Core.o ../../src/CoreFsm.o ../../src/Frontend.o
+	Audio.o Config.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
+	../../src/Components.o ../../src/CoreFsm.o ../../src/Frontend.o ../../src/dynlib.o
 
 all: sdl2lrcpp
 
