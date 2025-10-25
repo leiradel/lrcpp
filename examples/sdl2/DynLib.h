@@ -6,45 +6,43 @@
 #   include <stdio.h>
 #   define WIN32_LEAN_AND_MEAN
 #   include <Windows.h>
-    typedef HMODULE dynlib_t;
 #else
 #   include <dlfcn.h>
-    typedef void* dynlib_t;
 #endif
 
 // C++ wrapper around lrcpp/dynlib.h
 class DynLib {
 public:
-    DynLib() : handle(nullptr) {}
+    DynLib() : _handle(nullptr) {}
     ~DynLib() { unload(); }
 
     bool load(const std::string& path) {
         unload(); // Unload previous if any
 #ifdef _WIN32
-        handle = LoadLibrary(path.c_str());
+        _handle = LoadLibrary(path.c_str());
 #else
-        handle = dlopen(path.c_str(), RTLD_LAZY);
+        _handle = dlopen(path.c_str(), RTLD_LAZY);
 #endif
-        return handle != nullptr;
+        return _handle != nullptr;
     }
 
     void unload() {
-        if (handle) {
+        if (_handle) {
 #ifdef _WIN32
-            FreeLibrary(lib);
+            FreeLibrary(_handle);
 #else
-            dlclose(handle);
+            dlclose(_handle);
 #endif
-            handle = nullptr;
+            _handle = nullptr;
         }
     }
 
     void* getSymbol(const char* name) const {
-        if (!handle) return nullptr;
+        if (!_handle) return nullptr;
 #ifdef _WIN32
-        return static_cast<void *>(GetProcAddress(handle, name));
+        return (void *)GetProcAddress(_handle, name);
 #else
-        return dlsym(handle, name);
+        return dlsym(_handle, name);
 #endif
     }
 
@@ -76,8 +74,12 @@ public:
 #endif
     }
 
-    bool isLoaded() const { return handle != nullptr; }
+    bool isLoaded() const { return _handle != nullptr; }
 
 private:
-    dynlib_t handle;
+#ifdef _WIN32
+    HMODULE _handle;
+#else
+    void* _handle;
+#endif
 };
