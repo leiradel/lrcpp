@@ -12,7 +12,7 @@ void Perf::destroy() {}
 uint64_t Perf::getTimeUs() {
     struct timespec ts = {0};
 
-    if (clock_gettime(CLOCK_MONOTONIC_RAW, &ts) != 0) {
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
         return 0;
     }
 
@@ -22,7 +22,7 @@ uint64_t Perf::getTimeUs() {
 uint64_t Perf::getTimeNs() {
     struct timespec ts = {0};
 
-    if (clock_gettime(CLOCK_MONOTONIC_RAW, &ts) != 0) {
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
         return 0;
     }
 
