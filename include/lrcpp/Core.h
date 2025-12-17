@@ -2,7 +2,6 @@
 #define LRCPP_CORE_H__
 
 #include <lrcpp/libretro.h>
-#include <lrcpp/dynlib.h>
 
 namespace lrcpp {
     struct Core {
