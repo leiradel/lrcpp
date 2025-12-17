@@ -153,8 +153,8 @@ namespace lrcpp {
         bool apiVersion(unsigned* version);
         bool getSystemInfo(struct retro_system_info* info);
         bool getSystemAvInfo(struct retro_system_av_info* info);
-        bool serializeSize(size_t* size);
-        bool serialize(void* data, size_t size);
+        bool serializeSize(size_t* size, enum retro_savestate_context context);
+        bool serialize(void* data, size_t size, enum retro_savestate_context context);
         bool unserialize(void const* data, size_t size);
         bool cheatReset();
         bool cheatSet(unsigned index, bool enabled, char const* code);
@@ -224,6 +224,7 @@ namespace lrcpp {
         bool getPreferredHwRender(unsigned* data);
         bool getDiskControlInterfaceVersion(unsigned* data);
         bool setDiskControlExtInterface(struct retro_disk_control_ext_callback const* data);
+        bool getSavestateContext(enum retro_savestate_context* data);
 
         // Callbacks and interfaces
         bool environmentCallback(unsigned cmd, void* data);
@@ -313,6 +314,8 @@ namespace lrcpp {
 
         struct retro_vfs_interface _virtualFileSystemInterface;
         struct retro_midi_interface _midiInterface;
+
+        enum retro_savestate_context _serializeContext;
 
         bool _shutdownRequested;
     };

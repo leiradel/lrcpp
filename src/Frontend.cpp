@@ -60,6 +60,7 @@ lrcpp::Frontend::Frontend()
     , _diskControl(nullptr)
     , _perf(nullptr)
     , _supportsNoGame(false)
+    , _serializeContext(RETRO_SAVESTATE_CONTEXT_NORMAL)
     , _shutdownRequested(false)
 {
     CoreFsm_Init(&_fsm, &_core, this, nullptr);
@@ -396,11 +397,13 @@ bool lrcpp::Frontend::getSystemAvInfo(struct retro_system_av_info* info) {
     return CoreFsm_Transition_getSystemAvInfo(&_fsm, info);
 }
 
-bool lrcpp::Frontend::serializeSize(size_t* size) {
+bool lrcpp::Frontend::serializeSize(size_t* size, enum retro_savestate_context context) {
+    _serializeContext = context;
     return CoreFsm_Transition_serializeSize(&_fsm, size);
 }
 
-bool lrcpp::Frontend::serialize(void* data, size_t size) {
+bool lrcpp::Frontend::serialize(void* data, size_t size, enum retro_savestate_context context) {
+    _serializeContext = context;
     return CoreFsm_Transition_serialize(&_fsm, data, size);
 }
 
@@ -749,6 +752,11 @@ bool lrcpp::Frontend::setDiskControlExtInterface(struct retro_disk_control_ext_c
     return _diskControl != nullptr && _diskControl->setDiskControlExtInterface(data);
 }
 
+bool lrcpp::Frontend::getSavestateContext(enum retro_savestate_context* data) {
+    *data = _serializeContext;
+    return true;
+}
+
 bool lrcpp::Frontend::environmentCallback(unsigned cmd, void* data) {
     switch (cmd) {
         case RETRO_ENVIRONMENT_SET_ROTATION:
@@ -918,6 +926,9 @@ bool lrcpp::Frontend::environmentCallback(unsigned cmd, void* data) {
 
         case RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE:
             return setDiskControlExtInterface((struct retro_disk_control_ext_callback const*)data);
+
+        case RETRO_ENVIRONMENT_GET_SAVESTATE_CONTEXT:
+            return getSavestateContext((enum retro_savestate_context*)data);
 
         default:
             return false;
