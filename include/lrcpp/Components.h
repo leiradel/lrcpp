@@ -308,7 +308,7 @@ namespace lrcpp {
 
         // RETRO_ENVIRONMENT_GET_VFS_INTERFACE
         // retro_vfs_interface_info.retro_vfs_interface is set by Frontend and will call the interface methods
-        virtual bool getVfsInterface(retro_vfs_interface_info* callback) { return false; }
+        virtual bool getVfsInterface(retro_vfs_interface_info* callback) { (void)callback; return false; }
 
         // Interface
         virtual char const* getPath(retro_vfs_file_handle* stream) { (void)stream; return nullptr; }
