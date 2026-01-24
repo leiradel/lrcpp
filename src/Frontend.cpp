@@ -24,7 +24,6 @@ SOFTWARE.
 
 #include <lrcpp/Frontend.h>
 
-#include <new>
 #include <string.h>
 #include <stdlib.h>
 
