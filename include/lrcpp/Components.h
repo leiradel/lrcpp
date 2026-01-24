@@ -111,11 +111,11 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER
         virtual bool getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) { (void)framebuffer; return false; }
         // RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE
-        virtual bool getHwRenderInterface(retro_hw_render_interface const** interface) { (void)interface; return false; }
+        virtual bool getHwRenderInterface(retro_hw_render_interface const** ifc) { (void)ifc; return false; }
 
         // RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE
-        virtual bool setHwRenderContextNegotiationInterface(retro_hw_render_context_negotiation_interface const* interface) {
-            (void)interface;
+        virtual bool setHwRenderContextNegotiationInterface(retro_hw_render_context_negotiation_interface const* ifc) {
+            (void)ifc;
             return false;
         }
 
@@ -371,11 +371,11 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_GET_DISK_CONTROL_INTERFACE_VERSION
         virtual bool getDiskControlInterfaceVersion(unsigned* const version) { (void)version; return false; }
         // RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE
-        virtual bool setDiskControlInterface(retro_disk_control_callback const* interface) { (void)interface; return false; }
+        virtual bool setDiskControlInterface(retro_disk_control_callback const* ifc) { (void)ifc; return false; }
 
         // RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE
-        virtual bool setDiskControlExtInterface(retro_disk_control_ext_callback const* interface) {
-            (void)interface;
+        virtual bool setDiskControlExtInterface(retro_disk_control_ext_callback const* ifc) {
+            (void)ifc;
             return false;
         }
     };
