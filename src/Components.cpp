@@ -232,3 +232,8 @@ bool lrcpp::Config::preprocessMemoryDescriptors(struct retro_memory_descriptor* 
 
     return true;
 }
+
+void lrcpp::Audio::sample(int16_t left, int16_t right) {
+    int16_t batch[2] = { left, right };
+    sampleBatch(batch, 1);
+}

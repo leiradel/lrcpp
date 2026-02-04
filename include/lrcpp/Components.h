@@ -167,7 +167,7 @@ namespace lrcpp {
 
         // Callbacks
         virtual size_t sampleBatch(int16_t const* data, size_t frames) { (void)data; (void)frames; return 0; }
-        virtual void sample(int16_t left, int16_t right) { (void)left; (void)right; }
+        virtual void sample(int16_t left, int16_t right);
     };
 
     /**
