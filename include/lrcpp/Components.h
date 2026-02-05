@@ -59,7 +59,7 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_GET_USERNAME
         virtual bool getUsername(char const** username) { (void)username; return false; }
         // RETRO_ENVIRONMENT_GET_LANGUAGE
-        virtual bool getLanguage(unsigned* language) { (void)language; return false; }
+        virtual bool getLanguage(unsigned* language);
         // RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS
         virtual bool setSupportAchievements(bool supports) { (void)supports; return false; }
         // RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS
@@ -71,14 +71,22 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION
         bool getCoreOptionsVersion(unsigned* version);
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS
-        virtual bool setCoreOptions(retro_core_option_definition const* options) { (void)options; return false; }
+        virtual bool setCoreOptions(retro_core_option_definition const* options);
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL
-        virtual bool setCoreOptionsIntl(retro_core_options_intl const* intl) { (void)intl; return false; }
+        virtual bool setCoreOptionsIntl(retro_core_options_intl const* intl);
+        // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL
+        virtual bool setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) { (void)intlv2; return false; }
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY
         virtual bool setCoreOptionsDisplay(retro_core_option_display const* display) { (void)display; return false; }
 
     protected:
         // Misc
+        static retro_core_option_v2_definition* coreOptionV1ToV2(retro_core_option_definition const* options);
+
+        static size_t addBitsDown(size_t n);
+        static size_t inflate(size_t addr, size_t mask);
+        static size_t reduce(size_t addr, size_t mask);
+        static size_t highestBit(size_t n);
         static bool preprocessMemoryDescriptors(retro_memory_descriptor* descriptors, unsigned count);
     };
 

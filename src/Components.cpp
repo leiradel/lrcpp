@@ -31,40 +31,51 @@ void lrcpp::Logger::error(char const* format, ...) {
     va_end(args);
 }
 
+bool lrcpp::Config::getCoreOptionsVersion(unsigned* const version) {
+    *version = 2;
+    return true;
+}
+
 bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
+    bool ok = false;
     size_t count = 0;
     size_t totalLength = 0;
+    char* strings = nullptr;
 
     for (count = 0; variables[count].key != nullptr; count++) {
         totalLength += strlen(variables[count].key) + 1;
         totalLength += strlen(variables[count].value) + 1;
     }
 
-    retro_core_option_definition* const defs = (retro_core_option_definition*)malloc((count + 1) * sizeof(*defs));
-    char* const strings = (char*)malloc(totalLength);
+    auto const us = (retro_core_option_v2_definition*)malloc((count + 1) * sizeof(retro_core_option_v2_definition));
+    strings = (char*)malloc(totalLength);
 
-    if (defs == nullptr || strings == nullptr) {
-        free(defs);
-        free(strings);
-        return false;
-    }
+    memset(us, 0, (count + 1) * sizeof(retro_core_option_v2_definition));
+    retro_core_options_v2 usopts = {};
+    usopts.categories = nullptr;
+    usopts.definitions = us;
+
+    retro_core_options_v2_intl intlopts = {};
+    intlopts.local = nullptr;
+    intlopts.us = &usopts;
 
     char* ptr = strings;
 
+    if (us == nullptr || strings == nullptr) {
+        goto end;
+    }
+
     for (size_t i = 0; i < count; i++) {
-        retro_core_option_definition* const def = defs + i;
+        retro_core_option_v2_definition* const def = us + i;
         def->key = variables[i].key;
 
         char const* option = strchr(variables[i].value, ';');
 
         if (option == nullptr) {
-            free(defs);
-            free(strings);
-            return false;
+            goto end;
         }
 
         def->desc = ptr;
-        def->info = nullptr;
 
         memcpy(ptr, variables[i].value, option - variables[i].value);
         ptr += option - variables[i].value;
@@ -77,9 +88,7 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
         }
 
         if (*option == 0) {
-            free(defs);
-            free(strings);
-            return false;
+            goto end;
         }
 
         size_t j = 0;
@@ -98,8 +107,6 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
                 *ptr++ = 0;
             }
 
-            def->values[j].label = nullptr;
-
             if (pipe == nullptr) {
                 break;
             }
@@ -108,34 +115,111 @@ bool lrcpp::Config::setVariables(struct retro_variable const* const variables) {
         }
 
         if (j == RETRO_NUM_CORE_OPTION_VALUES_MAX - 1) {
-            free(defs);
-            free(strings);
-            return false;
+            goto end;
         }
 
-        def->values[j + 1].value = def->values[j + 1].label = nullptr;
         def->default_value = def->values[0].value;
     }
 
-    defs[count].key = nullptr;
-    defs[count].desc = nullptr;
-    defs[count].info = nullptr;
-    defs[count].values[0].value = nullptr;
-    defs[count].values[0].label = nullptr;
-    defs[count].default_value = nullptr;
+    ok = setCoreOptionsV2Intl(&intlopts);
 
-    bool const ok = setCoreOptions(defs);
+end:
     free(strings);
-    free(defs);
+    free(us);
     return ok;
 }
 
-bool lrcpp::Config::getCoreOptionsVersion(unsigned* const version) {
-    *version = 1;
+bool lrcpp::Config::getLanguage(unsigned* language) {
+    *language = RETRO_LANGUAGE_ENGLISH;
     return true;
 }
 
-static size_t addBitsDown(size_t n) {
+bool lrcpp::Config::setCoreOptions(retro_core_option_definition const* options) {
+    retro_core_option_v2_definition* const us = coreOptionV1ToV2(options);
+
+    if (us == nullptr) {
+        return false;
+    }
+
+    retro_core_options_v2 usopts = {};
+    usopts.categories = nullptr;
+    usopts.definitions = us;
+
+    retro_core_options_v2_intl intlopts = {};
+    intlopts.us = &usopts;
+    intlopts.local = nullptr;
+    
+    bool const ok = setCoreOptionsV2Intl(&intlopts);
+
+    free(us);
+    return ok;
+}
+
+bool lrcpp::Config::setCoreOptionsIntl(retro_core_options_intl const* intl) {
+    retro_core_option_v2_definition* const us = coreOptionV1ToV2(intl->us);
+    retro_core_option_v2_definition* const defs = coreOptionV1ToV2(intl->local);
+
+    if (us == nullptr || (defs == nullptr && intl->local != nullptr)) {
+        free(defs);
+        free(us);
+        return false;
+    }
+
+    retro_core_options_v2 usopts = {};
+    usopts.categories = nullptr;
+    usopts.definitions = us;
+
+    retro_core_options_v2 localopts = {};
+    localopts.categories = nullptr;
+    localopts.definitions = defs;
+
+    retro_core_options_v2_intl intlopts = {};
+    intlopts.us = &usopts;
+    intlopts.local = &localopts;
+
+    bool const ok = setCoreOptionsV2Intl(&intlopts);
+
+    free(defs);
+    free(us);
+    return ok;
+}
+
+retro_core_option_v2_definition* lrcpp::Config::coreOptionV1ToV2(retro_core_option_definition const* options) {
+    if (options == nullptr) {
+        return nullptr;
+    }
+
+    bool ok = false;
+    size_t count = 0;
+    size_t totalLength = 0;
+
+    for (count = 0; options[count].key != nullptr; count++) {
+        // just count
+    }
+
+    auto const defs = (retro_core_option_v2_definition*)malloc((count + 1) * sizeof(retro_core_option_v2_definition));
+
+    if (defs == nullptr) {
+        return nullptr;
+    }
+
+    memset(defs, 0, (count + 1) * sizeof(retro_core_option_v2_definition));
+
+    for (size_t i = 0; i < count; i++) {
+        retro_core_option_v2_definition* const def = defs + i;
+        def->key = options[i].key;
+
+        for (size_t j = 0; j < RETRO_NUM_CORE_OPTION_VALUES_MAX && options[i].values[j].value != nullptr; j++) {
+            def->values[j].value = options[i].values[j].value;
+        }
+
+        def->default_value = def->values[0].value;
+    }
+
+    return defs;
+}
+
+size_t lrcpp::Config::addBitsDown(size_t n) {
     n |= n >>  1;
     n |= n >>  2;
     n |= n >>  4;
@@ -150,7 +234,7 @@ static size_t addBitsDown(size_t n) {
     return n;
 }
 
-static size_t inflate(size_t addr, size_t mask) {
+size_t lrcpp::Config::inflate(size_t addr, size_t mask) {
     while (mask)
     {
         size_t tmp = (mask - 1) & ~mask;
@@ -162,7 +246,7 @@ static size_t inflate(size_t addr, size_t mask) {
     return addr;
 }
 
-static size_t reduce(size_t addr, size_t mask) {
+size_t lrcpp::Config::reduce(size_t addr, size_t mask) {
     while (mask) {
         size_t tmp = (mask - 1) & ~mask;
         addr = (addr & tmp) | ((addr >> 1) & ~tmp);
@@ -172,7 +256,7 @@ static size_t reduce(size_t addr, size_t mask) {
     return addr;
 }
 
-static size_t highestBit(size_t n) {
+size_t lrcpp::Config::highestBit(size_t n) {
     n = addBitsDown(n);
     return n ^ (n >> 1);
 }
