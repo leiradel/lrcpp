@@ -100,7 +100,6 @@ Deals with everything related to configuration and then some. Several methods mu
   * `bool setSubsystemInfo(struct retro_subsystem_info const* info)`
   * `bool setMemoryMaps(struct retro_memory_map const* map)`
   * `bool getUsername(char const** username)`
-  * `bool getLanguage(unsigned* language)`
   * `bool setSupportAchievements(bool supports)`
   * `bool setSerializationQuirks(uint64_t quirks)`
   * `bool getAudioVideoEnable(int* enabled)`
@@ -109,8 +108,11 @@ Deals with everything related to configuration and then some. Several methods mu
   * `bool setCoreOptionsIntl(struct retro_core_options_intl const* intl)`
   * `bool setCoreOptionsDisplay(struct retro_core_option_display const* display)`
 * The following methods are already implemented:
-  * `bool setVariables(struct retro_variable const* variables)`: Creates equivalent `retro_core_option_definition`s for the variables and calls `setCoreOptions`.
-  * `bool getCoreOptionsVersion(unsigned* version)`: Always sets `version` to 1.
+  * `bool getLanguage(unsigned* language)`: returns `RETRO_LANGUAGE_ENGLISH`.
+  * `bool setVariables(struct retro_variable const* variables)`: Creates an equivalent `retro_core_options_v2_intl` for the variables and calls `setCoreOptionsV2Intl`.
+  * `bool setCoreOptions(retro_core_option_definition const* options)`: Same as above.
+  * `bool setCoreOptionsIntl(retro_core_options_intl const* intl)`: Same as above.
+  * `bool getCoreOptionsVersion(unsigned* version)`: Always sets `version` to 2.
 * The following method that doesn't belong to the libretro API is implemented:
   * `bool preprocessMemoryDescriptors(struct retro_memory_descriptor* descriptors, unsigned count)`: Pre-processes the memory descriptors that are received in the `setMemoryMaps` method.
 
