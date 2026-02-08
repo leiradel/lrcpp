@@ -27,6 +27,15 @@ SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 
+#if defined(__GNUC__)
+    #define LRCPP_ATOMIC_LOAD_PTR(ptr)       __atomic_load_n(ptr, __ATOMIC_ACQUIRE)
+    #define LRCPP_ATOMIC_STORE_PTR(ptr, val) __atomic_store_n(ptr, val, __ATOMIC_RELEASE)
+#elif defined(_MSC_VER)
+    #include <intrin.h>
+    #define LRCPP_ATOMIC_LOAD_PTR(ptr) _InterlockedCompareExchangePointer((void* volatile*)(ptr), 0, 0)
+    #define LRCPP_ATOMIC_STORE_PTR(ptr, val) _InterlockedExchangePointer((void* volatile*)(ptr), (void*)(val))
+#endif
+
 namespace {
     class DummyLogger : public lrcpp::Logger {
     public:
@@ -39,7 +48,13 @@ namespace {
 }
 
 // Storage for the current Frontend instance
-static thread_local lrcpp::Frontend* s_frontend;
+static thread_local lrcpp::Frontend* s_frontend = nullptr;
+
+// For cores that call the frontend from multiple threads, we need to ensure that the correct frontend is used. This only works for
+// one multithreaded core at a time. For more than one, the problem is unsovable without changes to the libretro API, since there's
+// no way to associate a core with a frontend.
+static lrcpp::Frontend* s_global = nullptr;
+
 // Dummy logger to use if the caller doesn't set one
 static DummyLogger s_logger;
 
@@ -70,11 +85,12 @@ lrcpp::Frontend::~Frontend() {
 }
 
 lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
-    return s_frontend;
+    return s_frontend != nullptr ? s_frontend : (Frontend*)LRCPP_ATOMIC_LOAD_PTR(&s_global);
 }
 
 void lrcpp::Frontend::setCurrent(Frontend* frontend) {
     s_frontend = frontend;
+    LRCPP_ATOMIC_STORE_PTR(&s_global, frontend);
 }
 
 lrcpp::Logger* lrcpp::Frontend::getLogger() {
