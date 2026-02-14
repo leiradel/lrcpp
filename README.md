@@ -73,6 +73,31 @@ The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the plat
   * `bool getRegion(unsigned* region)`
   * `bool getMemoryData(unsigned id, void** data)`
   * `bool getMemorySize(unsigned id, size_t* size)`
+* Methods to query which API calls are available at any given moment are also available. Notice that an API call being allowed does not necessarily mean it will succeed, i.e. `loadGame()` can fail if the path doesn't exist etc.
+  * `bool apiVersionAllowed() const`
+  * `bool cheatResetAllowed() const`
+  * `bool cheatSetAllowed() const`
+  * `bool coreSetAllowed() const`
+  * `bool deinitAllowed() const`
+  * `bool getMemoryDataAllowed() const`
+  * `bool getMemorySizeAllowed() const`
+  * `bool getRegionAllowed() const`
+  * `bool getSystemAvInfoAllowed() const`
+  * `bool getSystemInfoAllowed() const`
+  * `bool gotoCoreSetAllowed() const`
+  * `bool initAllowed() const`
+  * `bool loadGameAllowed() const`
+  * `bool loadGameSpecialAllowed() const`
+  * `bool resetAllowed() const`
+  * `bool runAllowed() const`
+  * `bool serializeAllowed() const`
+  * `bool serializeSizeAllowed() const`
+  * `bool setCallbacksAllowed() const`
+  * `bool setControllerPortDeviceAllowed() const`
+  * `bool setEnvironmentAllowed() const`
+  * `bool unloadGameAllowed() const`
+  * `bool unserializeAllowed() const`
+  * `bool unsetAllowed() const`
 
 ### Components
 
