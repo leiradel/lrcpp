@@ -447,6 +447,101 @@ bool lrcpp::Frontend::shutdownRequested() const {
     return _shutdownRequested;
 }
 
+bool lrcpp::Frontend::apiVersionAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::apiVersion);
+}
+
+bool lrcpp::Frontend::cheatResetAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::cheatReset);
+}
+
+bool lrcpp::Frontend::cheatSetAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::cheatSet);
+}
+
+bool lrcpp::Frontend::coreSetAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::coreSet);
+}
+
+bool lrcpp::Frontend::deinitAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::deinit);
+}
+
+bool lrcpp::Frontend::getMemoryDataAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::getMemoryData);
+}
+
+bool lrcpp::Frontend::getMemorySizeAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::getMemorySize);
+}
+
+bool lrcpp::Frontend::getRegionAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::getRegion);
+}
+
+bool lrcpp::Frontend::getSystemAvInfoAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::getSystemAvInfo);
+}
+
+bool lrcpp::Frontend::getSystemInfoAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::getSystemInfo);
+}
+
+bool lrcpp::Frontend::gotoCoreSetAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::gotoCoreSet);
+}
+
+bool lrcpp::Frontend::initAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::init);
+}
+
+bool lrcpp::Frontend::loadGameAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::loadGame);
+}
+
+bool lrcpp::Frontend::loadGameSpecialAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::loadGameSpecial);
+}
+
+bool lrcpp::Frontend::resetAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::reset);
+}
+
+bool lrcpp::Frontend::runAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::run);
+}
+
+bool lrcpp::Frontend::serializeAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::serialize);
+}
+
+bool lrcpp::Frontend::serializeSizeAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::serializeSize);
+}
+
+bool lrcpp::Frontend::setCallbacksAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::setCallbacks);
+}
+
+bool lrcpp::Frontend::setControllerPortDeviceAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::setControllerPortDevice);
+}
+
+bool lrcpp::Frontend::setEnvironmentAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::setEnvironment);
+}
+
+bool lrcpp::Frontend::unloadGameAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::unloadGame);
+}
+
+bool lrcpp::Frontend::unserializeAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::unserialize);
+}
+
+bool lrcpp::Frontend::unsetAllowed() const {
+    return _fsm.canUseTransition(CoreFsm::Transition::unset);
+}
 
 bool lrcpp::Frontend::setControllerPortDevice(unsigned port, unsigned device) {
     return _fsm.setControllerPortDevice(port, device);

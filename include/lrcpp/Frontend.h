@@ -166,6 +166,32 @@ namespace lrcpp {
         // lrcpp API
         bool shutdownRequested() const;
 
+        // State changing queries
+        bool apiVersionAllowed() const;
+        bool cheatResetAllowed() const;
+        bool cheatSetAllowed() const;
+        bool coreSetAllowed() const;
+        bool deinitAllowed() const;
+        bool getMemoryDataAllowed() const;
+        bool getMemorySizeAllowed() const;
+        bool getRegionAllowed() const;
+        bool getSystemAvInfoAllowed() const;
+        bool getSystemInfoAllowed() const;
+        bool gotoCoreSetAllowed() const;
+        bool initAllowed() const;
+        bool loadGameAllowed() const;
+        bool loadGameSpecialAllowed() const;
+        bool resetAllowed() const;
+        bool runAllowed() const;
+        bool serializeAllowed() const;
+        bool serializeSizeAllowed() const;
+        bool setCallbacksAllowed() const;
+        bool setControllerPortDeviceAllowed() const;
+        bool setEnvironmentAllowed() const;
+        bool unloadGameAllowed() const;
+        bool unserializeAllowed() const;
+        bool unsetAllowed() const;
+
     protected:
         // Environment functions
         bool setRotation(unsigned data);
