@@ -73,15 +73,14 @@ lrcpp::Frontend::Frontend()
     , _virtualFileSystem(nullptr)
     , _diskControl(nullptr)
     , _perf(nullptr)
+    , _fsm(&_core, this, nullptr)
     , _supportsNoGame(false)
     , _serializeContext(RETRO_SAVESTATE_CONTEXT_NORMAL)
     , _shutdownRequested(false)
-{
-    CoreFsm_Init(&_fsm, &_core, this, nullptr);
-}
+{}
 
 lrcpp::Frontend::~Frontend() {
-    CoreFsm_Transition_unset(&_fsm);
+    _fsm.unset();
 }
 
 lrcpp::Frontend* lrcpp::Frontend::getCurrent() {
@@ -150,7 +149,7 @@ lrcpp::Perf* lrcpp::Frontend::getPerf() {
 }
 
 bool lrcpp::Frontend::setLogger(Logger* logger) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _logger = logger;
         return true;
     }
@@ -159,7 +158,7 @@ bool lrcpp::Frontend::setLogger(Logger* logger) {
 }
 
 bool lrcpp::Frontend::setConfig(Config* config) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _config = config;
         return true;
     }
@@ -168,7 +167,7 @@ bool lrcpp::Frontend::setConfig(Config* config) {
 }
 
 bool lrcpp::Frontend::setVideo(Video* video) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _video = video;
         return true;
     }
@@ -177,7 +176,7 @@ bool lrcpp::Frontend::setVideo(Video* video) {
 }
 
 bool lrcpp::Frontend::setLed(Led* led) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _led = led;
         return true;
     }
@@ -186,7 +185,7 @@ bool lrcpp::Frontend::setLed(Led* led) {
 }
 
 bool lrcpp::Frontend::setAudio(Audio* audio) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _audio = audio;
         return true;
     }
@@ -195,7 +194,7 @@ bool lrcpp::Frontend::setAudio(Audio* audio) {
 }
 
 bool lrcpp::Frontend::setMidi(Midi* midi) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _midi = midi;
         return true;
     }
@@ -204,7 +203,7 @@ bool lrcpp::Frontend::setMidi(Midi* midi) {
 }
 
 bool lrcpp::Frontend::setInput(Input* input) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _input = input;
         return true;
     }
@@ -213,7 +212,7 @@ bool lrcpp::Frontend::setInput(Input* input) {
 }
 
 bool lrcpp::Frontend::setRumble(Rumble* rumble) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _rumble = rumble;
         return true;
     }
@@ -222,7 +221,7 @@ bool lrcpp::Frontend::setRumble(Rumble* rumble) {
 }
 
 bool lrcpp::Frontend::setSensor(Sensor* sensor) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _sensor = sensor;
         return true;
     }
@@ -231,7 +230,7 @@ bool lrcpp::Frontend::setSensor(Sensor* sensor) {
 }
 
 bool lrcpp::Frontend::setCamera(Camera* camera) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _camera = camera;
         return true;
     }
@@ -240,7 +239,7 @@ bool lrcpp::Frontend::setCamera(Camera* camera) {
 }
 
 bool lrcpp::Frontend::setLocation(Location* location) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _location = location;
         return true;
     }
@@ -249,7 +248,7 @@ bool lrcpp::Frontend::setLocation(Location* location) {
 }
 
 bool lrcpp::Frontend::setVirtualFileSystem(VirtualFileSystem* virtualFileSystem) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _virtualFileSystem = virtualFileSystem;
         return true;
     }
@@ -258,7 +257,7 @@ bool lrcpp::Frontend::setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)
 }
 
 bool lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _diskControl = diskControl;
         return true;
     }
@@ -267,7 +266,7 @@ bool lrcpp::Frontend::setDiskControl(DiskControl* diskControl) {
 }
 
 bool lrcpp::Frontend::setPerf(Perf* perf) {
-    if (CoreFsm_CurrentState(&_fsm) == CoreFsm_State_Start) {
+    if (_fsm.currentState() == CoreFsm::State::Start) {
         _perf = perf;
         return true;
     }
@@ -278,17 +277,17 @@ bool lrcpp::Frontend::setPerf(Perf* perf) {
 bool lrcpp::Frontend::setCore(Core const* core) {
     _core = *core;
 
-    if (!CoreFsm_Transition_coreSet(&_fsm)) {
+    if (!_fsm.coreSet()) {
         _logger->error("Error in coreSet transition\n");
         return false;
     }
 
-    if (!CoreFsm_Transition_setEnvironment(&_fsm, staticEnvironmentCallback)) {
+    if (!_fsm.setEnvironment(staticEnvironmentCallback)) {
         _logger->error("Error in setEnvironment transition\n");
         return false;
     }
 
-    if (!CoreFsm_Transition_init(&_fsm)) {
+    if (!_fsm.init()) {
         _logger->error("Error in init transition\n");
         return false;
     }
@@ -312,7 +311,7 @@ bool lrcpp::Frontend::loadGame(char const* gamePath) {
 
     retro_system_info info;
 
-    if (!CoreFsm_Transition_getSystemInfo(&_fsm, &info)) {
+    if (!_fsm.getSystemInfo(&info)) {
         _logger->error("Error in getSystemInfo transition\n");
         return false;
     }
@@ -334,13 +333,12 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
     game.size = size;
     game.meta = nullptr;
 
-    if (!CoreFsm_Transition_loadGame(&_fsm, &game)) {
+    if (!_fsm.loadGame(&game)) {
         _logger->error("Error in loadGame transition\n");
         return false;
     }
 
-    int const ok = CoreFsm_Transition_setCallbacks(
-        &_fsm,
+    int const ok = _fsm.setCallbacks(
         videoRefresh,
         audioSample,
         audioSampleBatch,
@@ -355,7 +353,7 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
 
     retro_system_av_info avinfo;
 
-    if (!CoreFsm_Transition_getSystemAvInfo(&_fsm, &avinfo)) {
+    if (!_fsm.getSystemAvInfo(&avinfo)) {
         _logger->error("Error in getSystemAvInfo transition\n");
         return false;
     }
@@ -365,10 +363,9 @@ bool lrcpp::Frontend::loadGame(char const* gamePath, void const* data, size_t si
 }
 
 bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info const* info, size_t numInfo) {
-    bool ok = CoreFsm_Transition_loadGameSpecial(&_fsm, gameType, info, numInfo);
+    bool ok = _fsm.loadGameSpecial(gameType, info, numInfo);
 
-    ok = ok && CoreFsm_Transition_setCallbacks(
-        &_fsm,
+    ok = ok && _fsm.setCallbacks(
         videoRefresh,
         audioSample,
         audioSampleBatch,
@@ -377,7 +374,7 @@ bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info 
     );
 
     retro_system_av_info avinfo;
-    ok = ok && CoreFsm_Transition_getSystemAvInfo(&_fsm, &avinfo);
+    ok = ok && _fsm.getSystemAvInfo(&avinfo);
     ok = ok && setSystemAvInfo(&avinfo);
 
     _shutdownRequested = false;
@@ -385,65 +382,65 @@ bool lrcpp::Frontend::loadGameSpecial(unsigned gameType, struct retro_game_info 
 }
 
 bool lrcpp::Frontend::run() {
-    return CoreFsm_Transition_run(&_fsm);
+    return _fsm.run();
 }
 
 bool lrcpp::Frontend::reset() {
-    return CoreFsm_Transition_reset(&_fsm);
+    return _fsm.reset();
 }
 
 bool lrcpp::Frontend::unloadGame() {
-    return CoreFsm_Transition_unloadGame(&_fsm);
+    return _fsm.unloadGame();
 }
 
 bool lrcpp::Frontend::unset() {
-    return CoreFsm_Transition_unset(&_fsm);
+    return _fsm.unset();
 }
 
 bool lrcpp::Frontend::apiVersion(unsigned* version) {
-    return CoreFsm_Transition_apiVersion(&_fsm, version);
+    return _fsm.apiVersion(version);
 }
 
 bool lrcpp::Frontend::getSystemInfo(struct retro_system_info* info) {
-    return CoreFsm_Transition_getSystemInfo(&_fsm, info);
+    return _fsm.getSystemInfo(info);
 }
 
 bool lrcpp::Frontend::getSystemAvInfo(struct retro_system_av_info* info) {
-    return CoreFsm_Transition_getSystemAvInfo(&_fsm, info);
+    return _fsm.getSystemAvInfo(info);
 }
 
 bool lrcpp::Frontend::serializeSize(size_t* size, enum retro_savestate_context context) {
     _serializeContext = context;
-    return CoreFsm_Transition_serializeSize(&_fsm, size);
+    return _fsm.serializeSize(size);
 }
 
 bool lrcpp::Frontend::serialize(void* data, size_t size, enum retro_savestate_context context) {
     _serializeContext = context;
-    return CoreFsm_Transition_serialize(&_fsm, data, size);
+    return _fsm.serialize(data, size);
 }
 
 bool lrcpp::Frontend::unserialize(void const* data, size_t size) {
-    return CoreFsm_Transition_unserialize(&_fsm, data, size);
+    return _fsm.unserialize(data, size);
 }
 
 bool lrcpp::Frontend::cheatReset() {
-    return CoreFsm_Transition_cheatReset(&_fsm);
+    return _fsm.cheatReset();
 }
 
 bool lrcpp::Frontend::cheatSet(unsigned index, bool enabled, char const* code) {
-    return CoreFsm_Transition_cheatSet(&_fsm, index, enabled, code);
+    return _fsm.cheatSet(index, enabled, code);
 }
 
 bool lrcpp::Frontend::getRegion(unsigned* region) {
-    return CoreFsm_Transition_getRegion(&_fsm, region);
+    return _fsm.getRegion(region);
 }
 
 bool lrcpp::Frontend::getMemoryData(unsigned id, void** data) {
-    return CoreFsm_Transition_getMemoryData(&_fsm, id, data);
+    return _fsm.getMemoryData(id, data);
 }
 
 bool lrcpp::Frontend::getMemorySize(unsigned id, size_t* size) {
-    return CoreFsm_Transition_getMemorySize(&_fsm, id, size);
+    return _fsm.getMemorySize(id, size);
 }
 
 bool lrcpp::Frontend::shutdownRequested() const {
@@ -452,7 +449,7 @@ bool lrcpp::Frontend::shutdownRequested() const {
 
 
 bool lrcpp::Frontend::setControllerPortDevice(unsigned port, unsigned device) {
-    return CoreFsm_Transition_setControllerPortDevice(&_fsm, port, device);
+    return _fsm.setControllerPortDevice(port, device);
 }
 
 bool lrcpp::Frontend::setRotation(unsigned data) {

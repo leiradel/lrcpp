@@ -309,7 +309,7 @@ namespace lrcpp {
         Perf* _perf;
 
         Core _core;
-        CoreFsm_Context _fsm;
+        CoreFsm _fsm;
 
         bool _supportsNoGame;
 
