@@ -234,7 +234,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreInitialized", "apiVersion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "apiVersion"
             );
 
             if (!global_before(self)) {
@@ -280,7 +280,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreSet", "apiVersion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreSet", "apiVersion"
             );
 
             if (!global_before(self)) {
@@ -326,7 +326,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "apiVersion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "apiVersion"
             );
 
             if (!global_before(self)) {
@@ -372,7 +372,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "apiVersion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "apiVersion"
             );
 
             if (!global_before(self)) {
@@ -418,7 +418,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "apiVersion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "apiVersion"
             );
 
             if (!global_before(self)) {
@@ -466,7 +466,7 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "apiVersion", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "apiVersion", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -478,7 +478,7 @@ int CoreFsm_Transition_cheatReset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "cheatReset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "cheatReset"
             );
 
             if (!global_before(self)) {
@@ -526,7 +526,7 @@ int CoreFsm_Transition_cheatReset(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "cheatReset", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "cheatReset", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -538,7 +538,7 @@ int CoreFsm_Transition_cheatSet(CoreFsm_Context* const self, unsigned index, boo
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "cheatSet"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "cheatSet"
             );
 
             if (!global_before(self)) {
@@ -586,7 +586,7 @@ int CoreFsm_Transition_cheatSet(CoreFsm_Context* const self, unsigned index, boo
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "cheatSet", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "cheatSet", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -598,7 +598,7 @@ int CoreFsm_Transition_coreSet(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreSet", "coreSet"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreSet", "coreSet"
             );
 
             if (!global_before(self)) {
@@ -643,7 +643,7 @@ int CoreFsm_Transition_coreSet(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "coreSet", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "coreSet", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -655,7 +655,7 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "deinit"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "deinit"
             );
 
             if (!global_before(self)) {
@@ -701,7 +701,7 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "deinit"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "deinit"
             );
 
             if (!global_before(self)) {
@@ -749,7 +749,7 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "deinit"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "deinit"
             );
 
             if (!global_before(self)) {
@@ -799,7 +799,7 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "deinit", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "deinit", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -811,7 +811,7 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "getMemoryData"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "getMemoryData"
             );
 
             if (!global_before(self)) {
@@ -857,7 +857,7 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "getMemoryData"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "getMemoryData"
             );
 
             if (!global_before(self)) {
@@ -905,7 +905,7 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "getMemoryData", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "getMemoryData", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -917,7 +917,7 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "getMemorySize"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "getMemorySize"
             );
 
             if (!global_before(self)) {
@@ -963,7 +963,7 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "getMemorySize"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "getMemorySize"
             );
 
             if (!global_before(self)) {
@@ -1011,7 +1011,7 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "getMemorySize", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "getMemorySize", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1023,7 +1023,7 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "getRegion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "getRegion"
             );
 
             if (!global_before(self)) {
@@ -1069,7 +1069,7 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "getRegion"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "getRegion"
             );
 
             if (!global_before(self)) {
@@ -1117,7 +1117,7 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "getRegion", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "getRegion", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1129,7 +1129,7 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "getSystemAvInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "getSystemAvInfo"
             );
 
             if (!global_before(self)) {
@@ -1175,7 +1175,7 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "getSystemAvInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "getSystemAvInfo"
             );
 
             if (!global_before(self)) {
@@ -1223,7 +1223,7 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "getSystemAvInfo", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "getSystemAvInfo", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1235,7 +1235,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreInitialized", "getSystemInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "getSystemInfo"
             );
 
             if (!global_before(self)) {
@@ -1281,7 +1281,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreSet", "getSystemInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreSet", "getSystemInfo"
             );
 
             if (!global_before(self)) {
@@ -1327,7 +1327,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "getSystemInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getSystemInfo"
             );
 
             if (!global_before(self)) {
@@ -1373,7 +1373,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "getSystemInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "getSystemInfo"
             );
 
             if (!global_before(self)) {
@@ -1419,7 +1419,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "getSystemInfo"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "getSystemInfo"
             );
 
             if (!global_before(self)) {
@@ -1467,7 +1467,7 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "getSystemInfo", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "getSystemInfo", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1479,7 +1479,7 @@ int CoreFsm_Transition_gotoCoreSet(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreSet", "gotoCoreSet"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreSet", "gotoCoreSet"
             );
 
             if (!global_before(self)) {
@@ -1524,7 +1524,7 @@ int CoreFsm_Transition_gotoCoreSet(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "gotoCoreSet", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "gotoCoreSet", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1536,7 +1536,7 @@ int CoreFsm_Transition_init(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreInitialized", "init"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "init"
             );
 
             if (!global_before(self)) {
@@ -1584,7 +1584,7 @@ int CoreFsm_Transition_init(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "init", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "init", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1596,7 +1596,7 @@ int CoreFsm_Transition_loadGame(CoreFsm_Context* const self, ConstRetroGameInfoP
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "loadGame"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "loadGame"
             );
 
             if (!global_before(self)) {
@@ -1646,7 +1646,7 @@ int CoreFsm_Transition_loadGame(CoreFsm_Context* const self, ConstRetroGameInfoP
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "loadGame", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "loadGame", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1658,7 +1658,7 @@ int CoreFsm_Transition_loadGameSpecial(CoreFsm_Context* const self, unsigned gam
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "loadGameSpecial"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "loadGameSpecial"
             );
 
             if (!global_before(self)) {
@@ -1708,7 +1708,7 @@ int CoreFsm_Transition_loadGameSpecial(CoreFsm_Context* const self, unsigned gam
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "loadGameSpecial", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "loadGameSpecial", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1720,7 +1720,7 @@ int CoreFsm_Transition_reset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "reset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "reset"
             );
 
             if (!global_before(self)) {
@@ -1768,7 +1768,7 @@ int CoreFsm_Transition_reset(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "reset", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "reset", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1780,7 +1780,7 @@ int CoreFsm_Transition_run(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "run"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "run"
             );
 
             if (!global_before(self)) {
@@ -1828,7 +1828,7 @@ int CoreFsm_Transition_run(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "run", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "run", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1840,7 +1840,7 @@ int CoreFsm_Transition_serialize(CoreFsm_Context* const self, VoidPtr data, size
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "serialize"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "serialize"
             );
 
             if (!global_before(self)) {
@@ -1890,7 +1890,7 @@ int CoreFsm_Transition_serialize(CoreFsm_Context* const self, VoidPtr data, size
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "serialize", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "serialize", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1902,7 +1902,7 @@ int CoreFsm_Transition_serializeSize(CoreFsm_Context* const self, SizePtr size) 
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "serializeSize"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "serializeSize"
             );
 
             if (!global_before(self)) {
@@ -1950,7 +1950,7 @@ int CoreFsm_Transition_serializeSize(CoreFsm_Context* const self, SizePtr size) 
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "serializeSize", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "serializeSize", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -1962,7 +1962,7 @@ int CoreFsm_Transition_setCallbacks(CoreFsm_Context* const self, retro_video_ref
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "setCallbacks"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "setCallbacks"
             );
 
             if (!global_before(self)) {
@@ -2014,7 +2014,7 @@ int CoreFsm_Transition_setCallbacks(CoreFsm_Context* const self, retro_video_ref
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "setCallbacks", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "setCallbacks", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -2026,7 +2026,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreInitialized", "setControllerPortDevice"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "setControllerPortDevice"
             );
 
             if (!global_before(self)) {
@@ -2072,7 +2072,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "setControllerPortDevice"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "setControllerPortDevice"
             );
 
             if (!global_before(self)) {
@@ -2118,7 +2118,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameLoaded", "setControllerPortDevice"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "setControllerPortDevice"
             );
 
             if (!global_before(self)) {
@@ -2164,7 +2164,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "setControllerPortDevice"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "setControllerPortDevice"
             );
 
             if (!global_before(self)) {
@@ -2212,7 +2212,7 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "setControllerPortDevice", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "setControllerPortDevice", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -2224,7 +2224,7 @@ int CoreFsm_Transition_setEnvironment(CoreFsm_Context* const self, retro_environ
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "EnvironmentSet", "setEnvironment"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "setEnvironment"
             );
 
             if (!global_before(self)) {
@@ -2272,7 +2272,7 @@ int CoreFsm_Transition_setEnvironment(CoreFsm_Context* const self, retro_environ
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "setEnvironment", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "setEnvironment", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -2284,7 +2284,7 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreInitialized", "unloadGame"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "unloadGame"
             );
 
             if (!global_before(self)) {
@@ -2330,7 +2330,7 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "CoreInitialized", "unloadGame"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "unloadGame"
             );
 
             if (!global_before(self)) {
@@ -2378,7 +2378,7 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "unloadGame", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "unloadGame", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -2390,7 +2390,7 @@ int CoreFsm_Transition_unserialize(CoreFsm_Context* const self, ConstVoidPtr dat
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "GameRunning", "unserialize"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "unserialize"
             );
 
             if (!global_before(self)) {
@@ -2440,7 +2440,7 @@ int CoreFsm_Transition_unserialize(CoreFsm_Context* const self, ConstVoidPtr dat
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "unserialize", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "unserialize", CoreFsm_StateName(self->state)
     );
 
     return 0;
@@ -2452,7 +2452,7 @@ int CoreFsm_Transition_unset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "Start", "unset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "Start", "unset"
             );
 
             if (!global_before(self)) {
@@ -2500,7 +2500,7 @@ int CoreFsm_Transition_unset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "Start", "unset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "Start", "unset"
             );
 
             if (!global_before(self)) {
@@ -2543,7 +2543,7 @@ int CoreFsm_Transition_unset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "Start", "unset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "Start", "unset"
             );
 
             if (!global_before(self)) {
@@ -2591,7 +2591,7 @@ int CoreFsm_Transition_unset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "Start", "unset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "Start", "unset"
             );
 
             if (!global_before(self)) {
@@ -2639,7 +2639,7 @@ int CoreFsm_Transition_unset(CoreFsm_Context* const self) {
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, LifeCycle_StateName(LifeCycle_CurrentState(self)), "Start", "unset"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "Start", "unset"
             );
 
             if (!global_before(self)) {
@@ -2689,7 +2689,7 @@ int CoreFsm_Transition_unset(CoreFsm_Context* const self) {
     PRINTF(
         self,
         "FSM %s:%u Transition %s is invalid from state %s",
-        __FILE__, __LINE__, "unset", LifeCycle_StateName(self->state)
+        __FILE__, __LINE__, "unset", CoreFsm_StateName(self->state)
     );
 
     return 0;
