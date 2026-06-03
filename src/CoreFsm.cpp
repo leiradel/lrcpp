@@ -3,8 +3,11 @@
 #include <stddef.h>
 
 
+
     #include <lrcpp/CoreFsm.h>
+
     #include <lrcpp/Frontend.h>
+
 
 
 #ifdef DEBUG_FSM
@@ -112,6 +115,7 @@ int CoreFsm_CanUseTransition(CoreFsm_Context const* const self, CoreFsm_Transiti
             switch (transition) {
                 case COREFSM_TRANSITION_API_VERSION:
                 case COREFSM_TRANSITION_DEINIT:
+                case COREFSM_TRANSITION_GET_EXTENSION:
                 case COREFSM_TRANSITION_GET_SYSTEM_INFO:
                 case COREFSM_TRANSITION_LOAD_GAME:
                 case COREFSM_TRANSITION_LOAD_GAME_SPECIAL:
@@ -136,6 +140,7 @@ int CoreFsm_CanUseTransition(CoreFsm_Context const* const self, CoreFsm_Transiti
         case COREFSM_STATE_ENVIRONMENT_SET:
             switch (transition) {
                 case COREFSM_TRANSITION_API_VERSION:
+                case COREFSM_TRANSITION_GET_EXTENSION:
                 case COREFSM_TRANSITION_GET_SYSTEM_INFO:
                 case COREFSM_TRANSITION_GOTO_CORE_SET:
                 case COREFSM_TRANSITION_INIT:
@@ -150,6 +155,7 @@ int CoreFsm_CanUseTransition(CoreFsm_Context const* const self, CoreFsm_Transiti
             switch (transition) {
                 case COREFSM_TRANSITION_API_VERSION:
                 case COREFSM_TRANSITION_DEINIT:
+                case COREFSM_TRANSITION_GET_EXTENSION:
                 case COREFSM_TRANSITION_GET_MEMORY_DATA:
                 case COREFSM_TRANSITION_GET_MEMORY_SIZE:
                 case COREFSM_TRANSITION_GET_REGION:
@@ -170,6 +176,7 @@ int CoreFsm_CanUseTransition(CoreFsm_Context const* const self, CoreFsm_Transiti
                 case COREFSM_TRANSITION_CHEAT_RESET:
                 case COREFSM_TRANSITION_CHEAT_SET:
                 case COREFSM_TRANSITION_DEINIT:
+                case COREFSM_TRANSITION_GET_EXTENSION:
                 case COREFSM_TRANSITION_GET_MEMORY_DATA:
                 case COREFSM_TRANSITION_GET_MEMORY_SIZE:
                 case COREFSM_TRANSITION_GET_REGION:
@@ -205,8 +212,11 @@ int CoreFsm_CanUseTransition(CoreFsm_Context const* const self, CoreFsm_Transiti
 static int global_before(CoreFsm_Context* const self) {
     (void)self;
 
+
         self->previous = lrcpp::Frontend::getCurrent();
+
         lrcpp::Frontend::setCurrent(self->frontend);
+
     
     return 1;
 }
@@ -219,8 +229,11 @@ static int local_before(CoreFsm_Context* const self) {
 static void global_after(CoreFsm_Context* const self) {
     (void)self;
 
+
         lrcpp::Frontend::setCurrent(self->previous);
+
         self->previous = nullptr;
+
     
 }
 
@@ -258,7 +271,9 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             }
 
 
+
             *version = self->core->apiVersion();
+
         
             self->state = COREFSM_STATE_CORE_INITIALIZED;
 
@@ -304,7 +319,9 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             }
 
 
+
             *version = self->core->apiVersion();
+
         
             self->state = COREFSM_STATE_CORE_SET;
 
@@ -350,7 +367,9 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             }
 
 
+
             *version = self->core->apiVersion();
+
         
             self->state = COREFSM_STATE_ENVIRONMENT_SET;
 
@@ -396,7 +415,9 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             }
 
 
+
             *version = self->core->apiVersion();
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -442,7 +463,9 @@ int CoreFsm_Transition_apiVersion(CoreFsm_Context* const self, UnsignedPtr versi
             }
 
 
+
             *version = self->core->apiVersion();
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -502,7 +525,9 @@ int CoreFsm_Transition_cheatReset(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->cheatReset();
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -562,7 +587,9 @@ int CoreFsm_Transition_cheatSet(CoreFsm_Context* const self, unsigned index, boo
             }
 
 
+
             self->core->cheatSet(index, enabled, code);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -679,7 +706,9 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->deinit();
+
         
             self->state = COREFSM_STATE_ENVIRONMENT_SET;
 
@@ -805,6 +834,212 @@ int CoreFsm_Transition_deinit(CoreFsm_Context* const self) {
     return 0;
 }
 
+int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr symbol, RetroProcAddressPtr extension) {
+    switch (self->state) {
+        case COREFSM_STATE_CORE_INITIALIZED: {
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioning from %s to %s via %s",
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+            );
+
+            if (!global_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed global precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+            if (!local_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed state precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+
+
+            self->frontend->getConfig()->getExtension(symbol, extension);
+
+        
+            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+
+            local_after(self);
+            global_after(self);
+
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioned to %s",
+                __FILE__, __LINE__, "EnvironmentSet"
+            );
+
+            return 1;
+        }
+
+        break;
+
+        case COREFSM_STATE_ENVIRONMENT_SET: {
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioning from %s to %s via %s",
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+            );
+
+            if (!global_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed global precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+            if (!local_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed state precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+
+
+            self->frontend->getConfig()->getExtension(symbol, extension);
+
+        
+            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+
+            local_after(self);
+            global_after(self);
+
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioned to %s",
+                __FILE__, __LINE__, "EnvironmentSet"
+            );
+
+            return 1;
+        }
+
+        break;
+
+        case COREFSM_STATE_GAME_LOADED: {
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioning from %s to %s via %s",
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+            );
+
+            if (!global_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed global precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+            if (!local_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed state precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+
+
+            self->frontend->getConfig()->getExtension(symbol, extension);
+
+        
+            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+
+            local_after(self);
+            global_after(self);
+
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioned to %s",
+                __FILE__, __LINE__, "EnvironmentSet"
+            );
+
+            return 1;
+        }
+
+        break;
+
+        case COREFSM_STATE_GAME_RUNNING: {
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioning from %s to %s via %s",
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+            );
+
+            if (!global_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed global precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+            if (!local_before(self)) {
+                PRINTF(
+                    self,
+                    "FSM %s:%u Failed state precondition while transitioning to %s",
+                    __FILE__, __LINE__, "EnvironmentSet"
+                );
+
+                return 0;
+            }
+
+
+
+            self->frontend->getConfig()->getExtension(symbol, extension);
+
+        
+            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+
+            local_after(self);
+            global_after(self);
+
+            PRINTF(
+                self,
+                "FSM %s:%u Transitioned to %s",
+                __FILE__, __LINE__, "EnvironmentSet"
+            );
+
+            return 1;
+        }
+
+        break;
+
+        default: break;
+    }
+
+    PRINTF(
+        self,
+        "FSM %s:%u Transition %s is invalid from state %s",
+        __FILE__, __LINE__, "getExtension", CoreFsm_StateName(self->state)
+    );
+
+    return 0;
+}
+
 int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, VoidPtrPtr data) {
     switch (self->state) {
         case COREFSM_STATE_GAME_LOADED: {
@@ -835,7 +1070,9 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
             }
 
 
+
             *data = self->core->getMemoryData(id);
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -881,7 +1118,9 @@ int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, V
             }
 
 
+
             *data = self->core->getMemoryData(id);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -941,7 +1180,9 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
             }
 
 
+
             *size = self->core->getMemorySize(id);
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -987,7 +1228,9 @@ int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, S
             }
 
 
+
             *size = self->core->getMemorySize(id);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1047,7 +1290,9 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
             }
 
 
+
             *region = self->core->getRegion();
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -1093,7 +1338,9 @@ int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region
             }
 
 
+
             *region = self->core->getRegion();
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1153,7 +1400,9 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
             }
 
 
+
             self->core->getSystemAvInfo(info);
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -1199,7 +1448,9 @@ int CoreFsm_Transition_getSystemAvInfo(CoreFsm_Context* const self, RetroSystemA
             }
 
 
+
             self->core->getSystemAvInfo(info);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1259,7 +1510,9 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             }
 
 
+
             self->core->getSystemInfo(info);
+
         
             self->state = COREFSM_STATE_CORE_INITIALIZED;
 
@@ -1305,7 +1558,9 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             }
 
 
+
             self->core->getSystemInfo(info);
+
         
             self->state = COREFSM_STATE_CORE_SET;
 
@@ -1351,7 +1606,9 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             }
 
 
+
             self->core->getSystemInfo(info);
+
         
             self->state = COREFSM_STATE_ENVIRONMENT_SET;
 
@@ -1397,7 +1654,9 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             }
 
 
+
             self->core->getSystemInfo(info);
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -1443,7 +1702,9 @@ int CoreFsm_Transition_getSystemInfo(CoreFsm_Context* const self, RetroSystemInf
             }
 
 
+
             self->core->getSystemInfo(info);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1560,7 +1821,9 @@ int CoreFsm_Transition_init(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->init();
+
         
             self->state = COREFSM_STATE_CORE_INITIALIZED;
 
@@ -1620,9 +1883,13 @@ int CoreFsm_Transition_loadGame(CoreFsm_Context* const self, ConstRetroGameInfoP
             }
 
 
+
             if (!self->core->loadGame(gameInfo)) {
+
                 return 0;
+
             }
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -1682,9 +1949,13 @@ int CoreFsm_Transition_loadGameSpecial(CoreFsm_Context* const self, unsigned gam
             }
 
 
+
             if (!self->core->loadGameSpecial(gameType, info, numInfo)) {
+
                 return 0;
+
             }
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -1744,7 +2015,9 @@ int CoreFsm_Transition_reset(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->reset();
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1804,7 +2077,9 @@ int CoreFsm_Transition_run(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->run();
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1864,9 +2139,13 @@ int CoreFsm_Transition_serialize(CoreFsm_Context* const self, VoidPtr data, size
             }
 
 
+
             if (!self->core->serialize(data, size)) {
+
                 return 0;
+
             }
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1926,7 +2205,9 @@ int CoreFsm_Transition_serializeSize(CoreFsm_Context* const self, SizePtr size) 
             }
 
 
+
             *size = self->core->serializeSize();
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -1986,11 +2267,17 @@ int CoreFsm_Transition_setCallbacks(CoreFsm_Context* const self, retro_video_ref
             }
 
 
+
             self->core->setVideoRefresh(videoRefresh);
+
             self->core->setAudioSample(audioSample);
+
             self->core->setAudioSampleBatch(audioSampleBatch);
+
             self->core->setInputPoll(inputPoll);
+
             self->core->setInputState(inputState);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -2050,7 +2337,9 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             }
 
 
+
             self->core->setControllerPortDevice(port, device);
+
         
             self->state = COREFSM_STATE_CORE_INITIALIZED;
 
@@ -2096,7 +2385,9 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             }
 
 
+
             self->core->setControllerPortDevice(port, device);
+
         
             self->state = COREFSM_STATE_ENVIRONMENT_SET;
 
@@ -2142,7 +2433,9 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             }
 
 
+
             self->core->setControllerPortDevice(port, device);
+
         
             self->state = COREFSM_STATE_GAME_LOADED;
 
@@ -2188,7 +2481,9 @@ int CoreFsm_Transition_setControllerPortDevice(CoreFsm_Context* const self, unsi
             }
 
 
+
             self->core->setControllerPortDevice(port, device);
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -2248,7 +2543,9 @@ int CoreFsm_Transition_setEnvironment(CoreFsm_Context* const self, retro_environ
             }
 
 
+
             self->core->setEnvironment(cb);
+
         
             self->state = COREFSM_STATE_ENVIRONMENT_SET;
 
@@ -2308,7 +2605,9 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->unloadGame();
+
         
             self->state = COREFSM_STATE_CORE_INITIALIZED;
 
@@ -2354,7 +2653,9 @@ int CoreFsm_Transition_unloadGame(CoreFsm_Context* const self) {
             }
 
 
+
             self->core->unloadGame();
+
         
             self->state = COREFSM_STATE_CORE_INITIALIZED;
 
@@ -2414,9 +2715,13 @@ int CoreFsm_Transition_unserialize(CoreFsm_Context* const self, ConstVoidPtr dat
             }
 
 
+
             if (!self->core->unserialize(data, size)) {
+
                 return 0;
+
             }
+
         
             self->state = COREFSM_STATE_GAME_RUNNING;
 
@@ -2717,6 +3022,7 @@ const char* CoreFsm_TransitionName(CoreFsm_Transition const transition) {
         case COREFSM_TRANSITION_CHEAT_SET: return "cheatSet";
         case COREFSM_TRANSITION_CORE_SET: return "coreSet";
         case COREFSM_TRANSITION_DEINIT: return "deinit";
+        case COREFSM_TRANSITION_GET_EXTENSION: return "getExtension";
         case COREFSM_TRANSITION_GET_MEMORY_DATA: return "getMemoryData";
         case COREFSM_TRANSITION_GET_MEMORY_SIZE: return "getMemorySize";
         case COREFSM_TRANSITION_GET_REGION: return "getRegion";

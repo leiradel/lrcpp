@@ -162,6 +162,7 @@ namespace lrcpp {
         bool getMemoryData(unsigned id, void** data);
         bool getMemorySize(unsigned id, size_t* size);
         bool setControllerPortDevice(unsigned port, unsigned device);
+        bool getExtension(char const* const symbol, retro_proc_address_t* extension);
 
         // lrcpp API
         bool shutdownRequested() const;
@@ -187,6 +188,7 @@ namespace lrcpp {
         bool serializeSizeAllowed() const;
         bool setCallbacksAllowed() const;
         bool setControllerPortDeviceAllowed() const;
+        bool getExtensionAllowed() const;
         bool setEnvironmentAllowed() const;
         bool unloadGameAllowed() const;
         bool unserializeAllowed() const;

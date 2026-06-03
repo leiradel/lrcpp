@@ -10,6 +10,7 @@ digraph CoreFsm {
 
     CoreInitialized -> CoreInitialized [label="apiVersion"];
     CoreInitialized -> EnvironmentSet [label="deinit"];
+    CoreInitialized -> EnvironmentSet [label="getExtension"];
     CoreInitialized -> CoreInitialized [label="getSystemInfo"];
     CoreInitialized -> GameLoaded [label="loadGame"];
     CoreInitialized -> GameLoaded [label="loadGameSpecial"];
@@ -19,11 +20,13 @@ digraph CoreFsm {
     CoreSet -> EnvironmentSet [label="setEnvironment"];
     CoreSet -> Start [label="unset"];
     EnvironmentSet -> EnvironmentSet [label="apiVersion"];
+    EnvironmentSet -> EnvironmentSet [label="getExtension"];
     EnvironmentSet -> EnvironmentSet [label="getSystemInfo"];
     EnvironmentSet -> CoreSet [label="gotoCoreSet"];
     EnvironmentSet -> CoreInitialized [label="init"];
     EnvironmentSet -> EnvironmentSet [label="setControllerPortDevice"];
     GameLoaded -> GameLoaded [label="apiVersion"];
+    GameLoaded -> EnvironmentSet [label="getExtension"];
     GameLoaded -> GameLoaded [label="getMemoryData"];
     GameLoaded -> GameLoaded [label="getMemorySize"];
     GameLoaded -> GameLoaded [label="getRegion"];
@@ -35,6 +38,7 @@ digraph CoreFsm {
     GameRunning -> GameRunning [label="apiVersion"];
     GameRunning -> GameRunning [label="cheatReset"];
     GameRunning -> GameRunning [label="cheatSet"];
+    GameRunning -> EnvironmentSet [label="getExtension"];
     GameRunning -> GameRunning [label="getMemoryData"];
     GameRunning -> GameRunning [label="getMemorySize"];
     GameRunning -> GameRunning [label="getRegion"];

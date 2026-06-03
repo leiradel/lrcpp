@@ -6,24 +6,45 @@
 #include <stdarg.h>
 
 
+
     #include <lrcpp/libretro.h>
 
+
+
     namespace lrcpp {
+
         struct Core;
+
         class Frontend;
+
     }
 
+
+
     typedef lrcpp::Core* CorePtr;
+
     typedef lrcpp::Frontend* FrontendPtr;
+
     typedef size_t* SizePtr;
+
     typedef char const* ConstCharPtr;
+
     typedef retro_game_info const* ConstRetroGameInfoPtr;
+
     typedef void* VoidPtr;
+
     typedef void const* ConstVoidPtr;
+
     typedef void** VoidPtrPtr;
+
     typedef unsigned* UnsignedPtr;
+
     typedef struct retro_system_info* RetroSystemInfoPtr;
+
     typedef struct retro_system_av_info* RetroSystemAvInfoPtr;
+
+    typedef retro_proc_address_t* RetroProcAddressPtr;
+
 
 
 /* FSM states */
@@ -44,6 +65,7 @@ typedef enum {
     COREFSM_TRANSITION_CHEAT_SET,
     COREFSM_TRANSITION_CORE_SET,
     COREFSM_TRANSITION_DEINIT,
+    COREFSM_TRANSITION_GET_EXTENSION,
     COREFSM_TRANSITION_GET_MEMORY_DATA,
     COREFSM_TRANSITION_GET_MEMORY_SIZE,
     COREFSM_TRANSITION_GET_REGION,
@@ -97,6 +119,7 @@ int CoreFsm_Transition_cheatReset(CoreFsm_Context* const self);
 int CoreFsm_Transition_cheatSet(CoreFsm_Context* const self, unsigned index, bool enabled, ConstCharPtr code);
 int CoreFsm_Transition_coreSet(CoreFsm_Context* const self);
 int CoreFsm_Transition_deinit(CoreFsm_Context* const self);
+int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr symbol, RetroProcAddressPtr extension);
 int CoreFsm_Transition_getMemoryData(CoreFsm_Context* const self, unsigned id, VoidPtrPtr data);
 int CoreFsm_Transition_getMemorySize(CoreFsm_Context* const self, unsigned id, SizePtr size);
 int CoreFsm_Transition_getRegion(CoreFsm_Context* const self, UnsignedPtr region);
@@ -141,6 +164,7 @@ public:
         cheatSet = COREFSM_TRANSITION_CHEAT_SET,
         coreSet = COREFSM_TRANSITION_CORE_SET,
         deinit = COREFSM_TRANSITION_DEINIT,
+        getExtension = COREFSM_TRANSITION_GET_EXTENSION,
         getMemoryData = COREFSM_TRANSITION_GET_MEMORY_DATA,
         getMemorySize = COREFSM_TRANSITION_GET_MEMORY_SIZE,
         getRegion = COREFSM_TRANSITION_GET_REGION,
@@ -180,6 +204,7 @@ public:
     bool cheatSet(unsigned index, bool enabled, ConstCharPtr code) { return CoreFsm_Transition_cheatSet(&_fsm, index, enabled, code) != 0; }
     bool coreSet() { return CoreFsm_Transition_coreSet(&_fsm) != 0; }
     bool deinit() { return CoreFsm_Transition_deinit(&_fsm) != 0; }
+    bool getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) { return CoreFsm_Transition_getExtension(&_fsm, symbol, extension) != 0; }
     bool getMemoryData(unsigned id, VoidPtrPtr data) { return CoreFsm_Transition_getMemoryData(&_fsm, id, data) != 0; }
     bool getMemorySize(unsigned id, SizePtr size) { return CoreFsm_Transition_getMemorySize(&_fsm, id, size) != 0; }
     bool getRegion(UnsignedPtr region) { return CoreFsm_Transition_getRegion(&_fsm, region) != 0; }

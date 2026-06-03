@@ -41,6 +41,7 @@ header {
     typedef unsigned* UnsignedPtr;
     typedef struct retro_system_info* RetroSystemInfoPtr;
     typedef struct retro_system_av_info* RetroSystemAvInfoPtr;
+    typedef retro_proc_address_t* RetroProcAddressPtr;
 }
 
 implementation {
@@ -92,6 +93,10 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
             self->core->setControllerPortDevice(port, device);
         }
 
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+            self->frontend->getConfig()->getExtension(symbol, extension);
+        }
+
         init() => CoreInitialized {
             self->core->init();
         }
@@ -112,6 +117,10 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
 
         setControllerPortDevice(unsigned port, unsigned device) => CoreInitialized {
             self->core->setControllerPortDevice(port, device);
+        }
+
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+            self->frontend->getConfig()->getExtension(symbol, extension);
         }
 
         loadGame(ConstRetroGameInfoPtr gameInfo) => GameLoaded {
@@ -144,6 +153,10 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
 
         setControllerPortDevice(unsigned port, unsigned device) => GameLoaded {
             self->core->setControllerPortDevice(port, device);
+        }
+
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+            self->frontend->getConfig()->getExtension(symbol, extension);
         }
 
         getSystemAvInfo(RetroSystemAvInfoPtr info) => GameLoaded {
@@ -196,6 +209,10 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
 
         setControllerPortDevice(unsigned port, unsigned device) => GameRunning {
             self->core->setControllerPortDevice(port, device);
+        }
+
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+            self->frontend->getConfig()->getExtension(symbol, extension);
         }
 
         getSystemAvInfo(RetroSystemAvInfoPtr info) => GameRunning {

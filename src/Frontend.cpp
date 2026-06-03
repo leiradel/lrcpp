@@ -547,6 +547,10 @@ bool lrcpp::Frontend::setControllerPortDevice(unsigned port, unsigned device) {
     return _fsm.setControllerPortDevice(port, device);
 }
 
+bool lrcpp::Frontend::getExtension(char const* const symbol, retro_proc_address_t* extension) {
+    return _fsm.getExtension(symbol, extension);
+}
+
 bool lrcpp::Frontend::setRotation(unsigned data) {
     return _video != nullptr && _video->setRotation(data);
 }

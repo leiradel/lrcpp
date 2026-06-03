@@ -79,6 +79,9 @@ namespace lrcpp {
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY
         virtual bool setCoreOptionsDisplay(retro_core_option_display const* display) { (void)display; return false; }
 
+        // Interface
+        virtual bool getExtension(char const* const symbol, retro_proc_address_t* extension) { (void)symbol; *extension = nullptr; return false; }
+
     protected:
         // Misc
         static retro_core_option_v2_definition* coreOptionV1ToV2(retro_core_option_definition const* options);
