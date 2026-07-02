@@ -597,7 +597,14 @@ bool lrcpp::Frontend::setDiskControlInterface(struct retro_disk_control_callback
 }
 
 bool lrcpp::Frontend::setHwRender(struct retro_hw_render_callback* data) {
-    return _video != nullptr && _video->setHwRender(data);
+    if (_video == nullptr) {
+        return false;
+    }
+
+    data->get_current_framebuffer = videoGetCurrentFramebuffer;
+    data->get_proc_address = videoGetProcAddress;
+
+    return _video->setHwRender(data);
 }
 
 bool lrcpp::Frontend::getVariable(struct retro_variable* data) {
