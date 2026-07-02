@@ -840,14 +840,14 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "CoreInitialized", "getExtension"
             );
 
             if (!global_before(self)) {
                 PRINTF(
                     self,
                     "FSM %s:%u Failed global precondition while transitioning to %s",
-                    __FILE__, __LINE__, "EnvironmentSet"
+                    __FILE__, __LINE__, "CoreInitialized"
                 );
 
                 return 0;
@@ -857,7 +857,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
                 PRINTF(
                     self,
                     "FSM %s:%u Failed state precondition while transitioning to %s",
-                    __FILE__, __LINE__, "EnvironmentSet"
+                    __FILE__, __LINE__, "CoreInitialized"
                 );
 
                 return 0;
@@ -868,7 +868,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             self->frontend->getConfig()->getExtension(symbol, extension);
 
         
-            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+            self->state = COREFSM_STATE_CORE_INITIALIZED;
 
             local_after(self);
             global_after(self);
@@ -876,7 +876,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             PRINTF(
                 self,
                 "FSM %s:%u Transitioned to %s",
-                __FILE__, __LINE__, "EnvironmentSet"
+                __FILE__, __LINE__, "CoreInitialized"
             );
 
             return 1;
@@ -936,14 +936,14 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameLoaded", "getExtension"
             );
 
             if (!global_before(self)) {
                 PRINTF(
                     self,
                     "FSM %s:%u Failed global precondition while transitioning to %s",
-                    __FILE__, __LINE__, "EnvironmentSet"
+                    __FILE__, __LINE__, "GameLoaded"
                 );
 
                 return 0;
@@ -953,7 +953,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
                 PRINTF(
                     self,
                     "FSM %s:%u Failed state precondition while transitioning to %s",
-                    __FILE__, __LINE__, "EnvironmentSet"
+                    __FILE__, __LINE__, "GameLoaded"
                 );
 
                 return 0;
@@ -964,7 +964,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             self->frontend->getConfig()->getExtension(symbol, extension);
 
         
-            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+            self->state = COREFSM_STATE_GAME_LOADED;
 
             local_after(self);
             global_after(self);
@@ -972,7 +972,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             PRINTF(
                 self,
                 "FSM %s:%u Transitioned to %s",
-                __FILE__, __LINE__, "EnvironmentSet"
+                __FILE__, __LINE__, "GameLoaded"
             );
 
             return 1;
@@ -984,14 +984,14 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             PRINTF(
                 self,
                 "FSM %s:%u Transitioning from %s to %s via %s",
-                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "EnvironmentSet", "getExtension"
+                __FILE__, __LINE__, CoreFsm_StateName(CoreFsm_CurrentState(self)), "GameRunning", "getExtension"
             );
 
             if (!global_before(self)) {
                 PRINTF(
                     self,
                     "FSM %s:%u Failed global precondition while transitioning to %s",
-                    __FILE__, __LINE__, "EnvironmentSet"
+                    __FILE__, __LINE__, "GameRunning"
                 );
 
                 return 0;
@@ -1001,7 +1001,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
                 PRINTF(
                     self,
                     "FSM %s:%u Failed state precondition while transitioning to %s",
-                    __FILE__, __LINE__, "EnvironmentSet"
+                    __FILE__, __LINE__, "GameRunning"
                 );
 
                 return 0;
@@ -1012,7 +1012,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             self->frontend->getConfig()->getExtension(symbol, extension);
 
         
-            self->state = COREFSM_STATE_ENVIRONMENT_SET;
+            self->state = COREFSM_STATE_GAME_RUNNING;
 
             local_after(self);
             global_after(self);
@@ -1020,7 +1020,7 @@ int CoreFsm_Transition_getExtension(CoreFsm_Context* const self, ConstCharPtr sy
             PRINTF(
                 self,
                 "FSM %s:%u Transitioned to %s",
-                __FILE__, __LINE__, "EnvironmentSet"
+                __FILE__, __LINE__, "GameRunning"
             );
 
             return 1;

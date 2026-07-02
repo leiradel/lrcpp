@@ -119,7 +119,7 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
             self->core->setControllerPortDevice(port, device);
         }
 
-        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => CoreInitialized {
             self->frontend->getConfig()->getExtension(symbol, extension);
         }
 
@@ -155,7 +155,7 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
             self->core->setControllerPortDevice(port, device);
         }
 
-        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => GameLoaded {
             self->frontend->getConfig()->getExtension(symbol, extension);
         }
 
@@ -211,7 +211,7 @@ fsm CoreFsm(CorePtr core, FrontendPtr frontend, FrontendPtr previous) {
             self->core->setControllerPortDevice(port, device);
         }
 
-        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => EnvironmentSet {
+        getExtension(ConstCharPtr symbol, RetroProcAddressPtr extension) => GameRunning {
             self->frontend->getConfig()->getExtension(symbol, extension);
         }
 
