@@ -248,6 +248,7 @@ namespace lrcpp {
         bool getCoreOptionsVersion(unsigned* data);
         bool setCoreOptions(struct retro_core_option_definition const* data);
         bool setCoreOptionsIntl(struct retro_core_options_intl const* data);
+        bool setCoreOptionsV2(struct retro_core_options_v2 const* data);
         bool setCoreOptionsV2Intl(struct retro_core_options_v2_intl const* data);
         bool setCoreOptionsDisplay(struct retro_core_option_display const* data);
         bool getPreferredHwRender(unsigned* data);

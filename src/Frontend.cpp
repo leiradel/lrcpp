@@ -854,6 +854,10 @@ bool lrcpp::Frontend::setCoreOptionsIntl(struct retro_core_options_intl const* d
     return _config != nullptr && _config->setCoreOptionsIntl(data);
 }
 
+bool lrcpp::Frontend::setCoreOptionsV2(struct retro_core_options_v2 const* data) {
+    return _config != nullptr && _config->setCoreOptionsV2(data);
+}
+
 bool lrcpp::Frontend::setCoreOptionsV2Intl(struct retro_core_options_v2_intl const* data) {
     return _config != nullptr && _config->setCoreOptionsV2Intl(data);
 }
@@ -1037,6 +1041,9 @@ bool lrcpp::Frontend::environmentCallback(unsigned cmd, void* data) {
 
         case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL:
             return setCoreOptionsIntl((struct retro_core_options_intl const*)data);
+
+        case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2:
+            return setCoreOptionsV2((struct retro_core_options_v2 const*)data);
 
         case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL:
             return setCoreOptionsV2Intl((struct retro_core_options_v2_intl const*)data);

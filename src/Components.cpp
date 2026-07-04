@@ -184,6 +184,13 @@ bool lrcpp::Config::setCoreOptionsIntl(retro_core_options_intl const* intl) {
     return ok;
 }
 
+bool lrcpp::Config::setCoreOptionsV2(retro_core_options_v2 const* options) {
+    retro_core_options_v2_intl intlopts = {};
+    intlopts.us = const_cast<retro_core_options_v2*>(options);
+    intlopts.local = nullptr;
+    return setCoreOptionsV2Intl(&intlopts);
+}
+
 retro_core_option_v2_definition* lrcpp::Config::coreOptionV1ToV2(retro_core_option_definition const* options) {
     if (options == nullptr) {
         return nullptr;

@@ -74,6 +74,8 @@ namespace lrcpp {
         virtual bool setCoreOptions(retro_core_option_definition const* options);
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL
         virtual bool setCoreOptionsIntl(retro_core_options_intl const* intl);
+        // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2
+        bool setCoreOptionsV2(retro_core_options_v2 const* options);
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL
         virtual bool setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) { (void)intlv2; return false; }
         // RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY
