@@ -158,6 +158,8 @@ bool Player::init(std::vector<std::string> const& configPaths) {
         return false;
     }
 
+    _vfs.init(&_logger);
+
     if (!_frontend.setLogger(&_logger) || !_frontend.setConfig(&_config) || !_frontend.setVideo(&_video)) {
         _logger.error("Could not set components in the frontend\n");
 
@@ -173,7 +175,8 @@ error:
         return false;
     }
 
-    if (!_frontend.setPerf(&_perf) || !_frontend.setAudio(&_audio) || !_frontend.setInput(&_input)) {
+    if (!_frontend.setPerf(&_perf) || !_frontend.setAudio(&_audio) || !_frontend.setInput(&_input) ||
+        !_frontend.setVirtualFileSystem(&_vfs)) {
         _logger.error("Could not set components in the frontend\n");
         goto error;
     }
@@ -245,6 +248,7 @@ void Player::destroy() {
     _frontend.unset();
 
     _input.destroy();
+    _vfs.destroy();
     _video.destroy();
     _audio.destroy();
     _config.destroy();

@@ -14,7 +14,7 @@ endif
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 OBJECTS=\
-	Audio.o Config.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
+	Audio.o Config.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o Vfs.o \
 	../../src/Components.o ../../src/CoreFsm.o ../../src/Frontend.o
 
 all: sdl2lrcpp

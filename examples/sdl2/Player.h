@@ -6,6 +6,7 @@
 #include "Audio.h"
 #include "Video.h"
 #include "Input.h"
+#include "Vfs.h"
 #include "DynLib.h"
 #include "lrcpp/Frontend.h"
 
@@ -30,6 +31,7 @@ protected:
     Audio _audio;
     Video _video;
     Input _input;
+    Vfs _vfs;
 
     lrcpp::Core _core;
     DynLib _dynlib;
