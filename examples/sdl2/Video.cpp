@@ -206,12 +206,28 @@ void Video::present() {
         dest.w = width;
         dest.h = height;
 
+        {
+            std::lock_guard<std::mutex> lock(_viewportMutex);
+            _viewportX = static_cast<int>(dest.x);
+            _viewportY = static_cast<int>(dest.y);
+            _viewportWidth = static_cast<int>(dest.w);
+            _viewportHeight = static_cast<int>(dest.h);
+        }
+
         if (SDL_RenderCopyF(_renderer, _texture, &src, &dest) != 0) {
             _logger->error("SDL_RenderCopyF() failed: %s\n", SDL_GetError());
         }
     }
 
     SDL_RenderPresent(_renderer);
+}
+
+void Video::getViewport(int* x, int* y, int* width, int* height) {
+    std::lock_guard<std::mutex> lock(_viewportMutex);
+    *x = _viewportX;
+    *y = _viewportY;
+    *width = _viewportWidth;
+    *height = _viewportHeight;
 }
 
 bool Video::setRotation(unsigned rotation) {
@@ -386,4 +402,9 @@ void Video::reset() {
     _backIndex = 0;
     _frontIndex = 1;
     _hasFrame = false;
+
+    _viewportX = 0;
+    _viewportY = 0;
+    _viewportWidth = 0;
+    _viewportHeight = 0;
 }

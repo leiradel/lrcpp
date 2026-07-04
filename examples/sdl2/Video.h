@@ -21,6 +21,8 @@ public:
 
     void present();
 
+    void getViewport(int* x, int* y, int* width, int* height);
+
     // lrcpp::Video
     virtual bool setRotation(unsigned rotation) override;
     virtual bool getOverscan(bool* overscan) override;
@@ -78,4 +80,10 @@ protected:
     int _frontIndex;
     bool _hasFrame;
     std::mutex _frameMutex;
+
+    int _viewportX;
+    int _viewportY;
+    int _viewportWidth;
+    int _viewportHeight;
+    std::mutex _viewportMutex;
 };

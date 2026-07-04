@@ -9,11 +9,13 @@
 #include <vector>
 #include <mutex>
 
+class Video;
+
 class Input: public lrcpp::Input {
 public:
     Input();
 
-    bool init(lrcpp::Logger* logger);
+    bool init(lrcpp::Logger* logger, Video* video);
     void destroy();
 
     void process(SDL_Event const* event);
@@ -36,9 +38,11 @@ protected:
     void process(SDL_KeyboardEvent const* event);
     void process(SDL_MouseButtonEvent const* event);
     void process(SDL_MouseMotionEvent const* event);
+    void process(SDL_MouseWheelEvent const* event);
     void reset();
 
     static unsigned keycodeToLibretro(SDL_Keycode code);
+    static int16_t scalePointer(int value, int size);
 
     struct Gamepad {
         Gamepad();
@@ -65,9 +69,26 @@ protected:
     std::map<Sint32, Gamepad> _gamepads;
     std::vector<Gamepad*> _ports;
 
-    int _mouseX;
-    int _mouseY;
+    int _mouseDeltaX;
+    int _mouseDeltaY;
+    int _mouseWheelX;
+    int _mouseWheelY;
+    int _mouseAbsX;
+    int _mouseAbsY;
     bool _mouseButtons[5];
+
+    int _polledMouseDeltaX;
+    int _polledMouseDeltaY;
+    int _polledMouseWheelX;
+    int _polledMouseWheelY;
+
+    int16_t _pointerX;
+    int16_t _pointerY;
+    bool _pointerPressed;
+    bool _pointerOffscreen;
+    int _pointerCount;
+
+    Video* _video;
 
     retro_keyboard_callback _keyboardCallback;
     bool _keyboardPreviousState[RETROK_LAST];

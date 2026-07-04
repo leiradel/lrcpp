@@ -1,20 +1,22 @@
 #include "Input.h"
+#include "Video.h"
 
 Input::Input() {
     reset();
 }
 
-bool Input::init(lrcpp::Logger* logger) {
+bool Input::init(lrcpp::Logger* logger, Video* video) {
     reset();
 
     _logger = logger;
+    _video = video;
 
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0) {
         logger->error("SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) failed: %s\n", SDL_GetError());
         return false;
     }
 
-    _logger->info("Audio subsystem initialized\n");
+    _logger->info("Input subsystem initialized\n");
     return true;
 }
 
@@ -58,6 +60,10 @@ void Input::process(SDL_Event const* event) {
         case SDL_MOUSEMOTION:
             process(&event->motion);
             break;
+
+        case SDL_MOUSEWHEEL:
+            process(&event->wheel);
+            break;
     }
 }
 
@@ -92,7 +98,8 @@ bool Input::setKeyboardCallback(retro_keyboard_callback const* callback) {
 }
 
 bool Input::getInputDeviceCapabilities(uint64_t* capabilities) {
-    *capabilities = 1 << RETRO_DEVICE_JOYPAD | 1 << RETRO_DEVICE_MOUSE | 1 << RETRO_DEVICE_KEYBOARD | 1 << RETRO_DEVICE_ANALOG;
+    *capabilities = 1 << RETRO_DEVICE_JOYPAD | 1 << RETRO_DEVICE_MOUSE | 1 << RETRO_DEVICE_KEYBOARD |
+                    1 << RETRO_DEVICE_ANALOG | 1 << RETRO_DEVICE_POINTER;
     return true;
 }
 
@@ -149,13 +156,29 @@ int16_t Input::state(unsigned port, unsigned device, unsigned index, unsigned id
 
         case RETRO_DEVICE_MOUSE: {
             switch (id) {
-                case RETRO_DEVICE_ID_MOUSE_X: return _mouseX;
-                case RETRO_DEVICE_ID_MOUSE_Y: return _mouseY;
-                case RETRO_DEVICE_ID_MOUSE_LEFT: return _mouseButtons[0] ? 32767 : 0;
-                case RETRO_DEVICE_ID_MOUSE_MIDDLE: return _mouseButtons[1] ? 32767 : 0;
-                case RETRO_DEVICE_ID_MOUSE_RIGHT: return _mouseButtons[2] ? 32767 : 0;
-                case RETRO_DEVICE_ID_MOUSE_BUTTON_4: return _mouseButtons[3] ? 32767 : 0;
-                case RETRO_DEVICE_ID_MOUSE_BUTTON_5: return _mouseButtons[4] ? 32767 : 0;
+                case RETRO_DEVICE_ID_MOUSE_X: return _polledMouseDeltaX;
+                case RETRO_DEVICE_ID_MOUSE_Y: return _polledMouseDeltaY;
+                case RETRO_DEVICE_ID_MOUSE_LEFT: return _mouseButtons[0];
+                case RETRO_DEVICE_ID_MOUSE_MIDDLE: return _mouseButtons[1];
+                case RETRO_DEVICE_ID_MOUSE_RIGHT: return _mouseButtons[2];
+                case RETRO_DEVICE_ID_MOUSE_BUTTON_4: return _mouseButtons[3];
+                case RETRO_DEVICE_ID_MOUSE_BUTTON_5: return _mouseButtons[4];
+                case RETRO_DEVICE_ID_MOUSE_WHEELUP: return _polledMouseWheelY > 0 ? _polledMouseWheelY : 0;
+                case RETRO_DEVICE_ID_MOUSE_WHEELDOWN: return _polledMouseWheelY < 0 ? -_polledMouseWheelY : 0;
+                case RETRO_DEVICE_ID_MOUSE_HORIZ_WHEELUP: return _polledMouseWheelX > 0 ? _polledMouseWheelX : 0;
+                case RETRO_DEVICE_ID_MOUSE_HORIZ_WHEELDOWN: return _polledMouseWheelX < 0 ? -_polledMouseWheelX : 0;
+            }
+
+            break;
+        }
+
+        case RETRO_DEVICE_POINTER: {
+            switch (id) {
+                case RETRO_DEVICE_ID_POINTER_X: return index == 0 ? _pointerX : 0;
+                case RETRO_DEVICE_ID_POINTER_Y: return index == 0 ? _pointerY : 0;
+                case RETRO_DEVICE_ID_POINTER_PRESSED: return index == 0 ? _pointerPressed : 0;
+                case RETRO_DEVICE_ID_POINTER_COUNT: return _pointerCount;
+                case RETRO_DEVICE_ID_POINTER_IS_OFFSCREEN: return index == 0 ? _pointerOffscreen : 0;
             }
 
             break;
@@ -166,21 +189,48 @@ int16_t Input::state(unsigned port, unsigned device, unsigned index, unsigned id
 }
 
 void Input::poll() {
-    if (_keyboardCallback.callback == nullptr) {
-        return;
-    }
-
-    bool current[RETROK_LAST];
+    int mouseX, mouseY;
+    bool leftButton;
+    bool keyboard[RETROK_LAST];
 
     {
         std::lock_guard<std::mutex> lock(_mutex);
-        memcpy(current, _keyboardState, sizeof(current));
+
+        _polledMouseDeltaX = _mouseDeltaX;
+        _polledMouseDeltaY = _mouseDeltaY;
+        _mouseDeltaX = 0;
+        _mouseDeltaY = 0;
+
+        _polledMouseWheelX = _mouseWheelX;
+        _polledMouseWheelY = _mouseWheelY;
+        _mouseWheelX = 0;
+        _mouseWheelY = 0;
+
+        mouseX = _mouseAbsX;
+        mouseY = _mouseAbsY;
+        leftButton = _mouseButtons[0];
+
+        memcpy(keyboard, _keyboardState, sizeof(keyboard));
     }
 
-    for (int i = RETROK_FIRST; i < RETROK_LAST; i++) {
-        if (current[i] != _keyboardPreviousState[i]) {
-            _keyboardCallback.callback(current[i], i, 0, 0);
-            _keyboardPreviousState[i] = current[i];
+    int x = 0, y = 0, width = 0, height = 0;
+    _video->getViewport(&x, &y, &width, &height);
+
+    int const relX = mouseX - x;
+    int const relY = mouseY - y;
+
+    _pointerX = scalePointer(relX, width);
+    _pointerY = scalePointer(relY, height);
+    _pointerOffscreen = !(width > 0 && height > 0 && relX >= 0 && relX < width && relY >= 0 && relY < height);
+    _pointerPressed = !_pointerOffscreen && leftButton;
+    _pointerCount = _pointerPressed ? 1 : 0;
+
+    if (_keyboardCallback.callback != nullptr) {
+        for (int i = RETROK_FIRST; i < RETROK_LAST; i++) {
+            if (keyboard[i] != _keyboardPreviousState[i]) {
+                _keyboardCallback.callback(keyboard[i], i, 0, 0);
+                _keyboardPreviousState[i] = keyboard[i];
+            }
         }
     }
 }
@@ -437,22 +487,70 @@ void Input::process(SDL_MouseButtonEvent const* event) {
 }
 
 void Input::process(SDL_MouseMotionEvent const* event) {
-    _mouseX += event->xrel;
-    _mouseY += event->yrel;
+    _mouseDeltaX += event->xrel;
+    _mouseDeltaY += event->yrel;
+    _mouseAbsX = event->x;
+    _mouseAbsY = event->y;
+}
+
+void Input::process(SDL_MouseWheelEvent const* event) {
+    int x = event->x;
+    int y = event->y;
+
+    if (event->direction == SDL_MOUSEWHEEL_FLIPPED) {
+        x = -x;
+        y = -y;
+    }
+
+    _mouseWheelX += x;
+    _mouseWheelY += y;
 }
 
 void Input::reset() {
     _logger = nullptr;
+    _video = nullptr;
 
     _gamepads.clear();
     _ports.clear();
 
-    _mouseX = _mouseY = 0;
+    _mouseDeltaX = 0;
+    _mouseDeltaY = 0;
+    _mouseWheelX = 0;
+    _mouseWheelY = 0;
+    _mouseAbsX = 0;
+    _mouseAbsY = 0;
     memset(_mouseButtons, 0, sizeof(_mouseButtons));
+
+    _polledMouseDeltaX = 0;
+    _polledMouseDeltaY = 0;
+    _polledMouseWheelX = 0;
+    _polledMouseWheelY = 0;
+
+    _pointerX = 0;
+    _pointerY = 0;
+    _pointerPressed = false;
+    _pointerOffscreen = true;
+    _pointerCount = 0;
 
     _keyboardCallback.callback = nullptr;
     memset(_keyboardPreviousState, 0, sizeof(_keyboardPreviousState));
     memset(_keyboardState, 0, sizeof(_keyboardState));
+}
+
+int16_t Input::scalePointer(int value, int size) {
+    if (size <= 1) {
+        return 0;
+    }
+
+    if (value <= 0) {
+        return -0x7fff;
+    }
+
+    if (value >= size - 1) {
+        return 0x7fff;
+    }
+
+    return static_cast<int16_t>((value * 0xffff) / (size - 1) - 0x8000);
 }
 
 unsigned Input::keycodeToLibretro(SDL_Keycode code) {

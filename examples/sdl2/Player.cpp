@@ -150,7 +150,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
         return false;
     }
 
-    if (!_input.init(&_logger)) {
+    if (!_input.init(&_logger, &_video)) {
         _logger.error("Could not initialize the input component\n");
         _video.destroy();
         _audio.destroy();
