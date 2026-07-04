@@ -25,7 +25,7 @@ bool Audio::init(Config* config, lrcpp::Logger* logger) {
     int const count = SDL_GetNumAudioDevices(0);
 
     for (int i = 0; i < count; i++) {
-        _logger->info("Audio device %d: \"%s\"\n", i, SDL_GetAudioDeviceName(i, 0));
+        _logger->debug("Audio device %d: \"%s\"\n", i, SDL_GetAudioDeviceName(i, 0));
     }
 
     return true;

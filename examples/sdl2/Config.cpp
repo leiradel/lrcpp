@@ -95,7 +95,7 @@ bool Config::getOption(char const* key, char const** value) const {
     auto const it = _options.find(key);
 
     if (it == _options.end()) {
-        _logger->error("Could't find \"%s\" in the configuration file\n", key);
+        _logger->warn("Could't find \"%s\" in the configuration file\n", key);
         return false;
     }
 

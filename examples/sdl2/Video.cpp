@@ -44,7 +44,7 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
                     renderer = i;
                 }
 
-                _logger->info("Render driver %d: %s\n", i, info.name);
+                _logger->debug("Render driver %d: %s\n", i, info.name);
 
                 _logger->debug(
                     "    flags:%s%s%s%s\n",
