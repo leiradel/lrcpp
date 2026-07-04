@@ -6,6 +6,10 @@
 
 #include <SDL.h>
 
+#include <vector>
+#include <mutex>
+#include <stdint.h>
+
 class Video : public lrcpp::Video {
 public:
     Video();
@@ -15,7 +19,6 @@ public:
 
     double getCoreFps() const;
 
-    void clear();
     void present();
 
     // lrcpp::Video
@@ -42,6 +45,10 @@ public:
 
 protected:
     void reset();
+    bool createTexture(unsigned width, unsigned height, retro_pixel_format format);
+
+    static unsigned bytesPerPixel(retro_pixel_format format);
+    static Uint32 toSdlPixelFormat(retro_pixel_format format);
 
     lrcpp::Logger* _logger;
 
@@ -56,8 +63,19 @@ protected:
     unsigned _textureWidth;
     unsigned _textureHeight;
     retro_pixel_format _textureFormat;
-    unsigned _usedWidth;
-    unsigned _usedHeight;
+    float _drawAspect;
 
-    void* _swFramebuffer;
+    struct Frame {
+        std::vector<uint8_t> pixels;
+        unsigned width;
+        unsigned height;
+        retro_pixel_format format;
+        float aspectRatio;
+    };
+
+    Frame _frames[2];
+    int _backIndex;
+    int _frontIndex;
+    bool _hasFrame;
+    std::mutex _frameMutex;
 };

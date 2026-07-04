@@ -1,5 +1,7 @@
 #include "Video.h"
 
+#include <string.h>
+
 Video::Video() {
     reset();
 }
@@ -32,52 +34,26 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
     char const* rendererName = nullptr;
     config->getOption("sdl2lrcpp_video_renderer", &rendererName);
 
-    if (count > 0) {
-        for (int i = 0; i < count; i++) {
-            SDL_RendererInfo info;
+    for (int i = 0; i < count; i++) {
+        SDL_RendererInfo info;
 
-            if (SDL_GetRenderDriverInfo(i, &info) != 0) {
-                _logger->error("SDL_GetRenderDriverInfo() failed: %s\n", SDL_GetError());
-            }
-            else {
-                if (rendererName != nullptr && strcmp(rendererName, info.name) == 0) {
-                    renderer = i;
-                }
-
-                _logger->debug("Render driver %d: %s\n", i, info.name);
-
-                _logger->debug(
-                    "    flags:%s%s%s%s\n",
-                    (info.flags & SDL_RENDERER_SOFTWARE) != 0 ? " SDL_RENDERER_SOFTWARE" : "",
-                    (info.flags & SDL_RENDERER_ACCELERATED) != 0 ? " SDL_RENDERER_ACCELERATED" : "",
-                    (info.flags & SDL_RENDERER_PRESENTVSYNC) != 0 ? " SDL_RENDERER_PRESENTVSYNC" : "",
-                    (info.flags & SDL_RENDERER_TARGETTEXTURE) != 0 ? " SDL_RENDERER_TARGETTEXTURE" : ""
-                );
-
-                for (Uint32 j = 0; j < info.num_texture_formats; j++) {
-                    _logger->debug("    texture_formats[%u]: %s\n", j, SDL_GetPixelFormatName(info.texture_formats[j]));
-                }
-
-                _logger->debug("    max_texture: %d x %d\n", info.max_texture_width, info.max_texture_height);
-            }
+        if (SDL_GetRenderDriverInfo(i, &info) != 0) {
+            _logger->error("SDL_GetRenderDriverInfo() failed: %s\n", SDL_GetError());
+            continue;
         }
+
+        if (rendererName != nullptr && strcmp(rendererName, info.name) == 0) {
+            renderer = i;
+        }
+
+        _logger->info("Render driver %d: %s\n", i, info.name);
     }
 
     if (renderer == -1) {
         _logger->info("Using default video renderer\n");
     }
-    else {
-        SDL_RendererInfo info;
 
-        if (SDL_GetRenderDriverInfo(renderer, &info) != 0) {
-            _logger->error("SDL_GetRenderDriverInfo() failed: %s\n", SDL_GetError());
-        }
-        else {
-            _logger->info("Using video renderer %s\n", info.name);
-        }
-    }
-
-    _renderer = SDL_CreateRenderer(_window, renderer, SDL_RENDERER_ACCELERATED);
+    _renderer = SDL_CreateRenderer(_window, renderer, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if (_renderer == nullptr) {
         logger->error("SDL_CreateRenderer() failed: %s\n", SDL_GetError());
@@ -85,16 +61,7 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
         return false;
     }
 
-    {
-        SDL_RendererInfo info;
-
-        if (SDL_GetRenderDriverInfo(-1, &info) != 0) {
-            _logger->info("Renderer created: \"%s\"\n", info.name);
-        }
-        else {
-            _logger->info("Renderer created, unknown driver\n");
-        }
-    }
+    _logger->info("Renderer created\n");
 
     bool smooth = true;
     config->getOption("sdl2lrcpp_video_smooth", &smooth);
@@ -127,42 +94,123 @@ double Video::getCoreFps() const {
     return _coreFps;
 }
 
-void Video::clear() {
-    if (SDL_RenderClear(_renderer) != 0) {
-        _logger->error("SDL_RenderClear() failed: %s\n", SDL_GetError());
+unsigned Video::bytesPerPixel(retro_pixel_format format) {
+    switch (format) {
+        case RETRO_PIXEL_FORMAT_XRGB8888: return 4;
+        case RETRO_PIXEL_FORMAT_0RGB1555:
+        case RETRO_PIXEL_FORMAT_RGB565: return 2;
+        default: return 0;
     }
 }
 
+Uint32 Video::toSdlPixelFormat(retro_pixel_format format) {
+    switch (format) {
+        case RETRO_PIXEL_FORMAT_0RGB1555: return SDL_PIXELFORMAT_RGB555;
+        case RETRO_PIXEL_FORMAT_XRGB8888: return SDL_PIXELFORMAT_RGB888;
+        case RETRO_PIXEL_FORMAT_RGB565: return SDL_PIXELFORMAT_RGB565;
+        default: return SDL_PIXELFORMAT_UNKNOWN;
+    }
+}
+
+bool Video::createTexture(unsigned width, unsigned height, retro_pixel_format format) {
+    if (_texture != nullptr) {
+        SDL_DestroyTexture(_texture);
+        _texture = nullptr;
+    }
+
+    Uint32 const sdlFormat = toSdlPixelFormat(format);
+
+    if (sdlFormat == SDL_PIXELFORMAT_UNKNOWN) {
+        _logger->error("Unknown pixel format, cannot create texture\n");
+        return false;
+    }
+
+    _texture = SDL_CreateTexture(_renderer, sdlFormat, SDL_TEXTUREACCESS_STREAMING, width, height);
+
+    if (_texture == nullptr) {
+        _logger->error("SDL_CreateTexture() failed: %s\n", SDL_GetError());
+        return false;
+    }
+
+    _textureWidth = width;
+    _textureHeight = height;
+    _textureFormat = format;
+
+    _logger->info("Texture created with %u x %u pixels, format %s\n", width, height, SDL_GetPixelFormatName(sdlFormat));
+    return true;
+}
+
 void Video::present() {
-    int windowWidth = 0, windowHeight = 0;
-    SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
+    {
+        std::lock_guard<std::mutex> lock(_frameMutex);
 
-    float height = windowHeight;
-    float width = height * _aspectRatio;
+        if (_hasFrame) {
+            Frame const& front = _frames[_frontIndex];
 
-    if (width > windowWidth) {
-        width = windowWidth;
-        height = width / _aspectRatio;
+            if (_texture == nullptr || front.width != _textureWidth || front.height != _textureHeight ||
+                front.format != _textureFormat) {
+
+                createTexture(front.width, front.height, front.format);
+            }
+
+            if (_texture != nullptr) {
+                void* pixels = nullptr;
+                int texturePitch = 0;
+
+                if (SDL_LockTexture(_texture, nullptr, &pixels, &texturePitch) == 0) {
+                    size_t const rowBytes = static_cast<size_t>(front.width) * bytesPerPixel(front.format);
+                    uint8_t const* src = front.pixels.data();
+                    uint8_t* dst = static_cast<uint8_t*>(pixels);
+
+                    for (unsigned y = 0; y < front.height; y++) {
+                        memcpy(dst, src, rowBytes);
+                        src += rowBytes;
+                        dst += texturePitch;
+                    }
+
+                    SDL_UnlockTexture(_texture);
+                }
+                else {
+                    _logger->error("SDL_LockTexture() failed: %s\n", SDL_GetError());
+                }
+
+                _drawAspect = front.aspectRatio;
+            }
+
+            _hasFrame = false;
+        }
     }
 
-    SDL_Rect src;
-    src.x = src.y = 0;
-    src.w = _usedWidth;
-    src.h = _usedHeight;
+    SDL_RenderClear(_renderer);
 
-    SDL_FRect dest;
-    dest.x = (windowWidth - width) / 2.0f;
-    dest.y = (windowHeight - height) / 2.0f;
-    dest.w = width;
-    dest.h = height;
+    if (_texture != nullptr && _drawAspect > 0.0f) {
+        int windowWidth = 0, windowHeight = 0;
+        SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
 
-    _logger->debug("Rendering %d x %d texture to %f x %f window at (%f, %f)\n", src.w, src.h, dest.w, dest.h, dest.x, dest.y);
+        float height = windowHeight;
+        float width = height * _drawAspect;
 
-    if (SDL_RenderCopyF(_renderer, _texture, &src, &dest) != 0) {
-        _logger->error("SDL_RenderCopyF() failed: %s\n", SDL_GetError());
+        if (width > windowWidth) {
+            width = windowWidth;
+            height = width / _drawAspect;
+        }
+
+        SDL_Rect src;
+        src.x = src.y = 0;
+        src.w = _textureWidth;
+        src.h = _textureHeight;
+
+        SDL_FRect dest;
+        dest.x = (windowWidth - width) / 2.0f;
+        dest.y = (windowHeight - height) / 2.0f;
+        dest.w = width;
+        dest.h = height;
+
+        if (SDL_RenderCopyF(_renderer, _texture, &src, &dest) != 0) {
+            _logger->error("SDL_RenderCopyF() failed: %s\n", SDL_GetError());
+        }
     }
 
-    _logger->debug("Presenting rendered framebuffer\n");
     SDL_RenderPresent(_renderer);
 }
 
@@ -189,17 +237,18 @@ bool Video::showMessage(retro_message const* message) {
 }
 
 bool Video::setPixelFormat(retro_pixel_format format) {
-    _pixelFormat = format;
+    switch (format) {
+        case RETRO_PIXEL_FORMAT_0RGB1555:
+        case RETRO_PIXEL_FORMAT_XRGB8888:
+        case RETRO_PIXEL_FORMAT_RGB565:
+            _pixelFormat = format;
+            _logger->info("Pixel format set to %d\n", format);
+            return true;
 
-    switch (_pixelFormat) {
-        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_0RGB1555\n"); break;
-        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_XRGB8888\n"); break;
-        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_RGB565\n"); break;
-
-        default: _pixelFormat = RETRO_PIXEL_FORMAT_UNKNOWN; return false;
+        default:
+            _pixelFormat = RETRO_PIXEL_FORMAT_UNKNOWN;
+            return false;
     }
-
-    return true;
 }
 
 bool Video::setHwRender(retro_hw_render_callback* callback) {
@@ -223,110 +272,17 @@ bool Video::setSystemAvInfo(retro_system_av_info const* info) {
 bool Video::setGeometry(retro_game_geometry const* geometry) {
     _aspectRatio = geometry->aspect_ratio;
 
-    if (_aspectRatio <= 0) {
-        _aspectRatio = (float)geometry->base_width / (float)geometry->base_height;
+    if (_aspectRatio <= 0.0f) {
+        _aspectRatio = static_cast<float>(geometry->base_width) / static_cast<float>(geometry->base_height);
     }
 
     _logger->info("Core aspect ratio set to %f\n", _aspectRatio);
-
-    if (_texture != nullptr) {
-        if (geometry->max_width <= _textureWidth && geometry->max_height <= _textureHeight) {
-            return true;
-        }
-
-        SDL_DestroyTexture(_texture);
-        _texture = nullptr;
-        _textureWidth = _textureHeight = 0;
-    }
-
-    SDL_PixelFormatEnum format = SDL_PIXELFORMAT_UNKNOWN;
-
-    switch (_pixelFormat) {
-        case RETRO_PIXEL_FORMAT_0RGB1555: format = SDL_PIXELFORMAT_RGB555; break;
-        case RETRO_PIXEL_FORMAT_XRGB8888: format = SDL_PIXELFORMAT_RGB888; break;
-        case RETRO_PIXEL_FORMAT_RGB565: format = SDL_PIXELFORMAT_RGB565; break;
-
-        default:
-            _logger->error("Unknown pixel format, cannot create texture\n");
-            return false;
-    }
-
-    _texture = SDL_CreateTexture(_renderer, format, SDL_TEXTUREACCESS_STREAMING, geometry->max_width, geometry->max_height);
-    
-    if (_texture == nullptr) {
-        _logger->error("SDL_CreateTexture() failed: %s\n", SDL_GetError());
-        return false;
-    }
-
-    int width = 0, height = 0, access = 0;
-    Uint32 uformat = SDL_PIXELFORMAT_UNKNOWN;
-
-    if (SDL_QueryTexture(_texture, &uformat, &access, &width, &height) != 0) {
-        _logger->error("SDL_QueryTexture() failed: %s\n", SDL_GetError());
-        SDL_DestroyTexture(_texture);
-        _texture = nullptr;
-        return false;
-    }
-
-    switch (uformat) {
-        case SDL_PIXELFORMAT_RGB555: _textureFormat = RETRO_PIXEL_FORMAT_0RGB1555; break;
-        case SDL_PIXELFORMAT_RGB888: _textureFormat = RETRO_PIXEL_FORMAT_XRGB8888; break;
-        case SDL_PIXELFORMAT_RGB565: _textureFormat = RETRO_PIXEL_FORMAT_RGB565; break;
-
-        default:
-            _logger->error(
-                "Could not create a texture with the correct pixel format, requested %s, got %s\n",
-                SDL_GetPixelFormatName(format), SDL_GetPixelFormatName(uformat)
-            );
-
-            SDL_DestroyTexture(_texture);
-            _texture = nullptr;
-            return false;
-    }
-
-    _textureWidth = width;
-    _textureHeight = height;
-
-    _logger->info("Texture created with %d x %d pixels with format %s\n", width, height, SDL_GetPixelFormatName(uformat));
     return true;
 }
 
 bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
-    if ((framebuffer->access_flags & RETRO_MEMORY_ACCESS_READ) != 0) {
-        _logger->debug("Software framebuffer doesn't support reading\n");
-        return false;
-    }
-
-    if (framebuffer->width != _textureWidth || framebuffer->height != _textureHeight) {
-        SDL_DestroyTexture(_texture);
-        _texture = nullptr;
-
-        retro_game_geometry geometry;
-        geometry.base_width = geometry.max_width = _usedWidth = framebuffer->width;
-        geometry.base_height = geometry.max_height = _usedHeight = framebuffer->height;
-        geometry.aspect_ratio = _aspectRatio; // maintain the aspect ration
-
-        if (!setGeometry(&geometry)) {
-            return false;
-        }
-    }
-
-    void* texturePixels = nullptr;
-    int texturePitch = 0;
-
-    if (SDL_LockTexture(_texture, nullptr, &texturePixels, &texturePitch) != 0) {
-        _logger->error("SDL_LockTexture() failed: %s\n", SDL_GetError());
-        return false;
-    }
-
-    framebuffer->data = texturePixels;
-    framebuffer->pitch = texturePitch;
-    framebuffer->format = _textureFormat;
-    framebuffer->memory_flags = RETRO_MEMORY_ACCESS_WRITE | RETRO_MEMORY_TYPE_CACHED;
-
-    _swFramebuffer = texturePixels;
-    _logger->debug("Returning software framebuffer %p\n", texturePixels);
-    return true;
+    (void)framebuffer;
+    return false;
 }
 
 bool Video::getHwRenderInterface(retro_hw_render_interface const** interface) {
@@ -363,49 +319,36 @@ void Video::refresh(void const* data, unsigned width, unsigned height, size_t pi
         return;
     }
 
-    if (_swFramebuffer != nullptr) {
-        // Software framebuffer was requested, unlock the texture.
-        SDL_UnlockTexture(_texture);
+    unsigned const bpp = bytesPerPixel(_pixelFormat);
+
+    if (bpp == 0) {
+        _logger->error("Cannot refresh, unknown pixel format\n");
+        return;
     }
 
-    if (data != _swFramebuffer) {
-        if (_texture != nullptr) {
-            // Not using the software framebuffer, copy the pixels.
-            SDL_Rect rect;
-            rect.x = rect.y = 0;
-            rect.w = _usedWidth = width;
-            rect.h = _usedHeight = height;
+    Frame& back = _frames[_backIndex];
 
-            void* texturePixels = nullptr;
-            int texturePitch = 0;
+    size_t const rowBytes = static_cast<size_t>(width) * bpp;
+    back.pixels.resize(rowBytes * height);
+    back.width = width;
+    back.height = height;
+    back.format = _pixelFormat;
+    back.aspectRatio = _aspectRatio > 0.0f ? _aspectRatio : static_cast<float>(width) / static_cast<float>(height);
 
-            _logger->debug("Refreshing %d x %d rectangle in the texture\n", rect.w, rect.h);
+    uint8_t const* src = static_cast<uint8_t const*>(data);
+    uint8_t* dst = back.pixels.data();
 
-            if (SDL_LockTexture(_texture, &rect, &texturePixels, &texturePitch) != 0) {
-                _logger->error("SDL_LockTexture() failed: %s\n", SDL_GetError());
-                return;
-            }
-
-            auto source = static_cast<uint8_t const*>(data);
-            auto dest = static_cast<uint8_t*>(texturePixels);
-
-            for (unsigned y = 0; y < height; y++) {
-                memcpy(dest, source, pitch);
-                source += pitch;
-                dest += texturePitch;
-            }
-
-            SDL_UnlockTexture(_texture);
-        }
-        else {
-            _logger->error("Could not refresh the texture, it's null\n");
-        }
-    }
-    else {
-        _logger->debug("No need to refresh the texture, core rendered directly to the frontend framebuffer\n");
+    for (unsigned y = 0; y < height; y++) {
+        memcpy(dst, src, rowBytes);
+        src += pitch;
+        dst += rowBytes;
     }
 
-    _swFramebuffer = nullptr;
+    std::lock_guard<std::mutex> lock(_frameMutex);
+    int const swap = _frontIndex;
+    _frontIndex = _backIndex;
+    _backIndex = swap;
+    _hasFrame = true;
 }
 
 uintptr_t Video::getCurrentFramebuffer() {
@@ -414,7 +357,7 @@ uintptr_t Video::getCurrentFramebuffer() {
 
 retro_proc_address_t Video::getProcAddress(char const* symbol) {
     (void)symbol;
-    _logger->warn("RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT not implemented\n");
+    _logger->warn("RETRO_ENVIRONMENT_GET_PROC_ADDRESS not implemented\n");
     return nullptr;
 }
 
@@ -431,7 +374,16 @@ void Video::reset() {
     _texture = nullptr;
     _textureWidth = _textureHeight = 0;
     _textureFormat = RETRO_PIXEL_FORMAT_UNKNOWN;
-    _usedWidth = _usedHeight = 0;
+    _drawAspect = 0.0f;
 
-    _swFramebuffer = nullptr;
+    for (int i = 0; i < 2; i++) {
+        _frames[i].pixels.clear();
+        _frames[i].width = _frames[i].height = 0;
+        _frames[i].format = RETRO_PIXEL_FORMAT_UNKNOWN;
+        _frames[i].aspectRatio = 0.0f;
+    }
+
+    _backIndex = 0;
+    _frontIndex = 1;
+    _hasFrame = false;
 }

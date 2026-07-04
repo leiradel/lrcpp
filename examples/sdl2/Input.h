@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <mutex>
 
 class Input: public lrcpp::Input {
 public:
@@ -71,4 +72,6 @@ protected:
     retro_keyboard_callback _keyboardCallback;
     bool _keyboardPreviousState[RETROK_LAST];
     bool _keyboardState[RETROK_LAST];
+
+    std::mutex _mutex;
 };

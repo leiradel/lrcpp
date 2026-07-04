@@ -4,6 +4,10 @@
 #include <string.h>
 #include <sys/stat.h>
 
+Player::Player() {
+    _emuThread = nullptr;
+}
+
 bool Player::loadCore(char const *path)
 {
     if (!_dynlib.load(path)) {
@@ -282,17 +286,30 @@ void Player::destroy() {
     SDL_Quit();
 }
 
+int Player::emulationThread(void* userdata) {
+    Player* const self = static_cast<Player*>(userdata);
+
+    while (self->_audio.waitToFill()) {
+        self->_frontend.run();
+    }
+
+    return 0;
+}
+
 void Player::run() {
-    uint64_t const coreUsPerFrame = 1000000 / _video.getCoreFps();
-    uint64_t nextFrameTime = Perf::getTimeUs() + coreUsPerFrame;
+    _emuThread = SDL_CreateThread(emulationThread, "emulation", this);
+
+    if (_emuThread == nullptr) {
+        _logger.error("SDL_CreateThread() failed: %s\n", SDL_GetError());
+        return;
+    }
+
     bool done = false;
 
     do {
         SDL_Event event;
 
         while (SDL_PollEvent(&event)) {
-            // TODO process SDL events in the Input class
-
             if (event.type == SDL_QUIT) {
                 done = true;
             }
@@ -301,22 +318,13 @@ void Player::run() {
             }
         }
 
-        if (Perf::getTimeUs() >= nextFrameTime) {
-            nextFrameTime += coreUsPerFrame;
-
-            _audio.clear();
-            _video.clear();
-            _frontend.run();
-            _audio.present();
-            _video.present();
-
-            _logger.debug("Ran one frame\n");
-        }
-
-        // TODO pause for less time for greater granularity
-        SDL_Delay(1);
+        _video.present();
     }
     while (!done);
+
+    _audio.signalStop();
+    SDL_WaitThread(_emuThread, nullptr);
+    _emuThread = nullptr;
 }
 
 void const* Player::readAll(char const* path, size_t* size) {

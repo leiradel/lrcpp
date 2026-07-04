@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include <mutex>
+
 class Logger : public lrcpp::Logger {
 public:
     Logger();
@@ -20,4 +22,5 @@ public:
 protected:
     retro_log_level _level;
     FILE* _file;
+    std::mutex _mutex;
 };

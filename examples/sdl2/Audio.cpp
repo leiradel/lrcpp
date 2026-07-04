@@ -1,5 +1,7 @@
 #include "Audio.h"
 
+#include <string.h>
+
 Audio::Audio() {
     reset();
 }
@@ -32,70 +34,74 @@ bool Audio::init(Config* config, lrcpp::Logger* logger) {
 }
 
 void Audio::destroy() {
-    if (_audioDev != 0) {
-        SDL_CloseAudioDevice(_audioDev);
-    }
-
+    closeDevice();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     reset();
 }
 
-double Audio::getCoreSampleRate() const {
-    return _coreSampleRate;
+void Audio::closeDevice() {
+    if (_audioDev != 0) {
+        SDL_CloseAudioDevice(_audioDev);
+        _audioDev = 0;
+    }
 }
 
-void Audio::clear() {
-    _samples.clear();
+bool Audio::waitToFill() {
+    std::unique_lock<std::mutex> lock(_mutex);
+    _cv.wait(lock, [this]() { return _stop || _capacity - _count >= _frameSamples; });
+    return !_stop;
 }
 
-void Audio::present() {
-    if (SDL_QueueAudio(_audioDev, _samples.data(), _samples.size() * 2) != 0) {
-        _logger->error("SDL_QueueAudio() failed: %s\n", SDL_GetError());
-        return;
+void Audio::signalStop() {
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _stop = true;
     }
 
-    _logger->debug("%zu audio samples queued, %u bytes in output queue\n", _samples.size(), SDL_GetQueuedAudioSize(_audioDev));
+    _cv.notify_one();
 }
 
 bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
-    if (info->timing.sample_rate == _coreSampleRate) {
+    if (info->timing.sample_rate == _coreSampleRate && _audioDev != 0) {
         return true;
     }
+
+    closeDevice();
 
     _coreSampleRate = info->timing.sample_rate;
     _logger->info("Core sample rate set to %f\n", _coreSampleRate);
 
-    if (_audioDev != 0) {
-        SDL_CloseAudioDevice(_audioDev);
-        _audioDev = 0;
+    double const fps = info->timing.fps > 0.0 ? info->timing.fps : 60.0;
+    _frameSamples = static_cast<size_t>(_coreSampleRate / fps) * 2;
+
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _capacity = _frameSamples * 4;
+        _ring.assign(_capacity, 0);
+        _count = 0;
+        _head = 0;
+        _tail = 0;
     }
 
     SDL_AudioSpec desired, obtained;
     memset(&desired, 0, sizeof(desired));
     memset(&obtained, 0, sizeof(obtained));
 
-    desired.freq = _coreSampleRate;
+    desired.freq = static_cast<int>(_coreSampleRate);
     desired.format = AUDIO_S16SYS;
     desired.channels = 2;
     desired.samples = 1024;
-    desired.callback = nullptr;
-    desired.userdata = nullptr;
+    desired.callback = audioCallback;
+    desired.userdata = this;
 
-    if (_deviceName.length() != 0) {
-        _logger->info("Using audio device %s\n", _deviceName.c_str());
-        _audioDev = SDL_OpenAudioDevice(_deviceName.c_str(), 0, &desired, &obtained, 0);
-    }
-    else {
-        _logger->info("Using default audio device\n");
-        _audioDev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, 0);
-    }
+    char const* const device = _deviceName.length() != 0 ? _deviceName.c_str() : nullptr;
+    _logger->info("Using %s audio device\n", device != nullptr ? device : "default");
+    _audioDev = SDL_OpenAudioDevice(device, 0, &desired, &obtained, 0);
 
     if (_audioDev == 0) {
         _logger->error("SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
         return false;
     }
-
-    SDL_PauseAudioDevice(_audioDev, 0);
 
     _logger->info("Opened audio driver %s\n", SDL_GetCurrentAudioDriver());
     _logger->debug("    %d Hz\n", obtained.freq);
@@ -110,6 +116,7 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
 
     _logger->debug("    %s endian\n", SDL_AUDIO_ISBIGENDIAN(obtained.format) ? "big" : "little");
 
+    SDL_PauseAudioDevice(_audioDev, 0);
     return true;
 }
 
@@ -120,17 +127,58 @@ bool Audio::setAudioCallback(retro_audio_callback const* callback) {
 }
 
 size_t Audio::sampleBatch(int16_t const* data, size_t frames) {
-    size_t const size = _samples.size();
-    _samples.resize(size + frames * 2);
-    memcpy(_samples.data() + size, data, frames * 4);
+    size_t const samples = frames * 2;
 
-    _logger->debug("%zu audio frames queued\n", frames);
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    size_t const room = _capacity - _count;
+    size_t const toWrite = samples < room ? samples : room;
+    size_t const firstChunk = _capacity - _tail < toWrite ? _capacity - _tail : toWrite;
+
+    memcpy(_ring.data() + _tail, data, firstChunk * sizeof(int16_t));
+
+    if (toWrite > firstChunk) {
+        memcpy(_ring.data(), data + firstChunk, (toWrite - firstChunk) * sizeof(int16_t));
+    }
+
+    _tail = (_tail + toWrite) % _capacity;
+    _count += toWrite;
+
     return frames;
 }
 
 void Audio::sample(int16_t left, int16_t right) {
-    int16_t frame[2] = {left, right};
+    int16_t const frame[2] = {left, right};
     sampleBatch(frame, 1);
+}
+
+void SDLCALL Audio::audioCallback(void* userdata, Uint8* stream, int len) {
+    Audio* const self = static_cast<Audio*>(userdata);
+    int16_t* const out = reinterpret_cast<int16_t*>(stream);
+    size_t const wanted = static_cast<size_t>(len) / sizeof(int16_t);
+    size_t provided = 0;
+
+    {
+        std::lock_guard<std::mutex> lock(self->_mutex);
+
+        provided = wanted < self->_count ? wanted : self->_count;
+        size_t const firstChunk = self->_capacity - self->_head < provided ? self->_capacity - self->_head : provided;
+
+        memcpy(out, self->_ring.data() + self->_head, firstChunk * sizeof(int16_t));
+
+        if (provided > firstChunk) {
+            memcpy(out + firstChunk, self->_ring.data(), (provided - firstChunk) * sizeof(int16_t));
+        }
+
+        self->_head = (self->_head + provided) % self->_capacity;
+        self->_count -= provided;
+
+        self->_cv.notify_one();
+    }
+
+    if (provided < wanted) {
+        memset(out + provided, 0, (wanted - provided) * sizeof(int16_t));
+    }
 }
 
 void Audio::reset() {
@@ -140,5 +188,12 @@ void Audio::reset() {
     _coreSampleRate = 0.0;
     _audioDev = 0;
 
-    _samples.clear();
+    _ring.clear();
+    _capacity = 0;
+    _count = 0;
+    _head = 0;
+    _tail = 0;
+    _frameSamples = 0;
+
+    _stop = false;
 }

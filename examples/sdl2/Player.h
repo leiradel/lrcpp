@@ -15,6 +15,8 @@
 
 class Player {
 public:
+    Player();
+
     bool init(std::vector<std::string> const& configPaths);
     void destroy();
 
@@ -23,6 +25,7 @@ public:
 protected:
     void const* readAll(char const* path, size_t* size);
     bool loadCore(char const *path);
+    static int emulationThread(void* userdata);
 
     lrcpp::Frontend _frontend;
     Logger _logger;
@@ -35,4 +38,5 @@ protected:
 
     lrcpp::Core _core;
     DynLib _dynlib;
+    SDL_Thread* _emuThread;
 };

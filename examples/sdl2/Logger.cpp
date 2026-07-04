@@ -46,6 +46,8 @@ void Logger::vprintf(retro_log_level level, char const* format, va_list args) {
         default: break;
     }
 
+    std::lock_guard<std::mutex> lock(_mutex);
+
     fprintf(_file, "[%s] ", tag);
     vfprintf(_file, format, args);
     fflush(_file);

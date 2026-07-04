@@ -8,6 +8,8 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 #include <stdint.h>
 
 class Audio : public lrcpp::Audio {
@@ -17,10 +19,8 @@ public:
     bool init(Config* config, lrcpp::Logger* logger);
     void destroy();
 
-    double getCoreSampleRate() const;
-
-    void clear();
-    void present();
+    bool waitToFill();
+    void signalStop();
 
     // lrcpp::Audio
     virtual bool setSystemAvInfo(retro_system_av_info const* info) override;
@@ -30,6 +30,9 @@ public:
 
 protected:
     void reset();
+    void closeDevice();
+
+    static void SDLCALL audioCallback(void* userdata, Uint8* stream, int len);
 
     lrcpp::Logger* _logger;
 
@@ -37,5 +40,14 @@ protected:
     double _coreSampleRate;
     SDL_AudioDeviceID _audioDev;
 
-    std::vector<int16_t> _samples;
+    std::vector<int16_t> _ring;
+    size_t _capacity;
+    size_t _count;
+    size_t _head;
+    size_t _tail;
+    size_t _frameSamples;
+
+    std::mutex _mutex;
+    std::condition_variable _cv;
+    bool _stop;
 };

@@ -24,6 +24,8 @@ void Input::destroy() {
 }
 
 void Input::process(SDL_Event const* event) {
+    std::lock_guard<std::mutex> lock(_mutex);
+
     switch (event->type) {
         case SDL_JOYDEVICEADDED:
             process(&event->jdevice);
@@ -120,6 +122,8 @@ bool Input::getInputBitmasks(bool* supports) {
 }
 
 int16_t Input::state(unsigned port, unsigned device, unsigned index, unsigned id) {
+    std::lock_guard<std::mutex> lock(_mutex);
+
     unsigned const base = device & RETRO_DEVICE_MASK;
 
     switch (base) {
@@ -162,12 +166,21 @@ int16_t Input::state(unsigned port, unsigned device, unsigned index, unsigned id
 }
 
 void Input::poll() {
-    if (_keyboardCallback.callback != nullptr) {
-        for (int i = RETROK_FIRST; i < RETROK_LAST; i++) {
-            if (_keyboardState[i] != _keyboardPreviousState[i]) {
-                _keyboardCallback.callback(_keyboardState[i], i, 0, 0);
-                _keyboardPreviousState[i] = _keyboardState[i];
-            }
+    if (_keyboardCallback.callback == nullptr) {
+        return;
+    }
+
+    bool current[RETROK_LAST];
+
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        memcpy(current, _keyboardState, sizeof(current));
+    }
+
+    for (int i = RETROK_FIRST; i < RETROK_LAST; i++) {
+        if (current[i] != _keyboardPreviousState[i]) {
+            _keyboardCallback.callback(current[i], i, 0, 0);
+            _keyboardPreviousState[i] = current[i];
         }
     }
 }
