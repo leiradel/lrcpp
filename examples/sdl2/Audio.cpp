@@ -10,11 +10,11 @@ bool Audio::init(Config* config, lrcpp::Logger* logger) {
     _logger = logger;
 
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
-        logger->error("SDL_InitSubSystem(SDL_INIT_AUDIO) failed: %s", SDL_GetError());
+        logger->error("SDL_InitSubSystem(SDL_INIT_AUDIO) failed: %s\n", SDL_GetError());
         return false;
     }
 
-    _logger->info("Audio subsystem initialized");
+    _logger->info("Audio subsystem initialized\n");
 
     char const* driverName = nullptr;
 
@@ -25,7 +25,7 @@ bool Audio::init(Config* config, lrcpp::Logger* logger) {
     int const count = SDL_GetNumAudioDevices(0);
 
     for (int i = 0; i < count; i++) {
-        _logger->info("Audio device %d: %s", i, SDL_GetAudioDeviceName(i, 0));
+        _logger->info("Audio device %d: %s\n", i, SDL_GetAudioDeviceName(i, 0));
     }
 
     return true;
@@ -50,11 +50,11 @@ void Audio::clear() {
 
 void Audio::present() {
     if (SDL_QueueAudio(_audioDev, _samples.data(), _samples.size() * 2) != 0) {
-        _logger->error("SDL_QueueAudio() failed: %s", SDL_GetError());
+        _logger->error("SDL_QueueAudio() failed: %s\n", SDL_GetError());
         return;
     }
 
-    _logger->debug("%zu audio samples queued, %u bytes in output queue", _samples.size(), SDL_GetQueuedAudioSize(_audioDev));
+    _logger->debug("%zu audio samples queued, %u bytes in output queue\n", _samples.size(), SDL_GetQueuedAudioSize(_audioDev));
 }
 
 bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
@@ -63,7 +63,7 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
     }
 
     _coreSampleRate = info->timing.sample_rate;
-    _logger->info("Core sample rate set to %f", _coreSampleRate);
+    _logger->info("Core sample rate set to %f\n", _coreSampleRate);
 
     if (_audioDev != 0) {
         SDL_CloseAudioDevice(_audioDev);
@@ -82,40 +82,40 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
     desired.userdata = nullptr;
 
     if (_deviceName.length() != 0) {
-        _logger->info("Using audio device %s", _deviceName.c_str());
+        _logger->info("Using audio device %s\n", _deviceName.c_str());
         _audioDev = SDL_OpenAudioDevice(_deviceName.c_str(), 0, &desired, &obtained, 0);
     }
     else {
-        _logger->info("Using default audio device");
+        _logger->info("Using default audio device\n");
         _audioDev = SDL_OpenAudioDevice(nullptr, 0, &desired, &obtained, 0);
     }
 
     if (_audioDev == 0) {
-        _logger->error("SDL_OpenAudioDevice() failed: %s", SDL_GetError());
+        _logger->error("SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
         return false;
     }
 
     SDL_PauseAudioDevice(_audioDev, 0);
 
-    _logger->info("Opened audio driver %s", SDL_GetCurrentAudioDriver());
-    _logger->info("    %d Hz", obtained.freq);
-    _logger->info("    %u channels", obtained.channels);
-    _logger->info("    %u bits per sample", SDL_AUDIO_BITSIZE(obtained.format));
+    _logger->info("Opened audio driver %s\n", SDL_GetCurrentAudioDriver());
+    _logger->info("    %d Hz\n", obtained.freq);
+    _logger->info("    %u channels\n", obtained.channels);
+    _logger->info("    %u bits per sample\n", SDL_AUDIO_BITSIZE(obtained.format));
 
     _logger->info(
-        "    %s %s",
+        "    %s %s\n",
         SDL_AUDIO_ISSIGNED(obtained.format) ? "signed" : "unsigned",
         SDL_AUDIO_ISFLOAT(obtained.format) ? "float" : "integer"
     );
 
-    _logger->info("    %s endian", SDL_AUDIO_ISBIGENDIAN(obtained.format) ? "big" : "little");
+    _logger->info("    %s endian\n", SDL_AUDIO_ISBIGENDIAN(obtained.format) ? "big" : "little");
 
     return true;
 }
 
 bool Audio::setAudioCallback(retro_audio_callback const* callback) {
     (void)callback;
-    _logger->warn("RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK not implemented\n");
     return false;
 }
 
@@ -124,7 +124,7 @@ size_t Audio::sampleBatch(int16_t const* data, size_t frames) {
     _samples.resize(size + frames * 2);
     memcpy(_samples.data() + size, data, frames * 4);
 
-    _logger->debug("%zu audio frames queued", frames);
+    _logger->debug("%zu audio frames queued\n", frames);
     return frames;
 }
 

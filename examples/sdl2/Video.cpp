@@ -10,22 +10,22 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
     _logger = logger;
 
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
-        logger->error("SDL_InitSubSystem(SDL_INIT_VIDEO) failed: %s", SDL_GetError());
+        logger->error("SDL_InitSubSystem(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError());
         return false;
     }
 
-    _logger->info("Video subsystem initialized");
+    _logger->info("Video subsystem initialized\n");
 
     _window = SDL_CreateWindow("lrcpp example with SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                800, 600, SDL_WINDOW_RESIZABLE);
 
     if (_window == nullptr) {
-        logger->error("SDL_CreateWindow() failed: %s", SDL_GetError());
+        logger->error("SDL_CreateWindow() failed: %s\n", SDL_GetError());
         destroy();
         return false;
     }
 
-    _logger->info("Window created");
+    _logger->info("Window created\n");
 
     int const count = SDL_GetNumRenderDrivers();
     int renderer = -1;
@@ -37,17 +37,17 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
             SDL_RendererInfo info;
 
             if (SDL_GetRenderDriverInfo(i, &info) != 0) {
-                _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
+                _logger->error("SDL_GetRenderDriverInfo() failed: %s\n", SDL_GetError());
             }
             else {
                 if (rendererName != nullptr && strcmp(rendererName, info.name) == 0) {
                     renderer = i;
                 }
 
-                _logger->info("Render driver %d: %s", i, info.name);
+                _logger->info("Render driver %d: %s\n", i, info.name);
 
                 _logger->info(
-                    "    flags:%s%s%s%s",
+                    "    flags:%s%s%s%s\n",
                     (info.flags & SDL_RENDERER_SOFTWARE) != 0 ? " SDL_RENDERER_SOFTWARE" : "",
                     (info.flags & SDL_RENDERER_ACCELERATED) != 0 ? " SDL_RENDERER_ACCELERATED" : "",
                     (info.flags & SDL_RENDERER_PRESENTVSYNC) != 0 ? " SDL_RENDERER_PRESENTVSYNC" : "",
@@ -55,43 +55,43 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
                 );
 
                 for (Uint32 j = 0; j < info.num_texture_formats; j++) {
-                    _logger->info("    texture_formats[%u]: %s", j, SDL_GetPixelFormatName(info.texture_formats[j]));
+                    _logger->info("    texture_formats[%u]: %s\n", j, SDL_GetPixelFormatName(info.texture_formats[j]));
                 }
 
-                _logger->info("    max_texture: %d x %d", info.max_texture_width, info.max_texture_height);
+                _logger->info("    max_texture: %d x %d\n", info.max_texture_width, info.max_texture_height);
             }
         }
     }
 
     if (renderer == -1) {
-        _logger->info("Using default video renderer");
+        _logger->info("Using default video renderer\n");
     }
     else {
         SDL_RendererInfo info;
 
         if (SDL_GetRenderDriverInfo(renderer, &info) != 0) {
-            _logger->error("SDL_GetRenderDriverInfo() failed: %s", SDL_GetError());
+            _logger->error("SDL_GetRenderDriverInfo() failed: %s\n", SDL_GetError());
         }
         else {
-            _logger->info("Using video renderer %s", info.name);
+            _logger->info("Using video renderer %s\n", info.name);
         }
     }
 
     _renderer = SDL_CreateRenderer(_window, renderer, SDL_RENDERER_ACCELERATED);
 
     if (_renderer == nullptr) {
-        logger->error("SDL_CreateRenderer() failed: %s", SDL_GetError());
+        logger->error("SDL_CreateRenderer() failed: %s\n", SDL_GetError());
         destroy();
         return false;
     }
 
-    _logger->info("Renderer created");
+    _logger->info("Renderer created\n");
 
     bool smooth = true;
     config->getOption("sdl2lrcpp_video_smooth", &smooth);
 
     if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, smooth ? "1" : "0")) {
-        _logger->error("SDL_SetHint() failed: %s", SDL_GetError());
+        _logger->error("SDL_SetHint() failed: %s\n", SDL_GetError());
     }
 
     return true;
@@ -120,7 +120,7 @@ double Video::getCoreFps() const {
 
 void Video::clear() {
     if (SDL_RenderClear(_renderer) != 0) {
-        _logger->error("SDL_RenderClear() failed: %s", SDL_GetError());
+        _logger->error("SDL_RenderClear() failed: %s\n", SDL_GetError());
     }
 }
 
@@ -147,25 +147,25 @@ void Video::present() {
     dest.w = width;
     dest.h = height;
 
-    _logger->debug("Rendering %d x %d texture to %f x %f window at (%f, %f)", src.w, src.h, dest.w, dest.h, dest.x, dest.y);
+    _logger->debug("Rendering %d x %d texture to %f x %f window at (%f, %f)\n", src.w, src.h, dest.w, dest.h, dest.x, dest.y);
 
     if (SDL_RenderCopyF(_renderer, _texture, &src, &dest) != 0) {
-        _logger->error("SDL_RenderCopyF() failed: %s", SDL_GetError());
+        _logger->error("SDL_RenderCopyF() failed: %s\n", SDL_GetError());
     }
 
-    _logger->debug("Presenting rendered framebuffer");
+    _logger->debug("Presenting rendered framebuffer\n");
     SDL_RenderPresent(_renderer);
 }
 
 bool Video::setRotation(unsigned rotation) {
     (void)rotation;
-    _logger->warn("RETRO_ENVIRONMENT_SET_ROTATION not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_ROTATION not implemented\n");
     return false;
 }
 
 bool Video::getOverscan(bool* overscan) {
     (void)overscan;
-    _logger->warn("RETRO_ENVIRONMENT_GET_OVERSCAN not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_GET_OVERSCAN not implemented\n");
     return false;
 }
 
@@ -175,7 +175,7 @@ bool Video::getCanDupe(bool* canDupe) {
 }
 
 bool Video::showMessage(retro_message const* message) {
-    _logger->warn("RETRO_ENVIRONMENT_SET_MESSAGE not implemented (%u, \"%s\")", message->frames, message->msg);
+    _logger->warn("RETRO_ENVIRONMENT_SET_MESSAGE not implemented (%u, \"%s\")\n", message->frames, message->msg);
     return true;
 }
 
@@ -183,9 +183,9 @@ bool Video::setPixelFormat(retro_pixel_format format) {
     _pixelFormat = format;
 
     switch (_pixelFormat) {
-        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_0RGB1555"); break;
-        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_XRGB8888"); break;
-        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_RGB565"); break;
+        case RETRO_PIXEL_FORMAT_0RGB1555: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_0RGB1555\n"); break;
+        case RETRO_PIXEL_FORMAT_XRGB8888: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_XRGB8888\n"); break;
+        case RETRO_PIXEL_FORMAT_RGB565: _logger->info("Pixel format set to RETRO_PIXEL_FORMAT_RGB565\n"); break;
 
         default: _pixelFormat = RETRO_PIXEL_FORMAT_UNKNOWN; return false;
     }
@@ -195,19 +195,19 @@ bool Video::setPixelFormat(retro_pixel_format format) {
 
 bool Video::setHwRender(retro_hw_render_callback* callback) {
     (void)callback;
-    _logger->warn("RETRO_ENVIRONMENT_SET_HW_RENDER not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_HW_RENDER not implemented\n");
     return false;
 }
 
 bool Video::setFrameTimeCallback(retro_frame_time_callback const* callback) {
     (void)callback;
-    _logger->warn("RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK not implemented\n");
     return false;
 }
 
 bool Video::setSystemAvInfo(retro_system_av_info const* info) {
     _coreFps = info->timing.fps;
-    _logger->info("Core FPS set to %f", _coreFps);
+    _logger->info("Core FPS set to %f\n", _coreFps);
     return setGeometry(&info->geometry);
 }
 
@@ -218,7 +218,7 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
         _aspectRatio = (float)geometry->base_width / (float)geometry->base_height;
     }
 
-    _logger->info("Core aspect ratio set to %f", _aspectRatio);
+    _logger->info("Core aspect ratio set to %f\n", _aspectRatio);
 
     if (_texture != nullptr) {
         if (geometry->max_width <= _textureWidth && geometry->max_height <= _textureHeight) {
@@ -238,14 +238,14 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
         case RETRO_PIXEL_FORMAT_RGB565: format = SDL_PIXELFORMAT_RGB565; break;
 
         default:
-            _logger->error("Unknown pixel format, cannot create texture");
+            _logger->error("Unknown pixel format, cannot create texture\n");
             return false;
     }
 
     _texture = SDL_CreateTexture(_renderer, format, SDL_TEXTUREACCESS_STREAMING, geometry->max_width, geometry->max_height);
     
     if (_texture == nullptr) {
-        _logger->error("SDL_CreateTexture() failed: %s", SDL_GetError());
+        _logger->error("SDL_CreateTexture() failed: %s\n", SDL_GetError());
         return false;
     }
 
@@ -253,7 +253,7 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
     Uint32 uformat = SDL_PIXELFORMAT_UNKNOWN;
 
     if (SDL_QueryTexture(_texture, &uformat, &access, &width, &height) != 0) {
-        _logger->error("SDL_QueryTexture() failed: %s", SDL_GetError());
+        _logger->error("SDL_QueryTexture() failed: %s\n", SDL_GetError());
         SDL_DestroyTexture(_texture);
         _texture = nullptr;
         return false;
@@ -266,7 +266,7 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
 
         default:
             _logger->error(
-                "Could not create a texture with the correct pixel format, requested %s, got %s",
+                "Could not create a texture with the correct pixel format, requested %s, got %s\n",
                 SDL_GetPixelFormatName(format), SDL_GetPixelFormatName(uformat)
             );
 
@@ -278,13 +278,13 @@ bool Video::setGeometry(retro_game_geometry const* geometry) {
     _textureWidth = width;
     _textureHeight = height;
 
-    _logger->info("Texture created with %d x %d pixels with format %s", width, height, SDL_GetPixelFormatName(uformat));
+    _logger->info("Texture created with %d x %d pixels with format %s\n", width, height, SDL_GetPixelFormatName(uformat));
     return true;
 }
 
 bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
     if ((framebuffer->access_flags & RETRO_MEMORY_ACCESS_READ) != 0) {
-        _logger->debug("Software framebuffer doesn't support reading");
+        _logger->debug("Software framebuffer doesn't support reading\n");
         return false;
     }
 
@@ -306,7 +306,7 @@ bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
     int texturePitch = 0;
 
     if (SDL_LockTexture(_texture, nullptr, &texturePixels, &texturePitch) != 0) {
-        _logger->error("SDL_LockTexture() failed: %s", SDL_GetError());
+        _logger->error("SDL_LockTexture() failed: %s\n", SDL_GetError());
         return false;
     }
 
@@ -316,24 +316,24 @@ bool Video::getCurrentSoftwareFramebuffer(retro_framebuffer* framebuffer) {
     framebuffer->memory_flags = RETRO_MEMORY_ACCESS_WRITE | RETRO_MEMORY_TYPE_CACHED;
 
     _swFramebuffer = texturePixels;
-    _logger->debug("Returning software framebuffer %p", texturePixels);
+    _logger->debug("Returning software framebuffer %p\n", texturePixels);
     return true;
 }
 
 bool Video::getHwRenderInterface(retro_hw_render_interface const** interface) {
     (void)interface;
-    _logger->warn("RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE not implemented\n");
     return false;
 }
 
 bool Video::setHwRenderContextNegotiationInterface(retro_hw_render_context_negotiation_interface const* interface) {
     (void)interface;
-    _logger->warn("RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE not implemented\n");
     return false;
 }
 
 bool Video::setHwSharedContext() {
-    _logger->warn("RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT not implemented\n");
     return false;
 }
 
@@ -350,7 +350,7 @@ bool Video::getPreferredHwRender(unsigned* preferred) {
 
 void Video::refresh(void const* data, unsigned width, unsigned height, size_t pitch) {
     if (data == nullptr) {
-        _logger->debug("Last frame duplicated");
+        _logger->debug("Last frame duplicated\n");
         return;
     }
 
@@ -370,10 +370,10 @@ void Video::refresh(void const* data, unsigned width, unsigned height, size_t pi
             void* texturePixels = nullptr;
             int texturePitch = 0;
 
-            _logger->debug("Refreshing %d x %d rectangle in the texture", rect.w, rect.h);
+            _logger->debug("Refreshing %d x %d rectangle in the texture\n", rect.w, rect.h);
 
             if (SDL_LockTexture(_texture, &rect, &texturePixels, &texturePitch) != 0) {
-                _logger->error("SDL_LockTexture() failed: %s", SDL_GetError());
+                _logger->error("SDL_LockTexture() failed: %s\n", SDL_GetError());
                 return;
             }
 
@@ -389,11 +389,11 @@ void Video::refresh(void const* data, unsigned width, unsigned height, size_t pi
             SDL_UnlockTexture(_texture);
         }
         else {
-            _logger->error("Could not refresh the texture, it's null");
+            _logger->error("Could not refresh the texture, it's null\n");
         }
     }
     else {
-        _logger->debug("No need to refresh the texture, core rendered directly to the frontend framebuffer");
+        _logger->debug("No need to refresh the texture, core rendered directly to the frontend framebuffer\n");
     }
 
     _swFramebuffer = nullptr;
@@ -405,7 +405,7 @@ uintptr_t Video::getCurrentFramebuffer() {
 
 retro_proc_address_t Video::getProcAddress(char const* symbol) {
     (void)symbol;
-    _logger->warn("RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT not implemented\n");
     return nullptr;
 }
 

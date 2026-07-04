@@ -7,14 +7,14 @@
 bool Player::loadCore(char const *path)
 {
     if (!_dynlib.load(path)) {
-        _logger.error("Failed to load library: ");
+        _logger.error("Failed to load library: \n");
         return false;
     }
 
 #define LOAD_CORE_FUNC(member_name, name) \
     _core.member_name = reinterpret_cast<decltype(_core.member_name)>(_dynlib.getSymbol("retro_" #name)); \
     if (!_core.member_name) { \
-        _logger.error("Missing symbol: retro_" #name); \
+        _logger.error("Missing symbol: retro_" #name "\n"); \
         return false; \
     }
 
@@ -60,9 +60,15 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     _logger.setLevel(RETRO_LOG_WARN);
 
     if (!_config.init(configPaths, &_logger)) {
-        _logger.error("Could not initialize the configuration component");
+        _logger.error("Could not initialize the configuration component\n");
         _logger.destroy();
         return false;
+    }
+
+    if (_config.hasOption("sdl2lrcpp_log_path")) {
+        char const* logPath = nullptr;
+        _config.getOption("sdl2lrcpp_log_path", &logPath);
+        _logger.setLogPath(logPath);
     }
 
     if (_config.hasOption("sdl2lrcpp_log_level")) {
@@ -82,8 +88,15 @@ bool Player::init(std::vector<std::string> const& configPaths) {
             _logger.setLevel(RETRO_LOG_ERROR);
         }
         else {
-            _logger.warn("Invalid sdl2lrcpp_log_level \"%s\", keeping warn", level);
+            _logger.warn("Invalid sdl2lrcpp_log_level \"%s\", keeping warn\n", level);
         }
+    }
+
+    if (!_config.resolvePaths()) {
+        _logger.error("Could not resolve the core and content directories\n");
+        _config.destroy();
+        _logger.destroy();
+        return false;
     }
 
     char const* corePath = nullptr;
@@ -96,7 +109,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     }
 
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) != 0) {
-        _logger.error("SDL_InitSubSystem(SDL_INIT_EVENTS) failed: %s", SDL_GetError());
+        _logger.error("SDL_InitSubSystem(SDL_INIT_EVENTS) failed: %s\n", SDL_GetError());
         _config.destroy();
         _logger.destroy();
         SDL_Quit();
@@ -104,7 +117,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     }
 
     if (!_perf.init()) {
-        _logger.error("Could not initialize the perf component");
+        _logger.error("Could not initialize the perf component\n");
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _config.destroy();
         _logger.destroy();
@@ -113,7 +126,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     }
 
     if (!_audio.init(&_config, &_logger)) {
-        _logger.error("Could not initialize the audio component");
+        _logger.error("Could not initialize the audio component\n");
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
         _config.destroy();
@@ -123,7 +136,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     }
 
     if (!_video.init(&_config, &_logger)) {
-        _logger.error("Could not initialize the video component");
+        _logger.error("Could not initialize the video component\n");
         _audio.destroy();
         _perf.destroy();
         SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -134,7 +147,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     }
 
     if (!_input.init(&_logger)) {
-        _logger.error("Could not initialize the input component");
+        _logger.error("Could not initialize the input component\n");
         _video.destroy();
         _audio.destroy();
         _perf.destroy();
@@ -146,7 +159,7 @@ bool Player::init(std::vector<std::string> const& configPaths) {
     }
 
     if (!_frontend.setLogger(&_logger) || !_frontend.setConfig(&_config) || !_frontend.setVideo(&_video)) {
-        _logger.error("Could not set components in the frontend");
+        _logger.error("Could not set components in the frontend\n");
 
 error:
         _input.destroy();
@@ -161,19 +174,19 @@ error:
     }
 
     if (!_frontend.setPerf(&_perf) || !_frontend.setAudio(&_audio) || !_frontend.setInput(&_input)) {
-        _logger.error("Could not set components in the frontend");
+        _logger.error("Could not set components in the frontend\n");
         goto error;
     }
 
-    _logger.info("Loading core from \"%s\"", corePath);
+    _logger.info("Loading core from \"%s\"\n", corePath);
 
     if (!loadCore(corePath)) {
-        _logger.error("Failed to initialize core.");
+        _logger.error("Failed to initialize core.\n");
         goto error;
     }
 
     if (!_frontend.setCore(&_core)) {
-        _logger.error("Could not load the core from \"%s\"", corePath);
+        _logger.error("Could not load the core from \"%s\"\n", corePath);
         _dynlib.unload();
         goto error;
     }
@@ -181,23 +194,23 @@ error:
     retro_system_info sysinfo;
 
     if (!_frontend.getSystemInfo(&sysinfo)) {
-        _logger.error("Could not get the system info from the core");
+        _logger.error("Could not get the system info from the core\n");
         _frontend.unset();
         _dynlib.unload();
         goto error;
     }
 
-    _logger.info("System Info");
-    _logger.info("    library_name     = %s", sysinfo.library_name);
-    _logger.info("    library_version  = %s", sysinfo.library_version);
-    _logger.info("    valid_extensions = %s", sysinfo.valid_extensions);
-    _logger.info("    need_fullpath    = %s", sysinfo.need_fullpath ? "true" : "false");
-    _logger.info("    block_extract    = %s", sysinfo.block_extract ? "true" : "false");
+    _logger.info("System Info\n");
+    _logger.info("    library_name     = %s\n", sysinfo.library_name);
+    _logger.info("    library_version  = %s\n", sysinfo.library_version);
+    _logger.info("    valid_extensions = %s\n", sysinfo.valid_extensions);
+    _logger.info("    need_fullpath    = %s\n", sysinfo.need_fullpath ? "true" : "false");
+    _logger.info("    block_extract    = %s\n", sysinfo.block_extract ? "true" : "false");
 
     bool ok = false;
 
     if (contentPath != nullptr) {
-        _logger.info("Loading content from \"%s\"", contentPath);
+        _logger.info("Loading content from \"%s\"\n", contentPath);
 
         if (sysinfo.need_fullpath) {
             ok = _frontend.loadGame(contentPath);
@@ -213,12 +226,12 @@ error:
         }
     }
     else {
-        _logger.info("No content path set, starting the core without content");
+        _logger.info("No content path set, starting the core without content\n");
         ok = _frontend.loadGame();
     }
 
     if (!ok) {
-        _logger.error("Could not load the content");
+        _logger.error("Could not load the content\n");
         _frontend.unset();
         _dynlib.unload();
         goto error;
@@ -272,7 +285,7 @@ void Player::run() {
             _audio.present();
             _video.present();
 
-            _logger.debug("Ran one frame");
+            _logger.debug("Ran one frame\n");
         }
 
         // TODO pause for less time for greater granularity
@@ -285,21 +298,21 @@ void const* Player::readAll(char const* path, size_t* size) {
     struct stat statbuf;
 
     if (stat(path, &statbuf) != 0) {
-        _logger.error("Error getting content info: %s", strerror(errno));
+        _logger.error("Error getting content info: %s\n", strerror(errno));
         return nullptr;
     }
 
     void* data = malloc(statbuf.st_size);
 
     if (data == nullptr) {
-        _logger.error("Out of memory allocating %zu bytes", statbuf.st_size);
+        _logger.error("Out of memory allocating %zu bytes\n", statbuf.st_size);
         return nullptr;
     }
 
     FILE* file = fopen(path, "rb");
 
     if (file == nullptr) {
-        _logger.error("Error opening content: %s", strerror(errno));
+        _logger.error("Error opening content: %s\n", strerror(errno));
         free(data);
         return nullptr;
     }
@@ -307,7 +320,7 @@ void const* Player::readAll(char const* path, size_t* size) {
     size_t numread = fread(data, 1, statbuf.st_size, file);
 
     if (numread != (size_t)statbuf.st_size) {
-        _logger.error("Error reading content: %s", strerror(errno));
+        _logger.error("Error reading content: %s\n", strerror(errno));
         fclose(file);
         free(data);
         return nullptr;
@@ -315,7 +328,7 @@ void const* Player::readAll(char const* path, size_t* size) {
 
     fclose(file);
 
-    _logger.debug("Loaded data from \"%s\", %zu bytes", path, numread);
+    _logger.debug("Loaded data from \"%s\", %zu bytes\n", path, numread);
     *size = numread;
     return data;
 }

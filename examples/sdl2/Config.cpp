@@ -23,13 +23,17 @@ bool Config::init(std::vector<std::string> const& configPaths, lrcpp::Logger* lo
     _logger = logger;
 
     for (auto const& path : configPaths) {
-        _logger->info("Loading configuration from \"%s\"", path.c_str());
+        _logger->info("Loading configuration from \"%s\"\n", path.c_str());
 
         if (!loadOptions(path.c_str())) {
             return false;
         }
     }
 
+    return true;
+}
+
+bool Config::resolvePaths() {
     char const* corePath = nullptr;
 
     if (!getOption("sdl2lrcpp_core_path", &corePath)) {
@@ -40,7 +44,7 @@ bool Config::init(std::vector<std::string> const& configPaths, lrcpp::Logger* lo
         return false;
     }
 
-    _logger->info("Core directory is \"%s\"", _coreDir.c_str());
+    _logger->info("Core directory is \"%s\"\n", _coreDir.c_str());
 
     if (hasOption("sdl2lrcpp_content_path")) {
         char const* contentPath = nullptr;
@@ -54,7 +58,7 @@ bool Config::init(std::vector<std::string> const& configPaths, lrcpp::Logger* lo
         _contentDir = ".";
     }
 
-    _logger->info("Content directory is \"%s\"", _contentDir.c_str());
+    _logger->info("Content directory is \"%s\"\n", _contentDir.c_str());
     return true;
 }
 
@@ -70,13 +74,13 @@ bool Config::getOption(char const* key, char const** value) const {
     auto const it = _options.find(key);
 
     if (it == _options.end()) {
-        _logger->error("Could't find \"%s\" in the configuration file", key);
+        _logger->error("Could't find \"%s\" in the configuration file\n", key);
         return false;
     }
 
     *value = it->second.c_str();
 
-    _logger->debug("Found value \"%s\" for key \"%s\"", *value, key);
+    _logger->debug("Found value \"%s\" for key \"%s\"\n", *value, key);
     return true;
 }
 
@@ -96,7 +100,7 @@ bool Config::getOption(char const* key, unsigned long* value) const {
     }
 
     if (errno != 0) {
-        _logger->error("Could not convert \"%s\" to a number: %s", valueStr, strerror(errno));
+        _logger->error("Could not convert \"%s\" to a number: %s\n", valueStr, strerror(errno));
         return false;
     }
 
@@ -118,7 +122,7 @@ bool Config::getOption(char const* key, bool* value) const {
         *value = false;
     }
     else {
-        _logger->error("Could not convert \"%s\" to a boolean", valueStr);
+        _logger->error("Could not convert \"%s\" to a boolean\n", valueStr);
         return false;
     }
 
@@ -127,7 +131,7 @@ bool Config::getOption(char const* key, bool* value) const {
 
 bool Config::setPerformanceLevel(unsigned level) {
     (void)level;
-    _logger->warn("RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL not implemented\n");
     return false;
 }
 
@@ -141,12 +145,12 @@ bool Config::getVariable(retro_variable* variable) {
 
     if (found != _options.end()) {
         variable->value = found->second.c_str();
-        _logger->info("Found value \"%s\" for variable \"%s\"", variable->value, variable->key);
+        _logger->info("Found value \"%s\" for variable \"%s\"\n", variable->value, variable->key);
         return true;
     }
 
     variable->value = nullptr;
-    _logger->error("Variable \"%s\" not found", variable->key);
+    _logger->error("Variable \"%s\" not found\n", variable->key);
     return false;
 }
 
@@ -178,19 +182,19 @@ bool Config::getSaveDirectory(char const** directory) {
 
 bool Config::setProcAddressCallback(retro_get_proc_address_interface const* callback) {
     (void)callback;
-    _logger->warn("RETRO_ENVIRONMENT_SET_PROC_ADDRESS_CALLBACK not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_PROC_ADDRESS_CALLBACK not implemented\n");
     return false;
 }
 
 bool Config::setSubsystemInfo(retro_subsystem_info const* info) {
     (void)info;
-    _logger->warn("RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_SUBSYSTEM_INFO not implemented\n");
     return false;
 }
 
 bool Config::setMemoryMaps(retro_memory_map const* map) {
     (void)map;
-    _logger->warn("RETRO_ENVIRONMENT_SET_MEMORY_MAPS not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_MEMORY_MAPS not implemented\n");
     return false;
 }
 
@@ -206,13 +210,13 @@ bool Config::getLanguage(unsigned* language) {
 
 bool Config::setSupportAchievements(bool supports) {
     (void)supports;
-    _logger->warn("RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS not implemented\n");
     return false;
 }
 
 bool Config::setSerializationQuirks(uint64_t quirks) {
     (void)quirks;
-    _logger->warn("RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS not implemented\n");
     return false;
 }
 
@@ -227,7 +231,7 @@ bool Config::getFastForwarding(bool* is) {
 }
 
 bool Config::setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) {
-    _logger->info("Setting core options");
+    _logger->info("Setting core options\n");
 
     for (retro_core_option_v2_definition const* def = intlv2->us->definitions; def->key != nullptr; def++) {
         auto const found = _options.find(def->key);
@@ -236,7 +240,7 @@ bool Config::setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) {
             _options.emplace(def->key, def->default_value);
         }
 
-        _logger->info("    %s set to \"%s\"", def->key, _options[def->key].c_str());
+        _logger->info("    %s set to \"%s\"\n", def->key, _options[def->key].c_str());
     }
 
     return true;
@@ -244,7 +248,7 @@ bool Config::setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) {
 
 bool Config::setCoreOptionsDisplay(retro_core_option_display const* display) {
     (void)display;
-    _logger->warn("RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY not implemented");
+    _logger->warn("RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY not implemented\n");
     return false;
 }
 
@@ -252,14 +256,14 @@ bool Config::getDirectory(char const* path, std::string* directory) {
     size_t const length = strlen(path);
 
     if (length == 0) {
-        _logger->error("Cannot get directory from an empty path");
+        _logger->error("Cannot get directory from an empty path\n");
         return false;
     }
 
     struct stat statbuf;
 
     if (stat(path, &statbuf) != 0) {
-        _logger->error("Error info for path \"%s\": %s", path, strerror(errno));
+        _logger->error("Error info for path \"%s\": %s\n", path, strerror(errno));
         return false;
     }
 
@@ -296,17 +300,17 @@ bool Config::getDirectory(char const* path, std::string* directory) {
         }
     }
 
-    _logger->debug("Directory for \"%s\" is \"%s\"", path, directory->c_str());
+    _logger->debug("Directory for \"%s\" is \"%s\"\n", path, directory->c_str());
     return true;
 }
 
 bool Config::loadOptions(char const* configPath) {
-    _logger->info("Reading settings from \"%s\"", configPath);
+    _logger->info("Reading settings from \"%s\"\n", configPath);
 
     FILE* const file = fopen(configPath, "r");
 
     if (file == nullptr) {
-        _logger->error("Error opening \"%s\" for reading: %s", configPath, strerror(errno));
+        _logger->error("Error opening \"%s\" for reading: %s\n", configPath, strerror(errno));
         return false;
     }
 
@@ -333,7 +337,7 @@ bool Config::loadOptions(char const* configPath) {
         }
 
         if (*keyEnd == '\n' || *keyEnd == 0) {
-            _logger->error("Missing value for key \"%.*s\"", keyBegin, (int)(keyEnd - keyBegin));
+            _logger->error("Missing value for key \"%.*s\"\n", keyBegin, (int)(keyEnd - keyBegin));
             fclose(file);
             return false;
         }
@@ -346,7 +350,7 @@ bool Config::loadOptions(char const* configPath) {
         }
 
         if (*valueBegin != '=') {
-            _logger->error("Missing value for key \"%s\"", key.c_str());
+            _logger->error("Missing value for key \"%s\"\n", key.c_str());
             fclose(file);
             return false;
         }
@@ -369,7 +373,7 @@ bool Config::loadOptions(char const* configPath) {
             }
 
             if (*valueEnd != '"') {
-                _logger->error("Unterminated string for value of key \"%s\"", key.c_str());
+                _logger->error("Unterminated string for value of key \"%s\"\n", key.c_str());
                 fclose(file);
                 return false;
             }
@@ -381,12 +385,12 @@ bool Config::loadOptions(char const* configPath) {
         }
 
         const std::string value(valueBegin, valueEnd - valueBegin);
-        _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
+        _logger->debug("Found key \"%s\" with value \"%s\"\n", key.c_str(), value.c_str());
         _options[key] = value;
     }
 
     if (ferror(file)) {
-        _logger->error("Error reading from configuration file");
+        _logger->error("Error reading from configuration file\n");
         fclose(file);
         return false;
     }

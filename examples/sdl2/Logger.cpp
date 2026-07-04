@@ -1,30 +1,52 @@
 #include "Logger.h"
 
-Logger::Logger() {}
+Logger::Logger() {
+    _level = RETRO_LOG_WARN;
+    _file = nullptr;
+}
 
 bool Logger::init() {
-    _priority = SDL_LOG_PRIORITY_INFO;
+    _level = RETRO_LOG_WARN;
+    _file = nullptr;
     return true;
 }
 
-void Logger::destroy() {}
+void Logger::destroy() {
+    if (_file != nullptr) {
+        fclose(_file);
+        _file = nullptr;
+    }
+}
+
+bool Logger::setLogPath(char const* path) {
+    if (_file != nullptr) {
+        fclose(_file);
+    }
+
+    _file = fopen(path, "w");
+    return _file != nullptr;
+}
 
 void Logger::setLevel(retro_log_level level) {
-    _priority = levelToPriority(level);
-    SDL_LogSetAllPriority(_priority);
+    _level = level;
 }
 
 void Logger::vprintf(retro_log_level level, char const* format, va_list args) {
-    SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, levelToPriority(level), format, args);
-}
-
-SDL_LogPriority Logger::levelToPriority(retro_log_level level) {
-    switch (level) {
-        case RETRO_LOG_DEBUG: return SDL_LOG_PRIORITY_DEBUG;
-        case RETRO_LOG_INFO: return SDL_LOG_PRIORITY_INFO;
-        case RETRO_LOG_WARN: return SDL_LOG_PRIORITY_WARN;
-        case RETRO_LOG_ERROR: return SDL_LOG_PRIORITY_ERROR;
-
-        default: return SDL_LOG_PRIORITY_VERBOSE;
+    if (_file == nullptr || level < _level) {
+        return;
     }
+
+    char const* tag = "?????";
+
+    switch (level) {
+        case RETRO_LOG_DEBUG: tag = "DEBUG"; break;
+        case RETRO_LOG_INFO:  tag = "INFO "; break;
+        case RETRO_LOG_WARN:  tag = "WARN "; break;
+        case RETRO_LOG_ERROR: tag = "ERROR"; break;
+        default: break;
+    }
+
+    fprintf(_file, "[%s] ", tag);
+    vfprintf(_file, format, args);
+    fflush(_file);
 }

@@ -14,6 +14,8 @@ public:
     bool init(std::vector<std::string> const& configPaths, lrcpp::Logger* logger);
     void destroy();
 
+    bool resolvePaths();
+
     bool hasOption(char const* key) const;
     bool getOption(char const* key, char const** value) const;
     bool getOption(char const* key, unsigned long* value) const;

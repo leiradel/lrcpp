@@ -10,11 +10,11 @@ bool Input::init(lrcpp::Logger* logger) {
     _logger = logger;
 
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0) {
-        logger->error("SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) failed: %s", SDL_GetError());
+        logger->error("SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) failed: %s\n", SDL_GetError());
         return false;
     }
 
-    _logger->info("Audio subsystem initialized");
+    _logger->info("Audio subsystem initialized\n");
     return true;
 }
 
@@ -60,8 +60,8 @@ void Input::process(SDL_Event const* event) {
 }
 
 bool Input::setInputDescriptors(retro_input_descriptor const* descriptors) {
-    _logger->info("Setting input descriptors");
-    _logger->info("    port device index id description");
+    _logger->info("Setting input descriptors\n");
+    _logger->info("    port device index id description\n");
 
     for (size_t i = 0; descriptors[i].description != nullptr; i++) {
         /**
@@ -78,7 +78,7 @@ bool Input::setInputDescriptors(retro_input_descriptor const* descriptors) {
         }
 
         retro_input_descriptor const* desc = descriptors + i;
-        _logger->info("    %4u %6u %5u %2u %s", desc->port, desc->device, desc->index, desc->id, desc->description);
+        _logger->info("    %4u %6u %5u %2u %s\n", desc->port, desc->device, desc->index, desc->id, desc->description);
     }
 
     return true;
@@ -97,8 +97,8 @@ bool Input::getInputDeviceCapabilities(uint64_t* capabilities) {
 bool Input::setControllerInfo(retro_controller_info const* info) {
     static char const* const deviceNames[] = {"none", "joypad", "mouse", "keyboard", "lightgun", "analog", "pointer"};
 
-    _logger->info("Setting controller info");
-    _logger->info("    port id type     description");
+    _logger->info("Setting controller info\n");
+    _logger->info("    port id type     description\n");
 
     for (size_t i = 0; info[i].types != nullptr; i++) {
         for (unsigned j = 0; j < info[i].num_types; j++) {
@@ -107,7 +107,7 @@ bool Input::setControllerInfo(retro_controller_info const* info) {
             unsigned const deviceType = type->id & RETRO_DEVICE_MASK;
             char const* deviceName = deviceType < sizeof(deviceNames) / sizeof(deviceNames[0]) ? deviceNames[deviceType] : "?";
 
-            _logger->info("    %4zu %2u %-8s %s", i + 1, type->id >> RETRO_DEVICE_TYPE_SHIFT, deviceName, type->desc);
+            _logger->info("    %4zu %2u %-8s %s\n", i + 1, type->id >> RETRO_DEVICE_TYPE_SHIFT, deviceName, type->desc);
         }
     }
 
@@ -184,7 +184,7 @@ void Input::process(SDL_JoyDeviceEvent const* event) {
     if (mapping == nullptr) {
         char guidStr[128];
         SDL_JoystickGetGUIDString(guid, guidStr, sizeof(guidStr));
-        _logger->error("No mapping for joystick \"%s\" (GUID %s), joystick unusable", name, guidStr);
+        _logger->error("No mapping for joystick \"%s\" (GUID %s), joystick unusable\n", name, guidStr);
     }
     else {
         SDL_free((void*)mapping);
@@ -193,7 +193,7 @@ void Input::process(SDL_JoyDeviceEvent const* event) {
 
 void Input::process(SDL_ControllerDeviceEvent const* event) {
     if (!SDL_IsGameController(event->which)) {
-        _logger->warn("SDL device %d is not a controller", event->which);
+        _logger->warn("SDL device %d is not a controller\n", event->which);
         return;
     }
 
@@ -201,14 +201,14 @@ void Input::process(SDL_ControllerDeviceEvent const* event) {
         SDL_GameController* const controller = SDL_GameControllerOpen(event->which);
 
         if (controller == nullptr) {
-            _logger->error("SDL_GameControllerOpen() failed: %s", SDL_GetError());
+            _logger->error("SDL_GameControllerOpen() failed: %s\n", SDL_GetError());
             return;
         }
 
         SDL_Joystick* const joystick = SDL_GameControllerGetJoystick(controller);
 
         if (joystick == nullptr) {
-            _logger->error("SDL_GameControllerGetJoystick() failed: %s", SDL_GetError());
+            _logger->error("SDL_GameControllerGetJoystick() failed: %s\n", SDL_GetError());
             SDL_GameControllerClose(controller);
             return;
         }
@@ -224,13 +224,13 @@ void Input::process(SDL_ControllerDeviceEvent const* event) {
         gamepad->joystickName = SDL_JoystickName(joystick);
 
         _ports.emplace_back(gamepad);
-        _logger->info("Controller %s (%s) added", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+        _logger->info("Controller %s (%s) added\n", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
 
         size_t const count = _ports.size();
 
         for (size_t i = 0; i < count; i++) {
             Gamepad const* const gamepad = _ports[i];
-            _logger->info("    Port %zu has controller %s (%s)", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+            _logger->info("    Port %zu has controller %s (%s)\n", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
         }
     }
     else if (event->type == SDL_CONTROLLERDEVICEREMOVED) {
@@ -251,13 +251,13 @@ void Input::process(SDL_ControllerDeviceEvent const* event) {
         }
 
         _gamepads.erase(found);
-        _logger->info("Controller %s (%s) removed", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+        _logger->info("Controller %s (%s) removed\n", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
 
         size_t const count = _ports.size();
 
         for (size_t i = 0; i < count; i++) {
             Gamepad const* const gamepad = _ports[i];
-            _logger->info("    Port %zu has controller %s (%s)", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+            _logger->info("    Port %zu has controller %s (%s)\n", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
         }
     }
 }
