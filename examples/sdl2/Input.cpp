@@ -224,13 +224,13 @@ void Input::process(SDL_ControllerDeviceEvent const* event) {
         gamepad->joystickName = SDL_JoystickName(joystick);
 
         _ports.emplace_back(gamepad);
-        _logger->info("Controller %s (%s) added\n", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+        _logger->info("Controller \"%s\" (\"%s\") added\n", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
 
         size_t const count = _ports.size();
 
         for (size_t i = 0; i < count; i++) {
             Gamepad const* const gamepad = _ports[i];
-            _logger->info("    Port %zu has controller %s (%s)\n", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+            _logger->debug("    Port %zu has controller \"%s\" (\"%s\")\n", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
         }
     }
     else if (event->type == SDL_CONTROLLERDEVICEREMOVED) {
@@ -251,13 +251,13 @@ void Input::process(SDL_ControllerDeviceEvent const* event) {
         }
 
         _gamepads.erase(found);
-        _logger->info("Controller %s (%s) removed\n", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+        _logger->info("Controller \"%s\" (\"%s\") removed\n", gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
 
         size_t const count = _ports.size();
 
         for (size_t i = 0; i < count; i++) {
             Gamepad const* const gamepad = _ports[i];
-            _logger->info("    Port %zu has controller %s (%s)\n", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
+            _logger->debug("    Port %zu has controller \"%s\" (\"%s\")\n", i + 1, gamepad->controllerName.c_str(), gamepad->joystickName.c_str());
         }
     }
 }

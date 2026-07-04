@@ -46,7 +46,7 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
 
                 _logger->info("Render driver %d: %s\n", i, info.name);
 
-                _logger->info(
+                _logger->debug(
                     "    flags:%s%s%s%s\n",
                     (info.flags & SDL_RENDERER_SOFTWARE) != 0 ? " SDL_RENDERER_SOFTWARE" : "",
                     (info.flags & SDL_RENDERER_ACCELERATED) != 0 ? " SDL_RENDERER_ACCELERATED" : "",
@@ -55,10 +55,10 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
                 );
 
                 for (Uint32 j = 0; j < info.num_texture_formats; j++) {
-                    _logger->info("    texture_formats[%u]: %s\n", j, SDL_GetPixelFormatName(info.texture_formats[j]));
+                    _logger->debug("    texture_formats[%u]: %s\n", j, SDL_GetPixelFormatName(info.texture_formats[j]));
                 }
 
-                _logger->info("    max_texture: %d x %d\n", info.max_texture_width, info.max_texture_height);
+                _logger->debug("    max_texture: %d x %d\n", info.max_texture_width, info.max_texture_height);
             }
         }
     }
@@ -85,7 +85,16 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
         return false;
     }
 
-    _logger->info("Renderer created\n");
+    {
+        SDL_RendererInfo info;
+
+        if (SDL_GetRenderDriverInfo(-1, &info) != 0) {
+            _logger->info("Renderer created: \"%s\"\n", info.name);
+        }
+        else {
+            _logger->info("Renderer created, unknown driver\n");
+        }
+    }
 
     bool smooth = true;
     config->getOption("sdl2lrcpp_video_smooth", &smooth);

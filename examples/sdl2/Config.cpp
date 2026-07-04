@@ -166,7 +166,7 @@ bool Config::getVariable(retro_variable* variable) {
 
     if (found != _options.end()) {
         variable->value = found->second.c_str();
-        _logger->info("Found value \"%s\" for variable \"%s\"\n", variable->value, variable->key);
+        _logger->debug("Found value \"%s\" for variable \"%s\"\n", variable->value, variable->key);
         return true;
     }
 
@@ -261,7 +261,7 @@ bool Config::setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) {
             _options.emplace(def->key, def->default_value);
         }
 
-        _logger->info("    %s set to \"%s\"\n", def->key, _options[def->key].c_str());
+        _logger->debug("    %s set to \"%s\"\n", def->key, _options[def->key].c_str());
     }
 
     return true;

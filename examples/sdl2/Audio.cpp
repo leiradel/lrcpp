@@ -25,7 +25,7 @@ bool Audio::init(Config* config, lrcpp::Logger* logger) {
     int const count = SDL_GetNumAudioDevices(0);
 
     for (int i = 0; i < count; i++) {
-        _logger->info("Audio device %d: %s\n", i, SDL_GetAudioDeviceName(i, 0));
+        _logger->info("Audio device %d: \"%s\"\n", i, SDL_GetAudioDeviceName(i, 0));
     }
 
     return true;
@@ -98,17 +98,17 @@ bool Audio::setSystemAvInfo(retro_system_av_info const* info) {
     SDL_PauseAudioDevice(_audioDev, 0);
 
     _logger->info("Opened audio driver %s\n", SDL_GetCurrentAudioDriver());
-    _logger->info("    %d Hz\n", obtained.freq);
-    _logger->info("    %u channels\n", obtained.channels);
-    _logger->info("    %u bits per sample\n", SDL_AUDIO_BITSIZE(obtained.format));
+    _logger->debug("    %d Hz\n", obtained.freq);
+    _logger->debug("    %u channels\n", obtained.channels);
+    _logger->debug("    %u bits per sample\n", SDL_AUDIO_BITSIZE(obtained.format));
 
-    _logger->info(
+    _logger->debug(
         "    %s %s\n",
         SDL_AUDIO_ISSIGNED(obtained.format) ? "signed" : "unsigned",
         SDL_AUDIO_ISFLOAT(obtained.format) ? "float" : "integer"
     );
 
-    _logger->info("    %s endian\n", SDL_AUDIO_ISBIGENDIAN(obtained.format) ? "big" : "little");
+    _logger->debug("    %s endian\n", SDL_AUDIO_ISBIGENDIAN(obtained.format) ? "big" : "little");
 
     return true;
 }

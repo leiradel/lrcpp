@@ -204,9 +204,9 @@ error:
     }
 
     _logger.info("System Info\n");
-    _logger.info("    library_name     = %s\n", sysinfo.library_name);
+    _logger.info("    library_name     = \"%s\"\n", sysinfo.library_name);
     _logger.info("    library_version  = %s\n", sysinfo.library_version);
-    _logger.info("    valid_extensions = %s\n", sysinfo.valid_extensions);
+    _logger.info("    valid_extensions = \"%s\"\n", sysinfo.valid_extensions);
     _logger.info("    need_fullpath    = %s\n", sysinfo.need_fullpath ? "true" : "false");
     _logger.info("    block_extract    = %s\n", sysinfo.block_extract ? "true" : "false");
 
