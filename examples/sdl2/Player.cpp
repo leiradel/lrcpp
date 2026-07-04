@@ -291,6 +291,13 @@ int Player::emulationThread(void* userdata) {
 
     while (self->_audio.waitToFill()) {
         self->_frontend.run();
+
+        if (self->_frontend.shutdownRequested()) {
+            SDL_Event quit;
+            quit.type = SDL_QUIT;
+            SDL_PushEvent(&quit);
+            break;
+        }
     }
 
     return 0;
