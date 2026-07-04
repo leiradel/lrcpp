@@ -37,8 +37,7 @@ public:
     virtual bool setSerializationQuirks(uint64_t quirks) override;
     virtual bool getAudioVideoEnable(int* enabled) override;
     virtual bool getFastForwarding(bool* is) override;
-    virtual bool setCoreOptions(retro_core_option_definition const* options) override;
-    virtual bool setCoreOptionsIntl(retro_core_options_intl const* intl) override;
+    virtual bool setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) override;
     virtual bool setCoreOptionsDisplay(retro_core_option_display const* display) override;
 
 protected:

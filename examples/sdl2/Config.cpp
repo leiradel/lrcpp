@@ -226,25 +226,20 @@ bool Config::getFastForwarding(bool* is) {
     return true;
 }
 
-bool Config::setCoreOptions(retro_core_option_definition const* options) {
+bool Config::setCoreOptionsV2Intl(retro_core_options_v2_intl const* intlv2) {
     _logger->info("Setting core options");
 
-    for (; options->key != nullptr; options++) {
-        auto const found = _options.find(options->key);
+    for (retro_core_option_v2_definition const* def = intlv2->us->definitions; def->key != nullptr; def++) {
+        auto const found = _options.find(def->key);
 
         if (found == _options.end()) {
-            _options.emplace(options->key, options->default_value);
+            _options.emplace(def->key, def->default_value);
         }
 
-        _logger->info("    %s set to \"%s\"", options->key, _options[options->key].c_str());
+        _logger->info("    %s set to \"%s\"", def->key, _options[def->key].c_str());
     }
 
     return true;
-}
-
-bool Config::setCoreOptionsIntl(retro_core_options_intl const* intl) {
-    _logger->warn("Using English for the core options");
-    return setCoreOptions(intl->us);
 }
 
 bool Config::setCoreOptionsDisplay(retro_core_option_display const* display) {
