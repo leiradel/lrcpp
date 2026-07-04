@@ -1,7 +1,7 @@
 #include "Perf.h"
 
 #include <SDL.h>
-#include <time.h>
+#include <chrono>
 
 bool Perf::init() {
     return true;
@@ -10,23 +10,13 @@ bool Perf::init() {
 void Perf::destroy() {}
 
 uint64_t Perf::getTimeUs() {
-    struct timespec ts = {0};
-
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-        return 0;
-    }
-
-    return static_cast<int64_t>(ts.tv_sec * 1000000 + ts.tv_nsec / 1000);
+    auto const now = std::chrono::steady_clock::now().time_since_epoch();
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
 }
 
 uint64_t Perf::getTimeNs() {
-    struct timespec ts = {0};
-
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-        return 0;
-    }
-
-    return static_cast<int64_t>(ts.tv_sec * 1000000000 + ts.tv_nsec);
+    auto const now = std::chrono::steady_clock::now().time_since_epoch();
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(now).count());
 }
 
 retro_time_t Perf::getTimeUsec() {
