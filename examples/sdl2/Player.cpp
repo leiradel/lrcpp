@@ -240,6 +240,27 @@ error:
         goto error;
     }
 
+    if (_config.hasOption("sdl2lrcpp_state_path")) {
+        char const* statePath = nullptr;
+        _config.getOption("sdl2lrcpp_state_path", &statePath);
+
+        _logger.info("Loading state from \"%s\"\n", statePath);
+
+        size_t size = 0;
+        void const* data = readAll(statePath, &size);
+
+        if (data == nullptr) {
+            _logger.error("Could not read state from \"%s\"\n", statePath);
+        }
+        else {
+            if (!_frontend.unserialize(data, size)) {
+                _logger.error("Could not load state from \"%s\"\n", statePath);
+            }
+
+            free(const_cast<void*>(data));
+        }
+    }
+
     return true;
 }
 
