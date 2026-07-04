@@ -11,9 +11,10 @@ class Config : public lrcpp::Config {
 public:
     Config();
 
-    bool init(std::vector<std::string> const& configPaths, char const* contentPath, char const* corePath, lrcpp::Logger* logger);
+    bool init(std::vector<std::string> const& configPaths, lrcpp::Logger* logger);
     void destroy();
 
+    bool hasOption(char const* key) const;
     bool getOption(char const* key, char const** value) const;
     bool getOption(char const* key, unsigned long* value) const;
     bool getOption(char const* key, bool* value) const;

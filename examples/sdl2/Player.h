@@ -14,7 +14,7 @@
 
 class Player {
 public:
-    bool init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness);
+    bool init(std::vector<std::string> const& configPaths);
     void destroy();
 
     void run();

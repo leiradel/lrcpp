@@ -16,10 +16,7 @@ Config::Config() {
     reset();
 }
 
-bool Config::init(std::vector<std::string> const& configPaths,
-                  char const* contentPath,
-                  char const* corePath,
-                  lrcpp::Logger* logger) {
+bool Config::init(std::vector<std::string> const& configPaths, lrcpp::Logger* logger) {
 
     reset();
 
@@ -33,22 +30,40 @@ bool Config::init(std::vector<std::string> const& configPaths,
         }
     }
 
-    if (!getDirectory(contentPath, &_contentDir)) {
+    char const* corePath = nullptr;
+
+    if (!getOption("sdl2lrcpp_core_path", &corePath)) {
         return false;
     }
-
-    _logger->info("Content directory is \"%s\"", _contentDir.c_str());
 
     if (!getDirectory(corePath, &_coreDir)) {
         return false;
     }
 
     _logger->info("Core directory is \"%s\"", _coreDir.c_str());
+
+    if (hasOption("sdl2lrcpp_content_path")) {
+        char const* contentPath = nullptr;
+        getOption("sdl2lrcpp_content_path", &contentPath);
+
+        if (!getDirectory(contentPath, &_contentDir)) {
+            return false;
+        }
+    }
+    else {
+        _contentDir = ".";
+    }
+
+    _logger->info("Content directory is \"%s\"", _contentDir.c_str());
     return true;
 }
 
 void Config::destroy() {
     reset();
+}
+
+bool Config::hasOption(char const* key) const {
+    return _options.find(key) != _options.end();
 }
 
 bool Config::getOption(char const* key, char const** value) const {
@@ -370,14 +385,9 @@ bool Config::loadOptions(char const* configPath) {
             }
         }
 
-        if (_options.find(key) != _options.end()) {
-            _logger->warn("Duplicated key \"%s\"", key.c_str());
-        }
-        else {
-            const std::string value(valueBegin, valueEnd - valueBegin);
-            _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
-            _options.emplace(key, value);
-        }
+        const std::string value(valueBegin, valueEnd - valueBegin);
+        _logger->debug("Found key \"%s\" with value \"%s\"", key.c_str(), value.c_str());
+        _options[key] = value;
     }
 
     if (ferror(file)) {

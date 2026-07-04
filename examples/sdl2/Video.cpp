@@ -88,7 +88,7 @@ bool Video::init(Config* config, lrcpp::Logger* logger) {
     _logger->info("Renderer created");
 
     bool smooth = true;
-    config->getOption("video_smooth", &smooth);
+    config->getOption("sdl2lrcpp_video_smooth", &smooth);
 
     if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, smooth ? "1" : "0")) {
         _logger->error("SDL_SetHint() failed: %s", SDL_GetError());

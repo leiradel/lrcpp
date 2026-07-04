@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <errno.h>
+#include <string.h>
 #include <sys/stat.h>
 
 bool Player::loadCore(char const *path)
@@ -49,7 +50,7 @@ bool Player::loadCore(char const *path)
     return true;
 }
 
-bool Player::init(std::vector<std::string> const& configPaths, char const* corePath, char const* contentPath, int verboseness) {
+bool Player::init(std::vector<std::string> const& configPaths) {
 
     if (!_logger.init()) {
         // Doesn't really happen
@@ -58,29 +59,40 @@ bool Player::init(std::vector<std::string> const& configPaths, char const* coreP
 
     _logger.setLevel(RETRO_LOG_WARN);
 
-    if (!_config.init(configPaths, contentPath, corePath, &_logger)) {
+    if (!_config.init(configPaths, &_logger)) {
         _logger.error("Could not initialize the configuration component");
         _logger.destroy();
         return false;
     }
 
-    {
-        unsigned long level = 2;
-        _config.getOption("libretro_log_level", &level);
-        long realLevel = (long)level - verboseness;
+    if (_config.hasOption("sdl2lrcpp_log_level")) {
+        char const* level = nullptr;
+        _config.getOption("sdl2lrcpp_log_level", &level);
 
-        if (realLevel <= 0) {
+        if (strcmp(level, "debug") == 0) {
             _logger.setLevel(RETRO_LOG_DEBUG);
         }
-        else if (realLevel == 1) {
+        else if (strcmp(level, "info") == 0) {
             _logger.setLevel(RETRO_LOG_INFO);
         }
-        else if (realLevel == 2) {
+        else if (strcmp(level, "warn") == 0) {
             _logger.setLevel(RETRO_LOG_WARN);
         }
-        else if (realLevel >= 3) {
+        else if (strcmp(level, "error") == 0) {
             _logger.setLevel(RETRO_LOG_ERROR);
         }
+        else {
+            _logger.warn("Invalid sdl2lrcpp_log_level \"%s\", keeping warn", level);
+        }
+    }
+
+    char const* corePath = nullptr;
+    _config.getOption("sdl2lrcpp_core_path", &corePath);
+
+    char const* contentPath = nullptr;
+
+    if (_config.hasOption("sdl2lrcpp_content_path")) {
+        _config.getOption("sdl2lrcpp_content_path", &contentPath);
     }
 
     if (SDL_InitSubSystem(SDL_INIT_EVENTS) != 0) {
@@ -182,25 +194,31 @@ error:
     _logger.info("    need_fullpath    = %s", sysinfo.need_fullpath ? "true" : "false");
     _logger.info("    block_extract    = %s", sysinfo.block_extract ? "true" : "false");
 
-    _logger.info("Loading content from \"%s\"", contentPath);
-
     bool ok = false;
 
-    if (sysinfo.need_fullpath) {
-        ok = _frontend.loadGame(contentPath);
+    if (contentPath != nullptr) {
+        _logger.info("Loading content from \"%s\"", contentPath);
+
+        if (sysinfo.need_fullpath) {
+            ok = _frontend.loadGame(contentPath);
+        }
+        else {
+            size_t size = 0;
+            void const* data = readAll(contentPath, &size);
+
+            if (data != nullptr) {
+                ok = _frontend.loadGame(contentPath, data, size);
+                free(const_cast<void*>(data));
+            }
+        }
     }
     else {
-        size_t size = 0;
-        void const* data = readAll(contentPath, &size);
-
-        if (data != nullptr) {
-            ok = _frontend.loadGame(contentPath, data, size);
-            free(const_cast<void*>(data));
-        }
+        _logger.info("No content path set, starting the core without content");
+        ok = _frontend.loadGame();
     }
 
     if (!ok) {
-        _logger.error("Could not load content from \"%s\"", contentPath);
+        _logger.error("Could not load the content");
         _frontend.unset();
         _dynlib.unload();
         goto error;
