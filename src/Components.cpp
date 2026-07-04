@@ -189,9 +189,7 @@ retro_core_option_v2_definition* lrcpp::Config::coreOptionV1ToV2(retro_core_opti
         return nullptr;
     }
 
-    bool ok = false;
     size_t count = 0;
-    size_t totalLength = 0;
 
     for (count = 0; options[count].key != nullptr; count++) {
         // just count
