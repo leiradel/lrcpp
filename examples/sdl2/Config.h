@@ -44,6 +44,7 @@ public:
 
 protected:
     bool getDirectory(char const* path, std::string* directory);
+    bool resolveDir(char const* key, std::string const& fallback, std::string* directory);
     bool loadOptions(char const* configPath);
     void reset();
 
@@ -51,6 +52,9 @@ protected:
 
     std::string _contentDir;
     std::string _coreDir;
+    std::string _systemDir;
+    std::string _assetsDir;
+    std::string _saveDir;
     bool _supportsNoGame;
 
     std::map<std::string, std::string> _options;

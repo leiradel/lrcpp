@@ -59,7 +59,28 @@ bool Config::resolvePaths() {
     }
 
     _logger->info("Content directory is \"%s\"\n", _contentDir.c_str());
+
+    if (!resolveDir("sdl2lrcpp_system_path", _coreDir, &_systemDir) ||
+        !resolveDir("sdl2lrcpp_assets_path", _coreDir, &_assetsDir) ||
+        !resolveDir("sdl2lrcpp_save_path", _contentDir, &_saveDir)) {
+        return false;
+    }
+
+    _logger->info("System directory is \"%s\"\n", _systemDir.c_str());
+    _logger->info("Assets directory is \"%s\"\n", _assetsDir.c_str());
+    _logger->info("Save directory is \"%s\"\n", _saveDir.c_str());
     return true;
+}
+
+bool Config::resolveDir(char const* key, std::string const& fallback, std::string* directory) {
+    if (!hasOption(key)) {
+        *directory = fallback;
+        return true;
+    }
+
+    char const* path = nullptr;
+    getOption(key, &path);
+    return getDirectory(path, directory);
 }
 
 void Config::destroy() {
@@ -136,7 +157,7 @@ bool Config::setPerformanceLevel(unsigned level) {
 }
 
 bool Config::getSystemDirectory(char const** directory) {
-    *directory = _coreDir.c_str();
+    *directory = _systemDir.c_str();
     return true;
 }
 
@@ -171,12 +192,12 @@ bool Config::getLibretroPath(char const** path) {
 }
 
 bool Config::getCoreAssetsDirectory(char const** directory) {
-    *directory = _coreDir.c_str();
+    *directory = _assetsDir.c_str();
     return true;
 }
 
 bool Config::getSaveDirectory(char const** directory) {
-    *directory = _contentDir.c_str();
+    *directory = _saveDir.c_str();
     return true;
 }
 
@@ -404,6 +425,9 @@ void Config::reset() {
 
     _contentDir.clear();
     _coreDir.clear();
+    _systemDir.clear();
+    _assetsDir.clear();
+    _saveDir.clear();
     _supportsNoGame = false;
 
     _options.clear();
