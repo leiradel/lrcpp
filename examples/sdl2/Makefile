@@ -8,10 +8,10 @@ ifneq ($(findstring Linux,$(shell uname -a)),)
 endif
 
 %.o: %.c
-	gcc $(INCLUDES) $(CFLAGS) -c $< -o $@
+	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp
-	g++ $(INCLUDES) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 OBJECTS=\
 	Audio.o Config.o Entry.o Input.o Logger.o Main.o Perf.o Player.o Video.o \
@@ -20,7 +20,7 @@ OBJECTS=\
 all: sdl2lrcpp
 
 sdl2lrcpp: $(OBJECTS)
-	g++ -o $@ $+ $(LDFLAGS)
+	$(CXX) -o $@ $+ $(LDFLAGS)
 
 clean:
 	rm -f sdl2lrcpp $(OBJECTS)

@@ -3,10 +3,10 @@ CFLAGS=-O2 -std=c99 -Werror -Wall -Wpedantic
 CXXFLAGS=-O2 -std=c++11 -Werror -Wall -Wpedantic
 
 %.o: %.c
-	gcc $(INCLUDES) $(CFLAGS) -c $< -o $@
+	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 %.o: %.cpp
-	g++ $(INCLUDES) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -c $< -o $@
 
 all: liblrcpp.a
 
