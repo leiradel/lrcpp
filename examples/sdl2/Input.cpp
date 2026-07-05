@@ -152,7 +152,7 @@ int16_t Input::state(unsigned port, unsigned device, unsigned index, unsigned id
             break;
         }
 
-        case RETRO_DEVICE_KEYBOARD: return _keyboardState[id] ? 32767 : 0;
+        case RETRO_DEVICE_KEYBOARD: return _keyboardState[id];
 
         case RETRO_DEVICE_MOUSE: {
             switch (id) {
