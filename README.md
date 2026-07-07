@@ -12,6 +12,18 @@ In order to have a working application several classes must be implemented. Thei
 
 The minimum set of components required to run the more simple cores are`Audio` and `Video` (only the software framebuffer methods need be implemented for most of the cores, so `setHwRender` can return `false`). `Input` must also be provided in order to be able to interact with the emulation, of course. Some cores will also need configuration information to run, and thus will need a `Config` component. It doesn't hurt to provide a `Logger` component since it's easy to implement.
 
+## Concurrency
+
+`Frontend` is a regular class, not a singleton, so an application can create several instances and run many cores simultaneously, one core per `Frontend`, each with its own components.
+
+The Libretro callbacks (video refresh, audio, environment, and so on) are plain function pointers with no context argument, so a callback on its own doesn't tell which `Frontend` the calling core belongs to. lrcpp resolves this by tracking the *current* `Frontend` in a thread-local variable. Right before it calls into a core it sets the current `Frontend` for the calling thread and restores the previous one afterwards, so every callback the core makes while that call is on the stack routes back to the correct `Frontend`.
+
+As a result:
+
+* **Several cores driven from the same thread** work, because the current `Frontend` is set before each core call.
+* **Several cores, each driven from its own thread**, work, because every thread has its own thread-local current `Frontend` and they never interfere. Running more than one instance of the *same* core additionally requires copying the core's dynamic library under different names and loading each copy separately, since a libretro core holds global state and one library load is one core instance.
+* **A core that is itself multithreaded** is supported only one at a time. If such a core calls into the frontend from a thread that lrcpp did not use to drive it, that thread has no thread-local current `Frontend`; lrcpp falls back to a single global pointer, which serves one multithreaded core but cannot disambiguate two or more running at once. The libretro API provides no way to associate a callback with a frontend instance, so this case cannot be solved without a libretro API change.
+
 ## API
 
 ### Frontend
@@ -19,8 +31,7 @@ The minimum set of components required to run the more simple cores are`Audio` a
 The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the platform specific code needed for it to run. It does so via platform dependent components that are responsible for thigs like video and audio output, controller and camera input, and so on. `Frontend` also takes care of calling the core's functions and set the necessary callbacks for it to use, and routes the environment calls from the core to the correct components.
 
 * Life-cycle
-  * Since it's not possible to run more than one Libretro core at the same time (imposed by a limitation of the Libretro API), the `Frontend` class is a singleton.
-    * `static Frontend& getInstance()`: returns the front-end instance.
+  * `Frontend` is a regular class, not a singleton: create one instance per core with its default constructor, set the components, load a core and content, run frames, then unload. See [Concurrency](#concurrency) for running several cores at once.
 * Components, each method will set a new component and return `true` if successful, of `false` if the component cannot be set. Setting (or leaving) a component as `nullptr` will make the corresponding functionality unavailable for the core. Components can only be set when there's no core loaded.
   * `bool setLogger(Logger* logger)`
   * `bool setConfig(Config* config)`
@@ -35,7 +46,7 @@ The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the plat
   * `bool setLocation(Location* location)`
   * `bool setVirtualFileSystem(VirtualFileSystem* virtualFileSystem)`
   * `bool setDiskControl(DiskControl* diskControl)`
-  * `bool serPerf(Perf* perf)`
+  * `bool setPerf(Perf* perf)`
 * There are also getters for each of the components.
   * `Logger* getLogger()`
   * `Config* getConfig()`
@@ -52,7 +63,7 @@ The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the plat
   * `DiskControl* getDiskControl()`
   * `Perf* getPerf()`
 * Managed core life-cycle. These methods take into account the current state of the core and will return `false` if it detects inconsistencies like trying to run a frame with a core that has not being loaded. They also return `false` if they fail for any other reason.
-  * `bool load(char const* corePath)`: Loads a core from the file system.
+  * `bool setCore(Core const* core)`: Sets the core's entry points. The application is responsible for loading the core's dynamic library and filling in the `Core` structure.
   * `bool loadGame()`: Starts the core without a game, only available for cores that call `RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME` with `true`.
   * `bool loadGame(char const* gamePath)`: Starts a core with the given content path. The core will be responsible for loading the content. Only valid if `retro_system_info.need_fullpath` is `true`.
   * `bool loadGame(char const* gamePath, void const* data, size_t size)`: Starts a core with the given content. `data` and `size` must be valid, but `gamePath` is allowed to be `nullptr`.
@@ -60,25 +71,30 @@ The `Frontend` class manages a `Core`'s' life-cycle, and connects it to the plat
   * `bool run()`: Runs one video frame worth of emulation, generating enough audio frames to cover for the time it takes to generate the video.
   * `bool reset()`: Resets the current game.
   * `bool unloadGame()`: Unloads the game.
-  * `bool unload()`: Unloads the core.
+  * `bool unset()`: Unloads the game if one is loaded, deinitializes the core, and returns the frontend to its initial state.
 * Other Libretro API calls. These methods, like the ones above, will also return `false` if called when the core is in an invalid state. As an example, `getSystemAvInfo` can only be called when a game has been loaded or is running. The core states and available calls per state are in `CoreFsm.fsm`.
   * `bool apiVersion(unsigned* version)`
   * `bool getSystemInfo(struct retro_system_info* info)`
   * `bool getSystemAvInfo(struct retro_system_av_info* info)`
-  * `bool serializeSize(size_t* size)`
-  * `bool serialize(void* data, size_t size)`
+  * `bool serializeSize(size_t* size, enum retro_savestate_context context)`
+  * `bool serialize(void* data, size_t size, enum retro_savestate_context context)`
   * `bool unserialize(void const* data, size_t size)`
   * `bool cheatReset()`
   * `bool cheatSet(unsigned index, bool enabled, char const* code)`
   * `bool getRegion(unsigned* region)`
   * `bool getMemoryData(unsigned id, void** data)`
   * `bool getMemorySize(unsigned id, size_t* size)`
+  * `bool setControllerPortDevice(unsigned port, unsigned device)`
+  * `bool getExtension(char const* symbol, retro_proc_address_t* extension)`
+* lrcpp-specific calls.
+  * `bool shutdownRequested() const`: Returns `true` if the core asked to shut down via `RETRO_ENVIRONMENT_SHUTDOWN`.
 * Methods to query which API calls are available at any given moment are also available. Notice that an API call being allowed does not necessarily mean it will succeed, i.e. `loadGame()` can fail if the path doesn't exist etc.
   * `bool apiVersionAllowed() const`
   * `bool cheatResetAllowed() const`
   * `bool cheatSetAllowed() const`
   * `bool coreSetAllowed() const`
   * `bool deinitAllowed() const`
+  * `bool getExtensionAllowed() const`
   * `bool getMemoryDataAllowed() const`
   * `bool getMemorySizeAllowed() const`
   * `bool getRegionAllowed() const`
@@ -129,15 +145,16 @@ Deals with everything related to configuration and then some. Several methods mu
   * `bool setSerializationQuirks(uint64_t quirks)`
   * `bool getAudioVideoEnable(int* enabled)`
   * `bool getFastForwarding(bool* is)`
-  * `bool setCoreOptions(struct retro_core_option_definition const** options)`
-  * `bool setCoreOptionsIntl(struct retro_core_options_intl const* intl)`
+  * `bool setCoreOptionsV2Intl(struct retro_core_options_v2_intl const* intl)`
   * `bool setCoreOptionsDisplay(struct retro_core_option_display const* display)`
-* The following methods are already implemented:
+  * `bool getExtension(char const* symbol, retro_proc_address_t* extension)`
+* Because `getCoreOptionsVersion` reports version 2, the base class translates every core-option variant a core might use into `setCoreOptionsV2Intl`, so an application only needs to implement `setCoreOptionsV2Intl`. The following methods are already implemented:
   * `bool getLanguage(unsigned* language)`: returns `RETRO_LANGUAGE_ENGLISH`.
-  * `bool setVariables(struct retro_variable const* variables)`: Creates an equivalent `retro_core_options_v2_intl` for the variables and calls `setCoreOptionsV2Intl`.
+  * `bool getCoreOptionsVersion(unsigned* version)`: Always sets `version` to 2.
+  * `bool setVariables(struct retro_variable const* variables)`: Converts the variables to a `retro_core_options_v2_intl` and calls `setCoreOptionsV2Intl`.
   * `bool setCoreOptions(retro_core_option_definition const* options)`: Same as above.
   * `bool setCoreOptionsIntl(retro_core_options_intl const* intl)`: Same as above.
-  * `bool getCoreOptionsVersion(unsigned* version)`: Always sets `version` to 2.
+  * `bool setCoreOptionsV2(retro_core_options_v2 const* options)`: Same as above.
 * The following method that doesn't belong to the libretro API is implemented:
   * `bool preprocessMemoryDescriptors(struct retro_memory_descriptor* descriptors, unsigned count)`: Pre-processes the memory descriptors that are received in the `setMemoryMaps` method.
 
@@ -163,6 +180,8 @@ Takes care of everything related with video output. The methods that must be imp
   * `bool getPreferredHwRender(unsigned* preferred)`
 * Callbacks
   * `void refresh(void const* data, unsigned width, unsigned height, size_t pitch)`
+  * `uintptr_t getCurrentFramebuffer()`
+  * `retro_proc_address_t getProcAddress(char const* symbol)`
 
 #### Led
 
@@ -249,9 +268,8 @@ Provides location information to the core.
 Provides the core with a virtual file system interface.
 
 * Environment calls
-  * `bool getVfsInterface(retro_vfs_interface_info const* callback)`
+  * `bool getVfsInterface(retro_vfs_interface_info* callback)`
 * Interface
-  * `unsigned getVirtualFileSystemInterfaceVersion()`
   * `char const* getPath(struct retro_vfs_file_handle* stream)`
   * `struct retro_vfs_file_handle* open(char const* path, unsigned mode, unsigned hints)`
   * `int close(struct retro_vfs_file_handle* stream)`
