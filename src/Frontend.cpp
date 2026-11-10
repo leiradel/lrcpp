@@ -555,12 +555,16 @@ bool lrcpp::Frontend::setRotation(unsigned data) {
     return _video != nullptr && _video->setRotation(data);
 }
 
+// libretro lets a core pass NULL to any GET_ call to ask whether the frontend supports it, so every get below answers
+// such a probe and writes nothing: where a component answers into the data, it answers into a local instead.
 bool lrcpp::Frontend::getOverscan(bool* data) {
-    return _video != nullptr && _video->getOverscan(data);
+    bool probe;
+    return _video != nullptr && _video->getOverscan(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getCanDupe(bool* data) {
-    return _video != nullptr && _video->getCanDupe(data);
+    bool probe;
+    return _video != nullptr && _video->getCanDupe(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::showMessage(struct retro_message const* data) {
@@ -577,7 +581,8 @@ bool lrcpp::Frontend::setPerformanceLevel(unsigned data) {
 }
 
 bool lrcpp::Frontend::getSystemDirectory(char const** data) {
-    return _config != nullptr && _config->getSystemDirectory(data);
+    char const* probe;
+    return _config != nullptr && _config->getSystemDirectory(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setPixelFormat(enum retro_pixel_format data) {
@@ -608,6 +613,10 @@ bool lrcpp::Frontend::setHwRender(struct retro_hw_render_callback* data) {
 }
 
 bool lrcpp::Frontend::getVariable(struct retro_variable* data) {
+    if (data == nullptr) {
+        return _config != nullptr;
+    }
+
     return _config != nullptr && _config->getVariable(data);
 }
 
@@ -616,7 +625,8 @@ bool lrcpp::Frontend::setVariables(struct retro_variable const* data) {
 }
 
 bool lrcpp::Frontend::getVariableUpdate(bool* data) {
-    return _config != nullptr && _config->getVariableUpdate(data);
+    bool probe;
+    return _config != nullptr && _config->getVariableUpdate(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setSupportNoGame(bool data) {
@@ -625,7 +635,8 @@ bool lrcpp::Frontend::setSupportNoGame(bool data) {
 }
 
 bool lrcpp::Frontend::getLibretroPath(char const** data) {
-    return _config != nullptr && _config->getLibretroPath(data);
+    char const* probe;
+    return _config != nullptr && _config->getLibretroPath(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setFrameTimeCallback(struct retro_frame_time_callback const* data) {
@@ -641,17 +652,26 @@ bool lrcpp::Frontend::getRumbleInterface(struct retro_rumble_interface* data) {
         return false;
     }
 
+    if (data == nullptr) {
+        return true;
+    }
+
     data->set_rumble_state = rumbleSetState;
     return true;
 }
 
 bool lrcpp::Frontend::getInputDeviceCapabilities(uint64_t* data) {
-    return _input != nullptr && _input->getInputDeviceCapabilities(data);
+    uint64_t probe;
+    return _input != nullptr && _input->getInputDeviceCapabilities(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getSensorInterface(struct retro_sensor_interface* data) {
     if (_sensor == nullptr) {
         return false;
+    }
+
+    if (data == nullptr) {
+        return true;
     }
 
     data->set_sensor_state = sensorSetState;
@@ -662,6 +682,10 @@ bool lrcpp::Frontend::getSensorInterface(struct retro_sensor_interface* data) {
 bool lrcpp::Frontend::getCameraInterface(struct retro_camera_callback* data) {
     if (_camera == nullptr) {
         return false;
+    }
+
+    if (data == nullptr) {
+        return true;
     }
 
     if (!_camera->getCameraInterface(data)) {
@@ -678,6 +702,10 @@ bool lrcpp::Frontend::getLogInterface(struct retro_log_callback* data) {
         return false;
     }
 
+    if (data == nullptr) {
+        return true;
+    }
+
     data->log = loggerVprintf;
     return true;
 }
@@ -685,6 +713,10 @@ bool lrcpp::Frontend::getLogInterface(struct retro_log_callback* data) {
 bool lrcpp::Frontend::getPerfInterface(struct retro_perf_callback* data) {
     if (_perf == nullptr) {
         return false;
+    }
+
+    if (data == nullptr) {
+        return true;
     }
 
     data->get_time_usec = perfGetTimeUsec;
@@ -698,15 +730,18 @@ bool lrcpp::Frontend::getPerfInterface(struct retro_perf_callback* data) {
 }
 
 bool lrcpp::Frontend::getLocationInterface(struct retro_location_callback* data) {
-    return _location != nullptr && _location->getLocationInterface(data);
+    struct retro_location_callback probe;
+    return _location != nullptr && _location->getLocationInterface(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getCoreAssetsDirectory(char const** data) {
-    return _config != nullptr && _config->getCoreAssetsDirectory(data);
+    char const* probe;
+    return _config != nullptr && _config->getCoreAssetsDirectory(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getSaveDirectory(char const** data) {
-    return _config != nullptr && _config->getSaveDirectory(data);
+    char const* probe;
+    return _config != nullptr && _config->getSaveDirectory(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setSystemAvInfo(struct retro_system_av_info const* data) {
@@ -736,19 +771,26 @@ bool lrcpp::Frontend::setGeometry(struct retro_game_geometry const* data) {
 }
 
 bool lrcpp::Frontend::getUsername(char const** data) {
-    return _config != nullptr && _config->getUsername(data);
+    char const* probe;
+    return _config != nullptr && _config->getUsername(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getLanguage(unsigned* data) {
-    return _config != nullptr && _config->getLanguage(data);
+    unsigned probe;
+    return _config != nullptr && _config->getLanguage(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getCurrentSoftwareFramebuffer(struct retro_framebuffer* data) {
+    if (data == nullptr) {
+        return _video != nullptr;
+    }
+
     return _video != nullptr && _video->getCurrentSoftwareFramebuffer(data);
 }
 
 bool lrcpp::Frontend::getHwRenderInterface(struct retro_hw_render_interface const** data) {
-    return _video != nullptr && _video->getHwRenderInterface(data);
+    struct retro_hw_render_interface const* probe;
+    return _video != nullptr && _video->getHwRenderInterface(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setSupportAchievements(bool data) {
@@ -770,6 +812,10 @@ bool lrcpp::Frontend::setHwSharedContext() {
 bool lrcpp::Frontend::getVfsInterface(struct retro_vfs_interface_info* data) {
     if (_virtualFileSystem == nullptr) {
         return false;
+    }
+
+    if (data == nullptr) {
+        return true;
     }
 
     if (!_virtualFileSystem->getVfsInterface(data)) {
@@ -805,17 +851,26 @@ bool lrcpp::Frontend::getLedInterface(struct retro_led_interface* data) {
         return false;
     }
 
+    if (data == nullptr) {
+        return true;
+    }
+
     data->set_led_state = ledSetState;
     return true;
 }
 
 bool lrcpp::Frontend::getAudioVideoEnable(int* data) {
-    return _config != nullptr && _config->getAudioVideoEnable(data);
+    int probe;
+    return _config != nullptr && _config->getAudioVideoEnable(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getMidiInterface(struct retro_midi_interface** data) {
     if (_midi == nullptr) {
         return false;
+    }
+
+    if (data == nullptr) {
+        return true;
     }
 
     _midiInterface.input_enabled = midiInputEnabled;
@@ -829,21 +884,23 @@ bool lrcpp::Frontend::getMidiInterface(struct retro_midi_interface** data) {
 }
 
 bool lrcpp::Frontend::getFastForwarding(bool* data) {
-    return _config != nullptr && _config->getFastForwarding(data);
+    bool probe;
+    return _config != nullptr && _config->getFastForwarding(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getTargetRefreshRate(float* data) {
-    return _video != nullptr && _video->getTargetRefreshRate(data);
+    float probe;
+    return _video != nullptr && _video->getTargetRefreshRate(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getInputBitmasks(bool* data) {
-    // HACK: At least the vice core calls this with a null data
-    bool dummy = false;
-    return _input != nullptr && _input->getInputBitmasks(data != nullptr ? data : &dummy);
+    bool probe;
+    return _input != nullptr && _input->getInputBitmasks(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getCoreOptionsVersion(unsigned* data) {
-    return _config != nullptr && _config->getCoreOptionsVersion(data);
+    unsigned probe;
+    return _config != nullptr && _config->getCoreOptionsVersion(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setCoreOptions(struct retro_core_option_definition const* data) {
@@ -868,11 +925,13 @@ bool lrcpp::Frontend::setCoreOptionsDisplay(struct retro_core_option_display con
 }
 
 bool lrcpp::Frontend::getPreferredHwRender(unsigned* data) {
-    return _video != nullptr && _video->getPreferredHwRender(data);
+    unsigned probe;
+    return _video != nullptr && _video->getPreferredHwRender(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::getDiskControlInterfaceVersion(unsigned* data) {
-    return _diskControl != nullptr && _diskControl->getDiskControlInterfaceVersion(data);
+    unsigned probe;
+    return _diskControl != nullptr && _diskControl->getDiskControlInterfaceVersion(data != nullptr ? data : &probe);
 }
 
 bool lrcpp::Frontend::setDiskControlExtInterface(struct retro_disk_control_ext_callback const* data) {
@@ -880,6 +939,10 @@ bool lrcpp::Frontend::setDiskControlExtInterface(struct retro_disk_control_ext_c
 }
 
 bool lrcpp::Frontend::getSavestateContext(enum retro_savestate_context* data) {
+    if (data == nullptr) {
+        return true;
+    }
+
     *data = _serializeContext;
     return true;
 }
